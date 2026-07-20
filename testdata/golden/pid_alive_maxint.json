@@ -1,0 +1,5 @@
+{
+  "desc": "pid_alive of an unallocated max-int pid is false; total (no abort)",
+  "stdout": "false\n",
+  "exit": 0
+}

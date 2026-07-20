@@ -1,0 +1,6 @@
+{
+  "desc": "abs(int_min()) aborts located: the most-negative integer has no representable positive counterpart. The located message and exit 1 are the same on every shell (H2).",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "abs(): integer overflow", "nonEmpty": true }
+}

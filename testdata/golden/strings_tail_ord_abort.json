@@ -1,0 +1,1 @@
+{ "desc": "ord on empty string is a located top-level abort", "stdout": "", "exit": 1, "stderr": { "contains": "ord(): empty string", "nonEmpty": true } }

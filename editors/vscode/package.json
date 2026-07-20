@@ -1,0 +1,60 @@
+{
+  "name": "wisp",
+  "displayName": "wisp",
+  "description": "Syntax highlighting and language server support for the wisp language.",
+  "version": "0.1.0",
+  "publisher": "wisp",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mitchellnemitz/wisp"
+  },
+  "main": "./extension.js",
+  "activationEvents": [
+    "onLanguage:wisp"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "wisp",
+        "aliases": ["wisp", "Wisp"],
+        "extensions": [".wisp"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "wisp",
+        "scopeName": "source.wisp",
+        "path": "./syntaxes/wisp.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "title": "wisp",
+      "properties": {
+        "wisp.lsp.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run the wisp language server (diagnostics, formatting, document symbols, hover, completion). Syntax highlighting works regardless of this setting."
+        },
+        "wisp.lsp.path": {
+          "type": "string",
+          "default": "wisp-lsp",
+          "description": "Path to the wisp-lsp executable: a bare name resolved on PATH, or an absolute path."
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "vscode-languageclient": "^8.1.0"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.75.0"
+  }
+}

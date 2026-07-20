@@ -1,0 +1,1 @@
+{"desc":"numeric bound: int and float comparison (less monomorphized)","stdout":"true\nfalse\ntrue\nfalse\n","exit":0}

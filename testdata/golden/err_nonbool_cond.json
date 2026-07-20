@@ -1,0 +1,5 @@
+{
+  "desc": "non-bool condition (rule 2)",
+  "compileError": true,
+  "diagContains": "must be bool"
+}

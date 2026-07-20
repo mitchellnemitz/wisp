@@ -1,0 +1,1 @@
+{ "desc": "AC1: spawn([]) aborts located", "exit": 1, "stderr": {"contains": "spawn"} }

@@ -1,0 +1,1 @@
+{ "desc": "AC3: last-stage status only -- earlier exit 3 invisible (a=0), last exit 5 wins (b=5)", "stdout": "a=0\nb=5\n", "exit": 0 }

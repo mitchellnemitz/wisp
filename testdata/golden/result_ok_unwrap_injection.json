@@ -1,0 +1,1 @@
+{ "desc": "unwrap of Ok must not eval the payload: a command-substitution string is returned as inert data, never executed (empty stderr proves no injection)", "stdout": "ok: $(echo HACKED 1>&2)\n", "exit": 0, "stderr": { "exact": "" } }

@@ -1,0 +1,6 @@
+{
+  "desc": "regression guard: hostile pattern/subject/replacement (metachars, $(...), backticks) is inert data across all four regex builtins; no pwned* file appears; \\. matches a literal dot (ENVIRON not -v)",
+  "stdout": "false\nfalse\n0\nz\nfalse\n$(touch pwned5)\n`touch pwned6`\ntrue\nfalse\nfalse\nfalse\nfalse\nfalse\nfalse\nfalse\n",
+  "exit": 0,
+  "stderr": { "exact": "" }
+}

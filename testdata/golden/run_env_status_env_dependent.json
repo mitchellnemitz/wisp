@@ -1,0 +1,5 @@
+{
+  "desc": "run_env_status returns the child exit code when env is used by the command (AC2)",
+  "stdout": "3\n",
+  "exit": 0
+}

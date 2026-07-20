@@ -1,0 +1,6 @@
+{
+  "desc": "AC2: ln(0.0) aborts located promptly via the non-positive-domain guard (no hang)",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "ln(): non-finite", "nonEmpty": true }
+}

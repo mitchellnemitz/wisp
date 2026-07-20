@@ -1,0 +1,6 @@
+{
+  "desc": "AC1b: on_exit fires even when main triggers a located abort; exit code preserved (1)",
+  "stdout": "cleanup\n",
+  "exit": 1,
+  "stderr": { "contains": "division by zero", "nonEmpty": true }
+}

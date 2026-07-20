@@ -1,0 +1,1 @@
+{"desc": "filter over Optional: positive kept, negative dropped, None unchanged", "stdout": "true\ntrue\ntrue\n", "exit": 0}

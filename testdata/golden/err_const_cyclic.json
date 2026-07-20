@@ -1,0 +1,5 @@
+{
+  "desc": "a const that references itself is a cyclic reference compile error",
+  "compileError": true,
+  "diagContains": "cyclic reference involving"
+}

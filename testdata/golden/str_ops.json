@@ -1,0 +1,1 @@
+{ "desc": "string round-out behavior", "stdout": "world\nh\n4\n3\nx+y-z\n[hi ][ hi]\nhappy run\n[00042][hi...]\na|b|c true\n", "exit": 0 }

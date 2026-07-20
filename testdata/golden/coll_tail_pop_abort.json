@@ -1,0 +1,1 @@
+{ "desc": "pop on empty array is a located top-level abort", "stdout": "", "exit": 1, "stderr": { "contains": "pop: empty array", "nonEmpty": true } }

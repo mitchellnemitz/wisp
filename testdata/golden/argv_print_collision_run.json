@@ -1,0 +1,7 @@
+{
+  "desc": "process.run with argv[0] \"print\" must hit an external print, never wisp's internal helper (F1)",
+  "stubPath": "argv_print_collision_run.pathstub",
+  "requiresExternal": "print",
+  "stdout": "EXTERNAL_PRINT:hello\n",
+  "exit": 0
+}

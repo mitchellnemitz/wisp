@@ -1,0 +1,5 @@
+{
+  "desc": "H6: an outer error suspended across a finally that throws+catches its own error restores with its ORIGINAL code and message (not the finally error's code 7)",
+  "stdout": "inner-caught:7\nouter-msg:rethrown\nouter-code:42\n",
+  "exit": 0
+}

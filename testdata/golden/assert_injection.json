@@ -1,0 +1,6 @@
+{
+  "desc": "N1 injection-safety: a metacharacter-laden value reaches stderr as INERT DATA only -- $(date), backticks, '; rm -rf /', and a glob '*' all render LITERALLY (no command substitution, no glob expansion, no re-evaluation) on all four shells. The exact literal substring below would be absent if any expansion occurred.",
+  "stdout": "",
+  "exit": 122,
+  "stderr": { "contains": "assertion failed: \"$(date); rm -rf / `whoami` *\" != \"other\"", "nonEmpty": true }
+}

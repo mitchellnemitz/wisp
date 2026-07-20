@@ -1,0 +1,5 @@
+{
+  "desc": "ends_with byte model: subject ending with multibyte e-acute suffix",
+  "stdout": "true\n",
+  "exit": 0
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "run_full: empty argv aborts located",
+  "exit": 1,
+  "stderr": {"contains": "run_full"}
+}

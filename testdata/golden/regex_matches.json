@@ -1,0 +1,5 @@
+{
+  "desc": "matches: anchors, alternation, POSIX classes, intervals; true/false, never aborts on a valid pattern",
+  "stdout": "true\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue\ntrue\nfalse\n",
+  "exit": 0
+}

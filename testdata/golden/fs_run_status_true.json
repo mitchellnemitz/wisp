@@ -1,0 +1,5 @@
+{
+  "desc": "run_status of true returns 0",
+  "stdout": "0\n",
+  "exit": 0
+}

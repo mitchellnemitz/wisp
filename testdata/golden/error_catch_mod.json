@@ -1,0 +1,5 @@
+{
+  "desc": "modulo-by-zero is catchable with its located message (no hard shell abort)",
+  "stdout": "error_catch_mod.wisp:5:23: division by zero\n",
+  "exit": 0
+}

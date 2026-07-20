@@ -1,0 +1,1 @@
+{"desc":"int_min == -int_max - 1 (two's complement identity)","stdout":"true\n","exit":0}

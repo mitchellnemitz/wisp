@@ -1,0 +1,5 @@
+{
+  "desc": "malformed float literal 3. is rejected with a located error",
+  "compileError": true,
+  "diagContains": "float literal"
+}

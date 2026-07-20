@@ -1,0 +1,1 @@
+{ "desc": "AC1: printf | wc -l -> trimmed stdout exactly 3 (portable, not a contains check)", "stdout": "3\ncode=0\n", "exit": 0 }

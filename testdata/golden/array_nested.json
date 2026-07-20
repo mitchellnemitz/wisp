@@ -1,0 +1,5 @@
+{
+  "desc": "nested [[int]] and [Point] one level",
+  "stdout": "rowlen=3\ng12=5\np0x=100\np1y=4\n",
+  "exit": 0
+}

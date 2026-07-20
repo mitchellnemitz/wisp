@@ -1,0 +1,6 @@
+{
+  "desc": "AC2: ln(-1.0) aborts located (domain x > 0)",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "ln(): non-finite", "nonEmpty": true }
+}

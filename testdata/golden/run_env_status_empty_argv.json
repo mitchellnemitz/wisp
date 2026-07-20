@@ -1,0 +1,6 @@
+{
+  "desc": "run_env_status with empty argv aborts located via shared builder (AC2 negative)",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "empty argv", "nonEmpty": true }
+}

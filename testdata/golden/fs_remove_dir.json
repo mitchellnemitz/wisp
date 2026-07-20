@@ -1,0 +1,5 @@
+{
+  "desc": "remove_dir removes an empty directory",
+  "stdout": "false\n",
+  "exit": 0
+}

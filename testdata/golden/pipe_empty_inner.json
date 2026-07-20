@@ -1,0 +1,1 @@
+{ "desc": "AC4: empty FIRST stage -> 127 (invisible: last cat reads EOF, rc 0, EMPTY stdout); empty LAST stage -> 127 result", "stdout": "a.code=0 a.out=[]\nb.code=127\n", "exit": 0 }

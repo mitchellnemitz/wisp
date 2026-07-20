@@ -1,0 +1,5 @@
+{
+  "desc": "throw of a non-error operand is a compile error",
+  "compileError": true,
+  "diagContains": "error"
+}

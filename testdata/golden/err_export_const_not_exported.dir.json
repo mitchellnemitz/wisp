@@ -1,0 +1,1 @@
+{ "desc": "referencing a non-exported const is a compile error", "compileError": true, "diagContains": "is not exported from" }

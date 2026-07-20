@@ -1,0 +1,6 @@
+{
+  "desc": "array out-of-bounds access aborts located",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "out of bounds", "nonEmpty": true }
+}

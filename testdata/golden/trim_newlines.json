@@ -1,0 +1,5 @@
+{
+  "desc": "trim strips edge ws incl newlines, keeps interior",
+  "stdout": "hi_there\n",
+  "exit": 0
+}

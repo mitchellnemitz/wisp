@@ -1,0 +1,5 @@
+{
+  "desc": "has_env on an always-set variable is true",
+  "stdout": "true\n",
+  "exit": 0
+}

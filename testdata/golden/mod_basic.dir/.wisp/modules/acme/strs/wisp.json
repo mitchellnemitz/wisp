@@ -1,0 +1,1 @@
+{ "name": "s", "main": "strs.wisp", "dependencies": { "ignored/by-compiler": "git@example" } }

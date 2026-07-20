@@ -1,0 +1,1 @@
+{"desc":"map(user-wrapper-sqrt) with faulting element - parity with builtin-funcref (stdout+exit identical)","stdout":"","exit":1,"stderr":{"contains":"sqrt()","nonEmpty":true}}

@@ -1,0 +1,5 @@
+{
+  "desc": "run captures echo output; trailing newline stripped, print re-adds it",
+  "stdout": "hi\n",
+  "exit": 0
+}

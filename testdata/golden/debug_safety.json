@@ -1,0 +1,1 @@
+{"desc": "debug injection safety: shell metacharacters in values are inert", "stdout": "\"$(touch pwned)\"\n[\"$(touch pwned)\"]\nerror(\"$(touch pwned)\", 0)\n", "exit": 0}

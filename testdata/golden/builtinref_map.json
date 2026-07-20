@@ -1,0 +1,1 @@
+{"desc":"map(trim) + map(upper) + filter(is_file)","stdout":"a\nb\nABC\nDE\nexists\n","exit":0}

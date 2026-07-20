@@ -1,0 +1,5 @@
+{
+  "desc": "repeat n times; n==0 -> empty",
+  "stdout": "ababab\n[]\n",
+  "exit": 0
+}

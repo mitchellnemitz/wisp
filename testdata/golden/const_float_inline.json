@@ -1,0 +1,5 @@
+{
+  "desc": "a float const inlines as its raw decimal literal (a bare safe word), not an empty token; positive and negative float consts both round-trip through string()",
+  "stdout": "3.1400000000000001\n-2.5\n",
+  "exit": 0
+}

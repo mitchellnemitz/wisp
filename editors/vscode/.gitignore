@@ -1,0 +1,5 @@
+# VSCode extension build artifacts (produced by npm install + vsce package).
+# Ignored so building the .vsix during release does not dirty the tree.
+node_modules/
+*.vsix
+package-lock.json

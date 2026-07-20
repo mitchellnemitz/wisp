@@ -1,0 +1,6 @@
+{
+  "desc": "empty argv aborts located before exec (AC4)",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "exec_command: empty argv", "nonEmpty": true }
+}

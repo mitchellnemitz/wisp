@@ -1,0 +1,5 @@
+{
+  "desc": "break and continue inside a for-in loop",
+  "stdout": "1\n3\n",
+  "exit": 0
+}

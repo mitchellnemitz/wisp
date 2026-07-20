@@ -1,0 +1,12 @@
+fn fact(n: int) -> int {
+  if (n <= 1) {
+    return 1
+  }
+  return n * fact(n - 1)
+}
+fn main() -> int {
+  print("${fact(0)}")
+  print("${fact(5)}")
+  print("${fact(10)}")
+  return 0
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "\\${x} prints literally, ${x} interpolates",
+  "stdout": "literal ${x} and real 5\n",
+  "exit": 0
+}

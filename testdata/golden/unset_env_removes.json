@@ -1,0 +1,1 @@
+{ "desc": "unset_env removes the var (AC2)", "stdout": "none\n", "exit": 0 }

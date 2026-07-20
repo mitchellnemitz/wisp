@@ -1,0 +1,1 @@
+{"desc":"json API self-tests via the wisp test runner (assert_eq/some/none)","stdout":"TAP version 13\n1..6\nok 1 - encode round-trips decode\nok 2 - decode[int] projects\nok 3 - get returns Some for present key\nok 4 - get returns None for absent key\nok 5 - as_string decodes unicode\nok 6 - type_of classifies an array\n","exit":0}

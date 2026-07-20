@@ -1,0 +1,5 @@
+{
+  "desc": "a forward reference to a not-yet-resolved const is a compile error",
+  "compileError": true,
+  "diagContains": "cyclic or forward reference to"
+}

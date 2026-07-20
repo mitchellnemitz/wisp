@@ -1,0 +1,6 @@
+{
+  "desc": "dir_name/base_name spec P4 table (POSIX-style, pure string fns) identical across shells",
+  "stdout": "/a/b|c\n/a/b|c\na|b\n.|b\n/|/\n/|/\n.|\n/|a\n",
+  "exit": 0,
+  "stderr": { "exact": "" }
+}

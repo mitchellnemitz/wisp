@@ -1,0 +1,1 @@
+{"desc": "AC3 + R5 deep-walk: catch error_with(7,low), throw wrap(wrap(e,mid),context), catch at top; outer .message==context .code==0; walk cause -> mid; walk again -> root .message==low AND .code==7 (original inner id carried through throw)", "stdout": "context\n0\nmid\nlow\n7\ntrue\n", "exit": 0}

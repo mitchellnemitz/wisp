@@ -1,0 +1,5 @@
+{
+  "desc": "regex_find returns the first whole match as Some",
+  "stdout": "true\n1\n",
+  "exit": 0
+}

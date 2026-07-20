@@ -1,0 +1,5 @@
+{
+  "desc": "AC5: with poll_secs=9 but p already done, wait_any returns p on the first scan (before any sleep); returns the right process",
+  "stdout": "y\n\n",
+  "exit": 0
+}

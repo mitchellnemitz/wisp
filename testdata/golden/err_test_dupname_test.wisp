@@ -1,0 +1,4 @@
+test ("same name") {
+}
+test ("same name") {
+}

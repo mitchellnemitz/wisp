@@ -1,0 +1,6 @@
+{
+  "desc": "a missing assert_contains over an enum array exits 122 and renders via debug() as canonical ints, exercising genDebugArray -> genDebugValue enum recursion",
+  "stdout": "",
+  "exit": 122,
+  "stderr": { "nonEmpty": true }
+}

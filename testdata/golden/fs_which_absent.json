@@ -1,0 +1,5 @@
+{
+  "desc": "which of a guaranteed-absent name is None and never aborts",
+  "stdout": "true\n",
+  "exit": 0
+}

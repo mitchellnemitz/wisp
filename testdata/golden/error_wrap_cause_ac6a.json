@@ -1,0 +1,1 @@
+{"desc": "AC6a: uncaught throw wrap(error(inner),top) aborts located with the TOP message only; abort format identical to an uncaught throw error(top) -- cause chain NOT printed (R6)", "stdout": "", "exit": 1, "stderr": {"exact": "wisp: error_wrap_cause_ac6a.wisp:2:5: top\n"}}

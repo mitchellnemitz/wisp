@@ -1,0 +1,5 @@
+{
+  "desc": "array literal/index/mutate/length/push/for-in",
+  "stdout": "sum=54\nlen=4\nfirst=3\n",
+  "exit": 0
+}

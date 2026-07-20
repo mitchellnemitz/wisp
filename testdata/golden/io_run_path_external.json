@@ -1,0 +1,5 @@
+{
+  "desc": "run resolves an external command (cat) via PATH and captures its output",
+  "stdout": "viacat\n",
+  "exit": 0
+}

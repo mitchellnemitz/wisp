@@ -1,0 +1,9 @@
+{
+  "desc": "float division by zero aborts located (no inf/nan leak)",
+  "stdout": "",
+  "exit": 1,
+  "stderr": {
+    "contains": "division by zero",
+    "nonEmpty": true
+  }
+}

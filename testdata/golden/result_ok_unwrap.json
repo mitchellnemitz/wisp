@@ -1,0 +1,1 @@
+{ "desc": "Result Ok: unwrap, unwrap_or on Ok and Err", "stdout": "unwrap: 7\nor: 7\nerr or: 9\n", "exit": 0 }

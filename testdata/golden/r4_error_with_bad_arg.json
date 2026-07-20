@@ -1,0 +1,5 @@
+{
+  "desc": "error_with: wrong arg order (string,int) is a compile error",
+  "compileError": true,
+  "diagContains": "argument 1"
+}

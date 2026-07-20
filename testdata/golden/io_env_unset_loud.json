@@ -1,0 +1,6 @@
+{
+  "desc": "env on an unset variable aborts loud, message names the variable",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "WISP_GOLDEN_NOPE", "nonEmpty": true }
+}

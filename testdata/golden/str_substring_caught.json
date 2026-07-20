@@ -1,0 +1,1 @@
+{ "desc": "substring out-of-range is catchable", "stdout": "caught range\n", "exit": 0 }

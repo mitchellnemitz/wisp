@@ -1,0 +1,5 @@
+{
+  "desc": "run preserves interior newlines and strips trailing ones",
+  "stdout": "[a\nb]\n",
+  "exit": 0
+}

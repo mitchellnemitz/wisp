@@ -1,0 +1,5 @@
+{
+  "desc": "an out-of-range int literal in a runtime expression is a compile error",
+  "compileError": true,
+  "diagContains": "out of range"
+}

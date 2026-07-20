@@ -1,0 +1,5 @@
+{
+  "desc": "a thrown message with shell-active chars is inert data (printed verbatim)",
+  "stdout": "$(touch SENTINEL_INJECT) `echo no`\n",
+  "exit": 0
+}

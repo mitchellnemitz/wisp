@@ -1,0 +1,1 @@
+{"desc": "injection-safe: a payload with shell metacharacters round-trips inert through a combinator on the present branch", "stdout": "$(echo HACKED 1>&2)\n", "exit": 0, "stderr": {"exact": ""}}

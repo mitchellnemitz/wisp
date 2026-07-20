@@ -1,0 +1,6 @@
+{
+  "desc": "writing to an unwritable path aborts loud, message names the path",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "no_such_dir/f", "nonEmpty": true }
+}

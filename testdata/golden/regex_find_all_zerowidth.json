@@ -1,0 +1,5 @@
+{
+  "desc": "a zero-width-capable pattern (X*) terminates and returns only the non-empty matches; the fixture passing (not hanging) is the zero-width guard",
+  "stdout": "X,X\n2\n",
+  "exit": 0
+}

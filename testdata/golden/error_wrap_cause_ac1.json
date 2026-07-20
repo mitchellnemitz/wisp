@@ -1,0 +1,1 @@
+{"desc": "AC1: cause(wrap(error(inner),outer)) is Some with inner.message==inner; outer.message==outer, code==0; cause(error/error_with) are None", "stdout": "outer\n0\nsome\ninner\ntrue\ntrue\n", "exit": 0}

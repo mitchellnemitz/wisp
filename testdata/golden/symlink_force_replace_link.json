@@ -1,0 +1,5 @@
+{
+  "desc": "replaces an existing symlink (AC2)",
+  "stdout": "new\n",
+  "exit": 0
+}

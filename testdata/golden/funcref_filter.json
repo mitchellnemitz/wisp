@@ -1,0 +1,5 @@
+{
+  "desc": "filter selects even elements in order",
+  "stdout": "len=3\n2\n4\n6\n",
+  "exit": 0
+}

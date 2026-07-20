@@ -1,0 +1,1 @@
+{"desc":"ordinary negative literals and canonicalization (-0->0, -007->-7) take the unchanged code path","stdout":"-5\n-5\n-9223372036854775807\n0\n-7\n","exit":0}

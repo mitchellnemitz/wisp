@@ -1,0 +1,6 @@
+{
+  "desc": "list_dir of a missing path aborts loud",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "list_dir", "nonEmpty": true }
+}

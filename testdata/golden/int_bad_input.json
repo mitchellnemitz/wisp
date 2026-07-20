@@ -1,0 +1,9 @@
+{
+  "desc": "int() bad input aborts",
+  "stdout": "",
+  "exit": 1,
+  "stderr": {
+    "contains": "int(",
+    "nonEmpty": true
+  }
+}

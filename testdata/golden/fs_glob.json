@@ -1,0 +1,5 @@
+{
+  "desc": "glob (AC5): d/*.txt -> [d/a.txt, d/b.txt] (sorted join, length 2); d/*.none no-match -> empty array (length 0, not the literal pattern)",
+  "stdout": "d/a.txt,d/b.txt\n2\n0\n",
+  "exit": 0
+}

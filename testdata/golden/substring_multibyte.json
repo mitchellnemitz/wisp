@@ -1,0 +1,5 @@
+{
+  "desc": "substring byte model: multibyte UTF-8 string -- full slice, prefix slice, empty slice",
+  "stdout": "café\ncaf\n\n",
+  "exit": 0
+}

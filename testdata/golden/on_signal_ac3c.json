@@ -1,0 +1,5 @@
+{
+  "desc": "AC3c: signal handler exit(0) fires the on_exit EXIT trap; shutting-down then cleanup; exit 0",
+  "stdout": "shutting-down\ncleanup\n",
+  "exit": 0
+}

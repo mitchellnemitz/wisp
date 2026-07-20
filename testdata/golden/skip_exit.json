@@ -1,0 +1,6 @@
+{
+  "desc": "skip(reason) exits the (sub)shell with the reserved SKIP code 121 and the rest of the body does not run; identical on all four shells",
+  "stdout": "",
+  "exit": 121,
+  "stderr": { "contains": "SKIP: not implemented yet", "nonEmpty": true }
+}

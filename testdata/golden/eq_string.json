@@ -1,0 +1,5 @@
+{
+  "desc": "string == string",
+  "stdout": "true\nfalse\ntrue\n",
+  "exit": 0
+}

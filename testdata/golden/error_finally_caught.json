@@ -1,0 +1,5 @@
+{
+  "desc": "finally runs after a caught fault",
+  "stdout": "caught:boom\nfinally\n",
+  "exit": 0
+}

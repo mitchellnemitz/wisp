@@ -1,0 +1,1 @@
+{ "desc": "Optional[int] ==/!= usable as bool: direct in if, as both && operands, and bound via let", "stdout": "if-ok\nand-ok\nlet-ok\n", "exit": 0 }

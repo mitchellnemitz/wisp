@@ -1,0 +1,5 @@
+{
+  "desc": "declared type and initializer type mismatch in a const is a compile error",
+  "compileError": true,
+  "diagContains": ": type mismatch: declared"
+}

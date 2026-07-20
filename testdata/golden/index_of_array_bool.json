@@ -1,0 +1,1 @@
+{ "desc": "index_of([bool], bool) -> Optional[int]", "stdout": "1\ntrue\n", "exit": 0 }

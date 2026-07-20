@@ -1,0 +1,5 @@
+{
+  "desc": "a string holding a shell command is inert data, never executed (the bytes appear verbatim on stdout)",
+  "stdout": "data=$(touch SENTINEL); `id`\n",
+  "exit": 0
+}

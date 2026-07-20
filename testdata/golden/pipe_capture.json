@@ -1,0 +1,1 @@
+{ "desc": "AC2: last-stage stdout (X, not empty -- per-segment redirect), last-stage stderr captured, last-stage command exit code", "stdout": "a.stdout=X\nb.stdout=x\n\nb.stderr=err\n\nc.code=4\n", "exit": 0 }

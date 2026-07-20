@@ -1,0 +1,1 @@
+{"desc": "and_then: Optional Some chains / None / chain-to-None; Result Ok chains / Err short-circuits", "stdout": "5\ntrue\ntrue\n6\ntrue\n", "exit": 0}

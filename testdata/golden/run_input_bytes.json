@@ -1,0 +1,5 @@
+{
+  "desc": "run_input: wc -c counts stdin bytes; trim removes wc padding",
+  "stdout": "3\n",
+  "exit": 0
+}

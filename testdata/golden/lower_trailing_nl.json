@@ -1,0 +1,5 @@
+{
+  "desc": "lower preserves trailing newline",
+  "stdout": "abc[nl]\n",
+  "exit": 0
+}

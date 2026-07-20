@@ -1,0 +1,1 @@
+{"desc": "debug of string-keyed dict: insertion order, empty dict", "stdout": "{\"a\": 1, \"b\": 2}\n{}\n", "exit": 0}

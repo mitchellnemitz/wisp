@@ -1,0 +1,1 @@
+{ "desc": "Result Err: is_ok/is_err and unwrap_err().message", "stdout": "is_err: true\nis_ok: false\nmsg: boom\n", "exit": 0 }

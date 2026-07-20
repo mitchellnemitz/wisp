@@ -1,0 +1,5 @@
+{
+  "desc": "sibling for-loop var reuse (must compile+run)",
+  "stdout": "a0\na1\na2\nb0\nb1\n",
+  "exit": 0
+}

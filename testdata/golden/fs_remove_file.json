@@ -1,0 +1,5 @@
+{
+  "desc": "remove_file removes a file; removing a missing file is a success (-f)",
+  "stdout": "false\nok\n",
+  "exit": 0
+}

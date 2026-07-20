@@ -1,0 +1,1 @@
+{ "desc": "qualified generic call with explicit type args box.identity[int] and return-only box.empty[string] across an include; ShellCheck-clean under dash/busybox", "stdout": "n=9\nlen=1\n", "exit": 0 }

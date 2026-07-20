@@ -1,0 +1,5 @@
+{
+  "desc": "cwd() is the actual process cwd (marker lookup) and is absolute",
+  "stdout": "true\ntrue\n",
+  "exit": 0
+}

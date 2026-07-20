@@ -1,0 +1,5 @@
+{
+  "desc": "each side effects in order; empty array -> map/filter empty, each no-op",
+  "stdout": "got a\ngot b\ngot c\nm=0\nf=0\n",
+  "exit": 0
+}

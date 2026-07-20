@@ -1,0 +1,5 @@
+{
+  "desc": "generic functions identity/first_of, type-erased, one shell function each",
+  "stdout": "first int: 10\nfirst str: a\nidentity: 42\nempty has none\n",
+  "exit": 0
+}

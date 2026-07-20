@@ -1,0 +1,1 @@
+{"desc":"pow: negative base with fractional exponent is a catchable abort","stdout":"caught\n","exit":0}

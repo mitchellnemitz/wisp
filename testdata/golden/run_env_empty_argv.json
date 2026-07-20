@@ -1,0 +1,6 @@
+{
+  "desc": "run_env([], env) aborts located via the builder's empty-argv pre-check (AC5/empty-argv)",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "empty argv", "nonEmpty": true }
+}

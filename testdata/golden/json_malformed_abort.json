@@ -1,0 +1,1 @@
+{"desc":"malformed JSON aborts located","exit":1,"stderr":{"contains":"invalid JSON","nonEmpty":true}}

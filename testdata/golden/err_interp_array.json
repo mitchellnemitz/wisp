@@ -1,0 +1,1 @@
+{ "desc": "interpolating an array value is a compile error", "compileError": true, "diagContains": "cannot interpolate an array value" }

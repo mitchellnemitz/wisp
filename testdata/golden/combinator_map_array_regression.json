@@ -1,0 +1,1 @@
+{"desc": "map over array (regression): existing array behavior is unchanged after Optional/Result overload", "stdout": "3\n6\n9\n", "exit": 0}

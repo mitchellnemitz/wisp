@@ -1,0 +1,5 @@
+{
+  "desc": "reverse builds a new reversed array; source unchanged; empty ok",
+  "stdout": "3\n2\n1\nlen=3\nrev_empty=0\n",
+  "exit": 0
+}

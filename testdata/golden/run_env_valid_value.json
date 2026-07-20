@@ -1,0 +1,5 @@
+{
+  "desc": "run_env with a valid name and an arbitrary value does NOT abort; the child sees the exact value (AC4)",
+  "stdout": "a=b c;d\n",
+  "exit": 0
+}

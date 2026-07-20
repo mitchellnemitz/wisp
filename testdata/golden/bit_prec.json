@@ -1,0 +1,5 @@
+{
+  "desc": "precedence: & tighter than |, arithmetic tighter than shift and &",
+  "stdout": "7\n5\n2\n4\n",
+  "exit": 0
+}

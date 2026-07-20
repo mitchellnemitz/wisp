@@ -1,0 +1,1 @@
+{"desc":"as_int on a non-integer aborts located","exit":1,"stderr":{"contains":"not an integer","nonEmpty":true}}

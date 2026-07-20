@@ -1,0 +1,1 @@
+{"desc":"decode string unescapes u-escapes and surrogate pairs to UTF-8","stdout":"café\n€\n😀\n","exit":0}

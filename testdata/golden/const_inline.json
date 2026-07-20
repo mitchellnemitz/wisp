@@ -1,0 +1,5 @@
+{
+  "desc": "const folds and inlines at use sites; end-to-end behavioral check (the no-shell-variable-emitted property is asserted by codegen unit tests in const_final_test.go)",
+  "stdout": "123\n",
+  "exit": 0
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "RunResult: field access returns correct field values",
+  "stdout": "hi\n\n0\n",
+  "exit": 0
+}

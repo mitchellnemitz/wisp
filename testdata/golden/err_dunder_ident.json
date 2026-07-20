@@ -1,0 +1,5 @@
+{
+  "desc": "__-prefixed identifier rejected",
+  "compileError": true,
+  "diagContains": "reserved"
+}

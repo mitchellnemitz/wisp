@@ -1,0 +1,5 @@
+{
+  "desc": "AC7: make_fifo path metacharacters are inert -- a FIFO is created at the literal path; no command substitution, no PWNED2 file",
+  "stdout": "isfifo=0\npwned=false\n",
+  "exit": 0
+}

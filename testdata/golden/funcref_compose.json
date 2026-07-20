@@ -1,0 +1,5 @@
+{
+  "desc": "indirect call equals direct; funcref through getter/param/array/dict (nested composition)",
+  "stdout": "direct=7\nindirect=7\ngetter=7\napply=42\narr=42\ndict=16\n",
+  "exit": 0
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "shell-active key is stored/retrieved verbatim and inertly",
+  "stdout": "v=42\nk=$(echo PWN); `id`; rm -rf x\n",
+  "exit": 0
+}

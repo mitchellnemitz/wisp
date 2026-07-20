@@ -1,0 +1,1 @@
+{"desc": "or_else over Optional: Some returns original; None calls fallback", "stdout": "7\n42\n", "exit": 0}

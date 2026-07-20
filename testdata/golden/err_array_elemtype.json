@@ -1,0 +1,1 @@
+{ "desc": "array element type mismatch is a compile error", "compileError": true, "diagContains": "element 2 has type string" }

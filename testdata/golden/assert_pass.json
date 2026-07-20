@@ -1,0 +1,6 @@
+{
+  "desc": "every assertion on the expected case is a no-op; the program runs to completion and exits 0 on all four shells",
+  "stdout": "all passed\n",
+  "exit": 0,
+  "stderr": { "exact": "" }
+}

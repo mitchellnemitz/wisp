@@ -1,0 +1,5 @@
+{
+  "desc": "AC1: spawn + wait round-trip captures stdout/stderr/code",
+  "stdout": "out\nerr\ncode=2\n",
+  "exit": 0
+}

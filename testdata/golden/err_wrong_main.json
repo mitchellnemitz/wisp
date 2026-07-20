@@ -1,0 +1,5 @@
+{
+  "desc": "wrong-signature main (returns void)",
+  "compileError": true,
+  "diagContains": "main"
+}

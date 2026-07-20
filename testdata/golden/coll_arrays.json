@@ -1,0 +1,1 @@
+{ "desc": "array collections builtins", "stdout": "1 1 3 4 5\n2\n1 4 1\n3 1 4 1 5 9\n14\n0 1 2 3\n3/5\n", "exit": 0 }

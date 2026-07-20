@@ -1,0 +1,1 @@
+{"desc": "map_err: Ok passes through; Err yields a NEW error derived from the original (context: orig)", "stdout": "99\ncontext: orig\n", "exit": 0}

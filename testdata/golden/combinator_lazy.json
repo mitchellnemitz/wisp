@@ -1,0 +1,1 @@
+{"desc": "lazy: every inactive branch (map/and_then/filter on None, or_else on Some; map/and_then on Err, or_else/map_err on Ok) skips its function -- no sentinel output", "stdout": "", "exit": 0}

@@ -1,0 +1,5 @@
+{
+  "desc": "map over [1,2,3] doubling, in order",
+  "stdout": "2\n4\n6\n",
+  "exit": 0
+}

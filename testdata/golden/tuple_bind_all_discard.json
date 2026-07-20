@@ -1,0 +1,1 @@
+{ "desc": "Tuple destructuring: all-discard still evaluates RHS exactly once for effects", "stdout": "ran\n", "exit": 0 }

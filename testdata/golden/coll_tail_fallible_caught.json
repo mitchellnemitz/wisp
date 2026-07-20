@@ -1,0 +1,1 @@
+{ "desc": "collections-tail fallible builtins caught in try", "stdout": "pop caught\nremove_at caught\ninsert_at caught\ncount_where caught\n", "exit": 0 }

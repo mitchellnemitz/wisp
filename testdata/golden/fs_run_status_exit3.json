@@ -1,0 +1,5 @@
+{
+  "desc": "run_status returns the child's exit code (3)",
+  "stdout": "3\n",
+  "exit": 0
+}

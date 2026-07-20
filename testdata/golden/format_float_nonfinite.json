@@ -1,0 +1,5 @@
+{
+  "desc": "a float literal too large for awk double is rejected at compile time (out of domain)",
+  "compileError": true,
+  "diagContains": "float literal out of domain"
+}

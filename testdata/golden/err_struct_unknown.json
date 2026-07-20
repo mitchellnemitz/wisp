@@ -1,0 +1,1 @@
+{ "desc": "unknown struct field is a compile error", "compileError": true, "diagContains": "no field" }

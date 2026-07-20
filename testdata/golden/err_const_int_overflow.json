@@ -1,0 +1,5 @@
+{
+  "desc": "integer overflow in a constant expression is a compile error",
+  "compileError": true,
+  "diagContains": "constant integer out of range"
+}

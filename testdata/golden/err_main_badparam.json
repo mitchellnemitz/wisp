@@ -1,0 +1,1 @@
+{ "desc": "main with a non-string[] parameter is a compile error", "compileError": true, "diagContains": "string[]" }

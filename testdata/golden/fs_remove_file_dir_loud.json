@@ -1,0 +1,6 @@
+{
+  "desc": "remove_file on a directory aborts loud (rm -f does not remove a dir)",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "remove_file", "nonEmpty": true }
+}

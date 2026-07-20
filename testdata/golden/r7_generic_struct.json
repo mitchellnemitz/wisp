@@ -1,0 +1,1 @@
+{"desc":"generic structs: Box[T] and Pair[A,B] with field access and assignment","stdout":"5\n42\nhello\n10\nworld\n","exit":0}

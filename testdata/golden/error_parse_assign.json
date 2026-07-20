@@ -1,0 +1,5 @@
+{
+  "desc": "parse-then-assign: bad input caught, n set to -1; mutation persists",
+  "stdout": "-1\n",
+  "exit": 0
+}

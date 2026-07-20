@@ -1,0 +1,1 @@
+{"desc": "map over Result: Ok doubles; Err passes the original error through unchanged (unwrap_err.message == boom)", "stdout": "10\nboom\n", "exit": 0}

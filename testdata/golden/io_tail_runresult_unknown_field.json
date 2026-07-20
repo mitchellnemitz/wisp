@@ -1,0 +1,5 @@
+{
+  "desc": "RunResult: unknown field access is a compile error",
+  "compileError": true,
+  "diagContains": "RunResult"
+}

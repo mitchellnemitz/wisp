@@ -1,0 +1,6 @@
+{
+  "desc": "args with shell-active bytes are inert data, never executed",
+  "args": ["$(echo pwned)", "`id`", "a;b|c"],
+  "stdout": "$(echo pwned)\n`id`\na;b|c\n",
+  "exit": 0
+}

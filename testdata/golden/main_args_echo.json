@@ -1,0 +1,6 @@
+{
+  "desc": "main(args: [string]) echoes its arguments",
+  "args": ["apple", "two words", "cherry"],
+  "stdout": "argc=3\napple\ntwo words\ncherry\n",
+  "exit": 0
+}

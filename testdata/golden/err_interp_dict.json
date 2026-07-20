@@ -1,0 +1,1 @@
+{ "desc": "interpolating a dict value is a compile error", "compileError": true, "diagContains": "cannot interpolate a dict value" }

@@ -1,0 +1,6 @@
+{
+  "desc": "uncaught unwrap of None aborts located, fatal nonzero exit",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "unwrap of None", "nonEmpty": true }
+}

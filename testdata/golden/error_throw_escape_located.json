@@ -1,0 +1,6 @@
+{
+  "desc": "M4: a thrown error that escapes uncaught through a try epilogue (rethrown from catch, finally runs) aborts with the located 'wisp: file:line:col: msg' form, matching a direct uncaught throw",
+  "stdout": "cleanup\n",
+  "exit": 1,
+  "stderr": { "exact": "wisp: error_throw_escape_located.wisp:5:5: escaped\n" }
+}

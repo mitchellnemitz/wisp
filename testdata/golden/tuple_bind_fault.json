@@ -1,0 +1,1 @@
+{ "desc": "Tuple destructuring: fallible RHS faults before any binding (binds inside the skip-guard)", "stdout": "caught\n", "exit": 0 }

@@ -1,0 +1,5 @@
+{
+  "desc": "exit inside a try body is a compile error",
+  "compileError": true,
+  "diagContains": "exit"
+}

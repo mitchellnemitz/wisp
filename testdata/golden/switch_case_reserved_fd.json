@@ -1,0 +1,5 @@
+{
+  "desc": "reserved-const idents stdout/stderr as switch case values emit their folded fd literals (1/2) and dispatch at runtime",
+  "stdout": "out\nerr\nother\n",
+  "exit": 0
+}

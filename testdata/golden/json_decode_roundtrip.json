@@ -1,0 +1,1 @@
+{"desc":"decode canonicalizes + encode round-trips","stdout":"{\"a\":[1,2,{\"b\":true}],\"c\":null}\n","exit":0}

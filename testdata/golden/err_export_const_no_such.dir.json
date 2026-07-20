@@ -1,0 +1,1 @@
+{ "desc": "ns.NAME for a name that is not a const of the target is a compile error", "compileError": true, "diagContains": "has no exported constant" }

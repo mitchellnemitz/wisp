@@ -1,0 +1,5 @@
+{
+  "desc": "nested try: rethrow lands in outer catch; both finallys run in order",
+  "stdout": "inner-finally\nouter-catch:from-inner\nouter-finally\n",
+  "exit": 0
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "a test (...) block in a non-_test.wisp file is a compile error (R1/AC2)",
+  "compileError": true,
+  "diagContains": "only allowed in a `*_test.wisp` file"
+}

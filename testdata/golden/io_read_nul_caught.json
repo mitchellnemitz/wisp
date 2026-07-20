@@ -1,0 +1,5 @@
+{
+  "desc": "a NUL-byte read is catchable inside try",
+  "stdout": "caught nul\n",
+  "exit": 0
+}

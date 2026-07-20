@@ -1,0 +1,5 @@
+{
+  "desc": "an error value passes as a parameter and is returned from a function",
+  "stdout": "hello\n",
+  "exit": 0
+}

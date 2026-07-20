@@ -1,0 +1,6 @@
+{
+  "desc": "trailing-newline env value: V='abc\\n' (4 bytes) reaches the child unstripped; wc -c byte count trimmed and parsed must equal 4, not 3",
+  "stdout": "true\n",
+  "exit": 0,
+  "stderr": { "exact": "" }
+}

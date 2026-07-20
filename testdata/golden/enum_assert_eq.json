@@ -1,0 +1,5 @@
+{
+  "desc": "assert_eq admits an enum type: a passing comparison is a no-op and the program runs to completion",
+  "stdout": "passed\n",
+  "exit": 0
+}

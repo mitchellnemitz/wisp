@@ -1,0 +1,5 @@
+{
+  "desc": "declaring fn length(...) is a compile error (reserved builtin). Repurposed for PR C: split is now a freed identifier (moved to string.split), so this fixture pins a stays-flat builtin name that remains reserved.",
+  "compileError": true,
+  "diagContains": "reserved builtin"
+}

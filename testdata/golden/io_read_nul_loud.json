@@ -1,0 +1,6 @@
+{
+  "desc": "reading a file containing a NUL byte aborts loud, message names the path",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "NUL", "nonEmpty": true }
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "run_full: echo stdout, stderr, exit code",
+  "stdout": "hello\n0\nerr\n\n42\ngot:\n",
+  "exit": 0
+}

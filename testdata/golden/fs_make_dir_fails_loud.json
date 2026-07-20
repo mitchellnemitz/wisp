@@ -1,0 +1,6 @@
+{
+  "desc": "make_dir where a path component is a non-directory aborts loud",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "make_dir", "nonEmpty": true }
+}

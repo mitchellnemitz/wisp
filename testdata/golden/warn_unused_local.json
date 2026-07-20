@@ -1,0 +1,6 @@
+{
+  "desc": "unused local: non-gating warning, exit 0",
+  "stdout": "ok\n",
+  "exit": 0,
+  "warnContains": "unused"
+}

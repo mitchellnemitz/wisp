@@ -1,0 +1,1 @@
+{ "desc": "Tuple destructuring: shell-metacharacter element stays inert data, never re-evaluated", "stdout": "$(echo HACKED 1>&2)\n", "exit": 0, "stderr": { "exact": "" } }

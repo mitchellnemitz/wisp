@@ -1,0 +1,6 @@
+{
+  "desc": "run_input: nonzero child aborts located with run_input: sh exited with status 3",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "run_input: sh exited with status 3", "nonEmpty": true }
+}

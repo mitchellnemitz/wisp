@@ -1,0 +1,5 @@
+{
+  "desc": "unary -",
+  "stdout": "-5\n",
+  "exit": 0
+}

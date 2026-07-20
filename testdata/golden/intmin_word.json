@@ -1,0 +1,1 @@
+{"desc":"INT_MIN literal prints correctly on all shells (audit B1)","stdout":"-9223372036854775808\n","exit":0,"stderr":{"nonEmpty":false}}

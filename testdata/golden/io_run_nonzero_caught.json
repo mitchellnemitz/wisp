@@ -1,0 +1,5 @@
+{
+  "desc": "a nonzero run exit is catchable inside try",
+  "stdout": "caught run\n",
+  "exit": 0
+}

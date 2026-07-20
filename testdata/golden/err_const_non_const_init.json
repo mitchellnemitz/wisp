@@ -1,0 +1,5 @@
+{
+  "desc": "a variable reference in a const initializer is a compile error",
+  "compileError": true,
+  "diagContains": "may not reference a variable"
+}

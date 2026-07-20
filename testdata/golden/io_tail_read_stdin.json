@@ -1,0 +1,6 @@
+{
+  "desc": "read_stdin: trailing newline preserved",
+  "stdin": "hello\n",
+  "stdout": "hello\n",
+  "exit": 0
+}

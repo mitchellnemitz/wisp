@@ -1,0 +1,1 @@
+{"desc": "map over Some doubles the value; map over None yields None", "stdout": "10\ntrue\n", "exit": 0}

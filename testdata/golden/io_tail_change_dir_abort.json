@@ -1,0 +1,5 @@
+{
+  "desc": "change_dir: uncaught abort on nonexistent path",
+  "exit": 1,
+  "stderr": {"contains": "change_dir"}
+}

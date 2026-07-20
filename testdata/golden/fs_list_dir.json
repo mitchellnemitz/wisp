@@ -1,0 +1,5 @@
+{
+  "desc": "list_dir base names: space, glob metachars, hidden, broken symlink; . and .. excluded; sort deterministic",
+  "stdout": ".hidden,a b,brokenlink,c*d\n",
+  "exit": 0
+}

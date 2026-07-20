@@ -1,0 +1,5 @@
+{
+  "desc": "AC1: exp/ln/log10/log2/pi accurate (scaled-and-rounded), incl exp(-5) positive via reciprocal; cross-shell exact",
+  "stdout": "1\n1000000000\n5000000\n271828183\n6737947\n0\n300000000\n1000000000\n300000000\n1000000000\n3.1415926535897931\n",
+  "exit": 0
+}

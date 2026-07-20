@@ -1,0 +1,8 @@
+{
+  "desc": "process.run_full with argv[0] \"print\" and no external print on PATH must report exit 127, never wisp's internal helper (F1)",
+  "stubPath": "argv_print_collision.emptystub",
+  "isolatePath": true,
+  "requiresExternal": "print",
+  "stdout": "127\n",
+  "exit": 0
+}

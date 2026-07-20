@@ -1,0 +1,5 @@
+{
+  "desc": "switch on bool subject (rule 8)",
+  "compileError": true,
+  "diagContains": "switch subject"
+}

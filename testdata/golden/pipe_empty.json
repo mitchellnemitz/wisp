@@ -1,0 +1,1 @@
+{ "desc": "AC4: pipe([]) aborts located", "exit": 1, "stderr": {"contains": "pipe"} }

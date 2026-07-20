@@ -1,0 +1,5 @@
+{
+  "desc": "split then join round-trip",
+  "stdout": "3\none/two/three\n",
+  "exit": 0
+}

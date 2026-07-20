@@ -1,0 +1,1 @@
+{ "desc": "Optional[error] == is a compile error", "compileError": true, "diagContains": "is not defined for Optional values" }

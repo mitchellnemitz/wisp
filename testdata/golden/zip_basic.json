@@ -1,0 +1,1 @@
+{ "desc": "zip: pairs to min length, element access on result", "stdout": "2\n1\na\n2\nb\n", "exit": 0 }

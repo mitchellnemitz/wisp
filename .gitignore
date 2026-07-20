@@ -1,0 +1,21 @@
+# Built compiler binary
+/wisp
+/wisp-linux
+
+# Generated shell output and source maps from local runs
+*.sh.map
+.actrc
+
+# Runtime artifact left by the symlink_force doctest example (created in-place
+# when the guide example runs); must never be committed.
+/internal/doctest/applink
+
+# Claude Code worktrees (session-local, never committed)
+.claude/worktrees/
+
+# Ephemeral session-tracking scratch (never committed)
+/STATE.md
+
+# Local AI-session scratch and generated knowledge graph (never committed)
+/.claude/
+/graphify-out/

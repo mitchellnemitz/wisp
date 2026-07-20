@@ -1,0 +1,5 @@
+{
+  "desc": "continue inside a try body is a compile error (M5)",
+  "compileError": true,
+  "diagContains": "continue"
+}

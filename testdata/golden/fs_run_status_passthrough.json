@@ -1,0 +1,6 @@
+{
+  "desc": "run_status runs bare: child stdout passes through (not captured), child stderr too",
+  "stdout": "child-out\n0\n",
+  "exit": 0,
+  "stderr": { "contains": "child-err", "nonEmpty": true }
+}

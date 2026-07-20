@@ -1,0 +1,5 @@
+{
+  "desc": "replace literal metachars (* [ ] ? matched literally, not as globs)",
+  "stdout": "x#y#z\naBc\npQq\n",
+  "exit": 0
+}

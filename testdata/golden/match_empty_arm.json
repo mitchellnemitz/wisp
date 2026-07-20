@@ -1,0 +1,1 @@
+{ "desc": "empty match arms emit a `:` no-op so the shell then/elif/else branch is non-empty (regression: None => {} previously produced `then`/`fi` with no body, a syntax error)", "stdout": "7\nwild-some\ndone\n", "exit": 0 }

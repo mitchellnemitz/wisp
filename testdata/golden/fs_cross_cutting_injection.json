@@ -1,0 +1,6 @@
+{
+  "desc": "AC7 cross-cutting injection + leading-dash golden: (a) leading-dash operands to is_file/file_size/read_link/chmod/symlink are data not options (-- guard); (b) paths/targets containing $(...), backticks, ;, *, space, and a non-trailing newline are inert (no command execution); (c) hostile-target round-trip: symlink then read_link returns the target verbatim; empty stderr throughout",
+  "stdout": "false\n2\ntrue\ntrue\ntrue\ntrue\nfalse\ntrue\nfalse\nfalse\nfalse\nfalse\n",
+  "exit": 0,
+  "stderr": { "exact": "" }
+}

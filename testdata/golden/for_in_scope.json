@@ -1,0 +1,5 @@
+{
+  "desc": "for-in var is block-scoped; a sibling for-in reuses the name",
+  "stdout": "a=1\na=2\nb=10\nb=20\n",
+  "exit": 0
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "append_file appends to an existing file and creates an absent one",
+  "stdout": "ab\nnew\n",
+  "exit": 0
+}

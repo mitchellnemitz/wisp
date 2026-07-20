@@ -1,0 +1,5 @@
+{
+  "desc": "now() returns a real Unix epoch (> 2001-09-09 = 1000000000)",
+  "stdout": "true\n",
+  "exit": 0
+}

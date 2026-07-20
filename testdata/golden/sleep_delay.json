@@ -1,0 +1,5 @@
+{
+  "desc": "sleep(1) blocks at least one full second: t1-t0 >= 1 (AC2 regression guard; false-failure requires backward NTP adjustment in the ~1s window, < 1e-30)",
+  "stdout": "true\n",
+  "exit": 0
+}

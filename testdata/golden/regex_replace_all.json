@@ -1,0 +1,5 @@
+{
+  "desc": "regex_replace replaces all matches; no-match leaves the string unchanged",
+  "stdout": "a#b#\na#b#\nabc\n",
+  "exit": 0
+}

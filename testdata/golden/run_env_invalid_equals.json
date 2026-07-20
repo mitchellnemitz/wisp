@@ -1,0 +1,6 @@
+{
+  "desc": "run_env rejects an env name containing '=', located (AC4)",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "invalid environment variable name", "nonEmpty": true }
+}

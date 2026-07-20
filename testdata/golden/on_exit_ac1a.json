@@ -1,0 +1,5 @@
+{
+  "desc": "AC1a: on_exit preserves the original exit code (5) despite handler side effects",
+  "stdout": "cleanup\n",
+  "exit": 5
+}

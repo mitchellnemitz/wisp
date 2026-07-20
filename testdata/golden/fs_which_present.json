@@ -1,0 +1,5 @@
+{
+  "desc": "which(\"sh\") resolves to Some of a non-empty name (under busybox `command -v sh` may print the bare applet name `sh`, not an absolute path, so we assert resolution + non-empty, not path shape)",
+  "stdout": "true\ntrue\n",
+  "exit": 0
+}

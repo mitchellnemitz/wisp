@@ -1,0 +1,6 @@
+{
+  "desc": "AC5 injection: an env VALUE and an argv element carrying the full hostile set ($(...), backticks, ;, *, spaces, newline) are passed to the child literally -- no command execution (no pwned file, empty stderr), env VALUE round-trips verbatim (b), argv element round-trips without mangling or splitting (c)",
+  "stdout": "true\ntrue\nfalse\nfalse\n",
+  "exit": 0,
+  "stderr": { "exact": "" }
+}

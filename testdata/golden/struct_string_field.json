@@ -1,0 +1,5 @@
+{
+  "desc": "string field/element with shell-active bytes is stored and retrieved inertly",
+  "stdout": "a'b\"c$d`e;f|g\n$(echo x)\ny`z`\n",
+  "exit": 0
+}

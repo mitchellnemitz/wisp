@@ -1,0 +1,5 @@
+{
+  "desc": "divide by zero in a constant expression is a compile error",
+  "compileError": true,
+  "diagContains": "constant expression: divide by zero"
+}

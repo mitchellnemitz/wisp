@@ -1,0 +1,5 @@
+{
+  "desc": "RunResult: passing to comparable-requiring builtin is a compile error",
+  "compileError": true,
+  "diagContains": "RunResult"
+}

@@ -1,0 +1,139 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  # Pinned ShellCheck version for a reproducible lint gate (spec §12).
+  SHELLCHECK_VERSION: v0.11.0
+
+jobs:
+  build-test:
+    name: build + vet + test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # act-only: GitHub's hosted runners already ship node; some local act
+      # runner images do not expose it on PATH for post-action (cache-save)
+      # execs, which would fail the setup-go post step. env.ACT is set only by
+      # nektos/act, so this is a no-op on GitHub.
+      - name: ensure node on PATH for act post-actions
+        if: ${{ env.ACT }}
+        shell: bash
+        run: |
+          # node exists on the main-step PATH (toolcache) but the post-action
+          # exec uses a bare PATH; symlink node into /usr/local/bin (on that PATH).
+          n="$(command -v node || command -v nodejs || true)"
+          if [ -z "$n" ]; then
+            apt-get update && apt-get install -y --no-install-recommends nodejs
+            n="$(command -v nodejs)"
+          fi
+          ln -sf "$n" /usr/local/bin/node
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: gofmt
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "These files are not gofmt-clean:"
+            echo "$unformatted"
+            exit 1
+          fi
+      - name: go vet
+        run: go vet ./...
+      - name: go build
+        run: go build ./...
+      - name: go test
+        run: go test ./...
+
+  golden:
+    name: golden (dash + busybox + bash + zsh + shellcheck)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # act-only (see build-test): ensure node for the setup-go post step.
+      - name: ensure node on PATH for act post-actions
+        if: ${{ env.ACT }}
+        shell: bash
+        run: |
+          # node exists on the main-step PATH (toolcache) but the post-action
+          # exec uses a bare PATH; symlink node into /usr/local/bin (on that PATH).
+          n="$(command -v node || command -v nodejs || true)"
+          if [ -z "$n" ]; then
+            apt-get update && apt-get install -y --no-install-recommends nodejs
+            n="$(command -v nodejs)"
+          fi
+          ln -sf "$n" /usr/local/bin/node
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: install dash + busybox + zsh
+        # bash is preinstalled on the runner; zsh is installed here. The golden
+        # harness auto-discovers all four shells and runs the corpus under each.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends dash busybox-static zsh
+          command -v dash
+          command -v busybox
+          command -v bash
+          command -v zsh
+      - name: install pinned shellcheck
+        run: |
+          url="https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz"
+          curl -fsSL "$url" | tar -xJ
+          sudo install "shellcheck-${SHELLCHECK_VERSION}/shellcheck" /usr/local/bin/shellcheck
+          shellcheck --version
+      - name: golden tests under dash + busybox + bash + zsh + pinned shellcheck
+        run: go test ./... -count=1
+
+  static-binary:
+    name: static binary runs in busybox container
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: build static binary
+        run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o wisp ./cmd/wisp
+      - name: build static wisp-lsp binary
+        # The language server must run in the same minimal environments as the
+        # compiler (spec section 3.5(7)).
+        run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o wisp-lsp ./cmd/wisp-lsp
+      - name: run the compiler inside a busybox container
+        run: |
+          # Proves the static binary runs in a minimal container AND its output
+          # executes under busybox's ash (wisp run execs /bin/sh = busybox ash).
+          out=$(docker run --rm -v "$PWD:/w" -w /w busybox:latest ./wisp run examples/hello.wisp)
+          echo "container output: $out"
+          if [ "$out" != "hello, world" ]; then
+            echo "unexpected output from in-container run"
+            exit 1
+          fi
+
+  release-dryrun:
+    name: goreleaser config + matrix build (snapshot)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: validate release config
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: "~> v2"
+          args: check
+      - name: snapshot build (all platforms, no publish)
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: "~> v2"
+          args: release --snapshot --clean

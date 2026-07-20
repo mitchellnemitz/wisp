@@ -1,0 +1,1 @@
+{"desc":"duplicate keys preserved verbatim; get returns first","stdout":"{\"k\":1,\"k\":2}\n1\n","exit":0}

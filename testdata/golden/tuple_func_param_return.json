@@ -1,0 +1,1 @@
+{ "desc": "Tuple as function return AND parameter: build, pass into a tuple param, read element inside callee", "stdout": "42\nhi\n", "exit": 0 }

@@ -1,0 +1,6 @@
+{
+  "desc": "args supports the full array API (length/index/push)",
+  "args": ["first"],
+  "stdout": "2\nfirst\nappended\n",
+  "exit": 0
+}

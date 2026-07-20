@@ -1,0 +1,5 @@
+{
+  "desc": "{string:[int]} nested one level",
+  "stdout": "alen=2\nb2=5\nalen2=3\n",
+  "exit": 0
+}

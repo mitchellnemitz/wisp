@@ -1,0 +1,8 @@
+fn main() -> int {
+  print("${12 & 10}")
+  print("${12 | 10}")
+  print("${12 ^ 10}")
+  print("${1 << 4}")
+  print("${256 >> 2}")
+  return 0
+}

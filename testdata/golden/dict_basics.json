@@ -1,0 +1,5 @@
+{
+  "desc": "dict literal/lookup/has/set/overwrite/keys",
+  "stdout": "a=10\nhasb=true\nhasz=false\nnkeys=3\n",
+  "exit": 0
+}

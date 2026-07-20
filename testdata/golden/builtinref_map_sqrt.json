@@ -1,0 +1,1 @@
+{"desc":"map(sqrt) builtin-funcref == map(user-wrapper), success","stdout":"2\n3\n2\n3\n","exit":0}

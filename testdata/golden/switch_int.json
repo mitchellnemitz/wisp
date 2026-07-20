@@ -1,0 +1,5 @@
+{
+  "desc": "switch int incl. multi-value case + default",
+  "stdout": "ok\nretry\nretry\nfail\n",
+  "exit": 0
+}

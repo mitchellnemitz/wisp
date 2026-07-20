@@ -1,0 +1,1 @@
+{"desc": "debug compose: string interpolation and fn(string) argument", "stdout": "d=Some(1)\nSome(1)\n", "exit": 0}

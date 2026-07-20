@@ -1,0 +1,1 @@
+{"desc": "debug of nested types: Optional array, nested Optional, struct with array field, dict with array value", "stdout": "[Some(1), None]\nSome(Some(1))\nBox { items: [1, 2] }\n{\"k\": [1, 2]}\n", "exit": 0}

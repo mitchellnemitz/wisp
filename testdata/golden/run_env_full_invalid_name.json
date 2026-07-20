@@ -1,0 +1,6 @@
+{
+  "desc": "run_env_full rejects an env name with whitespace via shared builder (AC2 negative)",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "invalid environment variable name", "nonEmpty": true }
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "AC1: on_exit handler fires after main body (EXIT trap)",
+  "stdout": "main\nbye\n",
+  "exit": 0
+}

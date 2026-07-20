@@ -1,0 +1,6 @@
+{
+  "desc": "uncaught sqrt of a negative aborts located under all target shells",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "sqrt(): non-finite", "nonEmpty": true }
+}

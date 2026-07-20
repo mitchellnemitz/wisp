@@ -1,0 +1,1 @@
+{ "desc": "AC1: echo | tr -> HELLO; code 0", "stdout": "HELLO\n\ncode=0\n", "exit": 0 }

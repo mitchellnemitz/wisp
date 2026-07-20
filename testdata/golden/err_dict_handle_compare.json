@@ -1,0 +1,5 @@
+{
+  "desc": "dict handles are opaque: == is a compile error",
+  "compileError": true,
+  "diagContains": "opaque"
+}

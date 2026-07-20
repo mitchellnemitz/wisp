@@ -1,0 +1,5 @@
+{
+  "desc": "redeclaration/shadowing (rule 11)",
+  "compileError": true,
+  "diagContains": "no shadowing"
+}

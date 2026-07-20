@@ -1,0 +1,5 @@
+{
+  "desc": "format_float renders deterministic non-halfway values correctly across all target shells",
+  "stdout": "3.14\n3.1416\n3\n1.500\n0.00\n-2.5\n1.5000000000\n",
+  "exit": 0
+}

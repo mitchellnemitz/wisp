@@ -1,0 +1,1 @@
+{ "desc": "dict keys with newline bytes round-trip through keys()/decode (regression: __wisp_dkey_dec stripped newlines via per-byte command substitution). key \"a\\nb\" len 3 -> 7; key \"x\\ny\\n\" len 4 -> 9", "stdout": "3\n7\n4\n9\n", "exit": 0 }

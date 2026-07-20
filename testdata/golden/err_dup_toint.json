@@ -1,0 +1,1 @@
+{"desc": "to_int of an undeclared name reports the error once", "compileError": true, "diagContains": "undeclared name"}

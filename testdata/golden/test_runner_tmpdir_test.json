@@ -1,0 +1,5 @@
+{
+  "desc": "test-mode runner: test_tmpdir() is a writable per-test dir alive through setup/body/teardown, removed after (AC7)",
+  "stdout": "TAP version 13\n1..1\nok 1 - writes and reads under the per-test tmpdir\n",
+  "exit": 0
+}

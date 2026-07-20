@@ -1,0 +1,5 @@
+{
+  "desc": "creates a new symlink (AC1)",
+  "stdout": "/some/target\n",
+  "exit": 0
+}

@@ -1,0 +1,1 @@
+{ "desc": "AC7: runtime stage count (non-literal stages) walks the outer array", "stdout": "hi\n\n", "exit": 0 }

@@ -1,0 +1,5 @@
+{
+  "desc": "functions + recursion (factorial)",
+  "stdout": "1\n120\n3628800\n",
+  "exit": 0
+}

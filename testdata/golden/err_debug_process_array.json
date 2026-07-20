@@ -1,0 +1,1 @@
+{"desc": "debug of Process nested in an array is a compile error", "compileError": true, "diagContains": "debug() cannot render"}

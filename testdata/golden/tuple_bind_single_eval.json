@@ -1,0 +1,1 @@
+{ "desc": "Tuple destructuring: side-effecting RHS evaluated exactly once across two element reads", "stdout": "evaluated\n5\nv\n", "exit": 0 }

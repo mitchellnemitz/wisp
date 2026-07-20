@@ -1,0 +1,1 @@
+{ "desc": "Tuple destructuring: final form binds immutable usable names", "stdout": "3\nx\n", "exit": 0 }

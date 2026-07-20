@@ -1,0 +1,1 @@
+{ "desc": "migrated find/get via is_some/is_none/unwrap plus nested composite round-trip", "stdout": "hit: 2\nmiss\npresent: 10\nabsent\n4\n7\n", "exit": 0 }

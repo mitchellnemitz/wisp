@@ -1,0 +1,5 @@
+{
+  "desc": "redefining a builtin name",
+  "compileError": true,
+  "diagContains": "reserved"
+}

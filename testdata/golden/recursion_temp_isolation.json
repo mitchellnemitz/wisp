@@ -1,0 +1,1 @@
+{ "desc": "spill temps are local per function: a callee cannot clobber a caller's live temp (regression: fib(15) returned 8, h(1) returned 22). fib(15)=610, (1+2)+g()=14, (x+5)+g() with x=1 =17, (1+2)<g() is less", "stdout": "610\n14\n17\nless\n", "exit": 0 }

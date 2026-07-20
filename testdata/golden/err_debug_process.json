@@ -1,0 +1,1 @@
+{"desc": "debug of a bare Process is a compile error, not a codegen panic", "compileError": true, "diagContains": "debug() cannot render"}

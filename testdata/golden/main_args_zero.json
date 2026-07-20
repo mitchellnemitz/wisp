@@ -1,0 +1,5 @@
+{
+  "desc": "main(args) with no arguments: argc is 0",
+  "stdout": "argc=0\n",
+  "exit": 0
+}

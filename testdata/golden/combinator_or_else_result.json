@@ -1,0 +1,1 @@
+{"desc": "or_else over Result: Ok returns original (recover not called); Err calls recover WITH the error, which surfaces e.message", "stdout": "7\nbad input\n0\n", "exit": 0}

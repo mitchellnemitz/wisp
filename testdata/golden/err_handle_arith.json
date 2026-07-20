@@ -1,0 +1,1 @@
+{ "desc": "arithmetic on a handle is a compile error", "compileError": true, "diagContains": "int+int" }

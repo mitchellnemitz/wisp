@@ -1,0 +1,5 @@
+{
+  "desc": "regex_replace replacement semantics across awk engines: & = whole match, \\& = literal & (POSIX-defined, portable). The \\\\ literal-backslash case is engine-dependent (BSD awk vs gawk/mawk/busybox disagree) so it is documented, not golden-pinned",
+  "stdout": "<ab>\na&b\n",
+  "exit": 0
+}

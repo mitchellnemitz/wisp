@@ -1,0 +1,1 @@
+{ "desc": "re-export is rejected: mid.X (X is imported into mid, not re-exported by it) errors with 'has no exported constant' rather than silently resolving to base's value", "compileError": true, "diagContains": "has no exported constant" }

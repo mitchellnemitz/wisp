@@ -1,0 +1,5 @@
+{
+  "desc": "a malformed pattern is catchable inside try",
+  "stdout": "caught\n",
+  "exit": 0
+}

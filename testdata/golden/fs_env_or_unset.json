@@ -1,0 +1,5 @@
+{
+  "desc": "env_or on an unset variable returns the fallback",
+  "stdout": "FB\n",
+  "exit": 0
+}

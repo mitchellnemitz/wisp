@@ -1,0 +1,6 @@
+{
+  "desc": "remove_dir on a missing path aborts loud",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "remove_dir", "nonEmpty": true }
+}

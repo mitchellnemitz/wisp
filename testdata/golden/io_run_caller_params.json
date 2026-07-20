@@ -1,0 +1,5 @@
+{
+  "desc": "run rebuilds argv in its own positionals; the caller's params survive",
+  "stdout": "pq\n",
+  "exit": 0
+}

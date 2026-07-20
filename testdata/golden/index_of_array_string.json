@@ -1,0 +1,1 @@
+{ "desc": "index_of([string], string) -> Optional[int]", "stdout": "1\ntrue\n", "exit": 0 }

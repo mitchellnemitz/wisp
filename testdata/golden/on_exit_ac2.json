@@ -1,0 +1,5 @@
+{
+  "desc": "AC2: second on_exit replaces first; only b runs",
+  "stdout": "b\n",
+  "exit": 0
+}

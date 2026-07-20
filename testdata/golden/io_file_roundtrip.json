@@ -1,0 +1,5 @@
+{
+  "desc": "read_file preserves exact bytes including multiple trailing newlines",
+  "stdout": "[abc\n\n\n]\n",
+  "exit": 0
+}

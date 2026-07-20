@@ -1,0 +1,1 @@
+{"desc":"error_with: code survives throw and catch","stdout":"oops\n5\n","exit":0}

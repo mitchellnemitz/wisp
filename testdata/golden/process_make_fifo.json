@@ -1,0 +1,1 @@
+{ "desc": "AC6: make_fifo creates a FIFO (test -p true => rc 0)", "stdout": "isfifo=0\n", "exit": 0 }

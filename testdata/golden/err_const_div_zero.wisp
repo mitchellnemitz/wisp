@@ -1,0 +1,5 @@
+const N: int = 10 / 0
+
+fn main() -> int {
+  return 0
+}

@@ -1,0 +1,1 @@
+{ "desc": "blank catch runs the handler without binding an error var", "stdout": "caught\n", "exit": 0 }

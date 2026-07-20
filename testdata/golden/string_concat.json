@@ -1,0 +1,5 @@
+{
+  "desc": "string + concat",
+  "stdout": "foobar\n",
+  "exit": 0
+}

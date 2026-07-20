@@ -1,0 +1,1 @@
+{ "desc": "Tuple injection safety: shell metacharacters in element stored as inert data", "stdout": "$(echo HACKED 1>&2)\n", "exit": 0, "stderr": { "exact": "" } }

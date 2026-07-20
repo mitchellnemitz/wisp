@@ -1,0 +1,6 @@
+{
+  "desc": "read_line: partial last line (no trailing newline)",
+  "stdin": "partial",
+  "stdout": "Some(partial)\nNone\n",
+  "exit": 0
+}

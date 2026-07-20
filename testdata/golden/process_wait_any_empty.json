@@ -1,0 +1,1 @@
+{ "desc": "AC5: wait_any([], 1) aborts located", "exit": 1, "stderr": {"contains": "wait_any"} }

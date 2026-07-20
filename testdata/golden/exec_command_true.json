@@ -1,0 +1,1 @@
+{ "desc": "exec_command true -> exit 0 (AC2)", "stdout": "", "exit": 0 }

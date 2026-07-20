@@ -1,0 +1,5 @@
+{
+  "desc": "split separator with glob metachars matched literally, not as a glob",
+  "stdout": "a,b,c\nx,y\n",
+  "exit": 0
+}

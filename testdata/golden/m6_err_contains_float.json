@@ -1,0 +1,5 @@
+{
+  "desc": "array contains on [float] is a compile error (byte compare unsound)",
+  "compileError": true,
+  "diagContains": "contains"
+}

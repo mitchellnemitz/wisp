@@ -1,0 +1,1 @@
+{ "desc": "blank for-in over an array iterates without binding", "stdout": "tick\ntick\ntick\n", "exit": 0 }

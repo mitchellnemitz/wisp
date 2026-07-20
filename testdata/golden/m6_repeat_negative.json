@@ -1,0 +1,6 @@
+{
+  "desc": "repeat with negative count is a located abort",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "repeat", "nonEmpty": true }
+}

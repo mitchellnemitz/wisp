@@ -1,0 +1,5 @@
+{
+  "desc": "wrong dict value type is a compile error",
+  "compileError": true,
+  "diagContains": "value 2 has type string"
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "M5: 800 recursion frames succeed on every shell (above zsh's default ~700 FUNCNEST ceiling, which the zsh header now raises; below Debian dash's 1000-frame hard limit)",
+  "stdout": "0\n",
+  "exit": 0
+}

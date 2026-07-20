@@ -1,0 +1,6 @@
+{
+  "desc": "int_min() / -1 overflows (quotient 2^63 exceeds int_max()) and is a fatal $(( )) exception on some shells, so it aborts located before the arithmetic runs, exit 1, identically on every shell (H2). int_min() % -1 is 0 and does not abort.",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "division overflow", "nonEmpty": true }
+}

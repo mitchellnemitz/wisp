@@ -1,0 +1,5 @@
+{
+  "desc": "shell-active text through every I/O builtin is inert data, never executed",
+  "stdout": "rf=$(echo PWN); `id`; rm -rf x$(echo PWN); `id`; rm -rf x\nhasenv=false\nrun=$(echo PWN); `id`; rm -rf x\nenv-unset\n",
+  "exit": 0
+}

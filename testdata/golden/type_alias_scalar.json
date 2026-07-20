@@ -1,0 +1,1 @@
+{"desc": "transparent scalar alias `type Miles = int` in struct field/param/return/arithmetic compiles identically to int", "stdout": "total=42\nasint=42\n", "exit": 0}

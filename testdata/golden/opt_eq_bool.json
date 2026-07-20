@@ -1,0 +1,1 @@
+{ "desc": "Optional[bool] == / !=", "stdout": "eq\nneq\neq\nneq\n", "exit": 0 }

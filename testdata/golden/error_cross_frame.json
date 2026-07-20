@@ -1,0 +1,5 @@
+{
+  "desc": "a callee fault is caught by the caller's try; finally runs",
+  "stdout": "caught\ncleanup\n",
+  "exit": 0
+}

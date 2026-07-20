@@ -1,0 +1,5 @@
+{
+  "desc": "a duplicate key in a dict literal is a compile error",
+  "compileError": true,
+  "diagContains": "duplicate key"
+}

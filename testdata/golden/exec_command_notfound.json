@@ -1,0 +1,5 @@
+{
+  "desc": "exec failure -> shell exits 127 with native diagnostic (AC4)",
+  "exit": 127,
+  "stderr": { "contains": "wisp-no-such-cmd-xyzzy", "nonEmpty": true }
+}

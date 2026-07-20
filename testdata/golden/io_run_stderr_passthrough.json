@@ -1,0 +1,6 @@
+{
+  "desc": "run does not capture stderr; cat's error message passes through to the script's stderr",
+  "stdout": "done\n",
+  "exit": 0,
+  "stderr": { "contains": "missing_for_stderr", "nonEmpty": true }
+}

@@ -1,0 +1,1 @@
+{ "desc": "parse_args injection-safe: a flag value and a positional with $(...), backticks, ;, *, spaces, and a newline render literally (AC5)", "stdout": "$(touch pwned); `id`; a * b\n$(rm -rf /)\nline1\nline2\n1\n", "exit": 0 }

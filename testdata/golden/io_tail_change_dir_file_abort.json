@@ -1,0 +1,5 @@
+{
+  "desc": "change_dir: abort on existing non-directory file",
+  "exit": 1,
+  "stderr": {"contains": "change_dir"}
+}

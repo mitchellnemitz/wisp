@@ -1,0 +1,1 @@
+{"desc":"array/object build canonical text","stdout":"[1,\"x\",null]\n{\"k\":1,\"s\":\"v\",\"b\":false}\n","exit":0}

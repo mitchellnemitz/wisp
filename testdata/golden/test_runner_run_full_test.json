@@ -1,0 +1,5 @@
+{
+  "desc": "test-mode runner: a run_full-based test asserts on a typed RunResult end-to-end (AC11)",
+  "stdout": "TAP version 13\n1..2\nok 1 - run_full captures stdout and exit code\nok 2 - run_full captures a nonzero exit\n",
+  "exit": 0
+}

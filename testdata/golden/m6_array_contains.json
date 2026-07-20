@@ -1,0 +1,5 @@
+{
+  "desc": "array contains for int/string/bool incl. empty",
+  "stdout": "true\nfalse\ntrue\nfalse\nfalse\n",
+  "exit": 0
+}

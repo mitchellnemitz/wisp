@@ -1,0 +1,5 @@
+{
+  "desc": "a thrown message with a trailing newline is preserved (no $() capture truncation)",
+  "stdout": "line1\nEND\n",
+  "exit": 0
+}

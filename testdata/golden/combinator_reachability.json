@@ -1,0 +1,1 @@
+{"desc": "a function used only as a combinator argument is not tree-shaken", "stdout": "105\n", "exit": 0}

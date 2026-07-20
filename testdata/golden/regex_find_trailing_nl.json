@@ -1,0 +1,5 @@
+{
+  "desc": "a match ending in a newline survives the command-substitution strip (in-awk sentinel x); . matches the newline byte under LC_ALL=C",
+  "stdout": "true\nx\n\n",
+  "exit": 0
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "a non-canonical int literal (007) canonicalizes to 7, so a switch over a variable holding it matches case 7",
+  "stdout": "seven\n",
+  "exit": 0
+}

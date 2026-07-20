@@ -1,0 +1,1 @@
+{ "desc": "AC6: make_fifo on an already-existing path aborts located", "exit": 1, "stderr": {"contains": "make_fifo"} }

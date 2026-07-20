@@ -1,0 +1,5 @@
+{
+  "desc": "AC7: argv metacharacters ($(...), backticks, ;, *, spaces) are inert -- printf emits them literally, no command substitution, no PWNED file",
+  "stdout": "$(touch PWNED); `touch PWNED`; a;b *\npwned=false\n",
+  "exit": 0
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "final at module scope is a parse error; final is function-local only",
+  "compileError": true,
+  "diagContains": "function-local binding"
+}

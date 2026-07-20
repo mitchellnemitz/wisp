@@ -1,0 +1,1 @@
+{"desc": "debug of Result", "stdout": "Ok(10)\nErr(error(\"fail\", 0))\n", "exit": 0}

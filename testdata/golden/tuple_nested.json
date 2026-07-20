@@ -1,0 +1,1 @@
+{ "desc": "Tuple nested: t[0][1] chains two IndexExprs", "stdout": "3\ntrue\nx\n", "exit": 0 }

@@ -1,0 +1,1 @@
+{ "desc": "collections-tail non-mutating array builtins", "stdout": "2\ntrue\n3\n4\n1 4\n3\n2 1 3\n3 30\n3 30\n", "exit": 0 }

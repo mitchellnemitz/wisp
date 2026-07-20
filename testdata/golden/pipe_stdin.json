@@ -1,0 +1,1 @@
+{ "desc": "AC4a: first stage stdin is /dev/null -> read hits EOF -> empty; r.stdout='empty\\n', print appends another newline", "stdout": "empty\n\n", "exit": 0 }

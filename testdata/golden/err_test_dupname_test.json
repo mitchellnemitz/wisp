@@ -1,0 +1,5 @@
+{
+  "desc": "two test blocks sharing a name in one file is a compile error (R3/AC13)",
+  "compileError": true,
+  "diagContains": "more than once"
+}

@@ -1,0 +1,6 @@
+{
+  "desc": "outermost rethrow runs finally then aborts located",
+  "stdout": "caught\nfinally\n",
+  "exit": 1,
+  "stderr": { "contains": "rethrown", "nonEmpty": true }
+}

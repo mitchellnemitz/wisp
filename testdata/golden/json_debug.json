@@ -1,0 +1,1 @@
+{"desc":"debug() renders a json.Value as its canonical text","stdout":"[1,2,{\"k\":true}]\n","exit":0}

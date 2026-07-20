@@ -1,0 +1,5 @@
+{
+  "desc": "pre-fault aggregate mutation persists; post-fault mutation is skipped",
+  "stdout": "caught\n42\n",
+  "exit": 0
+}

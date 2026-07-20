@@ -1,0 +1,5 @@
+{
+  "desc": "byte-determinism smoke test: under LC_ALL=C the 2-byte UTF-8 e-acute counts as 2 bytes, so . matches per byte (length 4 over a<e9>b; replace yields __). Stable under all four shells. The harness runs in the C locale, so this is a stability smoke test, NOT proof LC_ALL=C is applied; the real guarantee is the source-level prelude test (each helper body literally contains LC_ALL=C).",
+  "stdout": "4\n__\n",
+  "exit": 0
+}

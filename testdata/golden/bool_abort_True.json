@@ -1,0 +1,9 @@
+{
+  "desc": "bool(\"True\") aborts",
+  "stdout": "",
+  "exit": 1,
+  "stderr": {
+    "contains": "bool(",
+    "nonEmpty": true
+  }
+}

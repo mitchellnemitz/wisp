@@ -1,0 +1,5 @@
+{
+  "desc": "export const: int/string/bool/float consts used in a body and a default arg, across include + import; injection-safe string crosses the module boundary; an unreferenced export leaves no trace",
+  "stdout": "3\nhi\non\n1.5\nhi\ncfg\n$(echo injected)\n",
+  "exit": 0
+}

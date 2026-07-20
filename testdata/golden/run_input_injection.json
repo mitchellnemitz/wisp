@@ -1,0 +1,5 @@
+{
+  "desc": "run_input: hostile stdin metacharacters are inert -- cat echoes them literally, no command substitution",
+  "stdout": "$(touch PWNED); `id`; *\n",
+  "exit": 0
+}

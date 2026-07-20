@@ -1,0 +1,6 @@
+{
+  "desc": "program_path() identical from main and a nested function, cross-shell; base_name of the invocation path is out.sh; non-empty",
+  "stdout": "true\nout.sh\nfalse\n",
+  "exit": 0,
+  "stderr": { "exact": "" }
+}

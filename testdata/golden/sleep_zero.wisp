@@ -1,0 +1,4 @@
+fn main() -> int {
+  sleep(0)
+  return 0
+}

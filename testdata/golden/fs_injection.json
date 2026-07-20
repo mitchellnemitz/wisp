@@ -1,0 +1,6 @@
+{
+  "desc": "regression guard: hostile PATH/NAME/argv-element for every fs builtin (incl. list_dir, where a filename containing $(...) round-trips through the glob unevaluated) is literal data; -- honored on busybox; no pwned* file ever appears",
+  "stdout": "true\nfalse\nfalse\ntrue\nfalse\nfalse\nfalse\nFB\nFB\nfalse\nfalse\n-rf0\n0\nfalse\n1\nfalse\n",
+  "exit": 0,
+  "stderr": { "exact": "" }
+}

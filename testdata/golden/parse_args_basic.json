@@ -1,0 +1,1 @@
+{ "desc": "parse_args: values/switches/positionals, = form, -- terminator + precedence, empty value, distinct = switches, last-wins, lone -, dedup (AC1-AC4/AC3a)", "stdout": "ada\n--verbose\nf1,f2\nada\nada|0|--not-a-flag,x\n--weird\nfalse|0|0\n--|x\ntrue|[]\n--verbose,--verbose=1\nb\n-|1\n--v|1\n", "exit": 0 }

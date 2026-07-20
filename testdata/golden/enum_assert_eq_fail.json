@@ -1,0 +1,6 @@
+{
+  "desc": "a failing assert_eq over enums exits 122 and renders both operands via debug() as their canonical ints (the genDebugValue enum case), not a compiler panic",
+  "stdout": "",
+  "exit": 122,
+  "stderr": { "contains": "assertion failed: 0 != 2", "nonEmpty": true }
+}

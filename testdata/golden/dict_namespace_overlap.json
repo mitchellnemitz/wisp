@@ -1,0 +1,5 @@
+{
+  "desc": "keys len/0/keys do not collide with length/element/order vars",
+  "stdout": "len=111\nz=222\nkeys=333\nn=3\n",
+  "exit": 0
+}

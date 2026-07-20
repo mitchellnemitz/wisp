@@ -1,0 +1,1 @@
+{ "desc": "index_of_elem is removed; use index_of instead", "compileError": true, "diagContains": "index_of_elem" }

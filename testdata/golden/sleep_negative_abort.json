@@ -1,0 +1,6 @@
+{
+  "desc": "sleep(-1) aborts located with a message containing 'negative' (AC2a)",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "negative", "nonEmpty": true }
+}

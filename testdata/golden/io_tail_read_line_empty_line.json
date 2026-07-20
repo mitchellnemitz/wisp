@@ -1,0 +1,6 @@
+{
+  "desc": "read_line: blank line -> Some(empty string)",
+  "stdin": "\n",
+  "stdout": "Some()\n",
+  "exit": 0
+}

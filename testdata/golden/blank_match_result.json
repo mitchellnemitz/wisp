@@ -1,0 +1,1 @@
+{ "desc": "blank match Ok arm takes the branch without binding", "stdout": "yes\n", "exit": 0 }

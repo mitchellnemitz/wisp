@@ -1,0 +1,1 @@
+{"desc": "AC5: map_err fn returning wrap preserves cause; already-wrapped error through map_err/or_else preserves cause chain (same handle id, no codegen change)", "stdout": "ctx\n0\norig\nctx\npre\norig\n42\nrecovered\npre\n", "exit": 0}

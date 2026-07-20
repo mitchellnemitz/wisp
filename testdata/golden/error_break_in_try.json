@@ -1,0 +1,5 @@
+{
+  "desc": "break inside a try body is a compile error (M5)",
+  "compileError": true,
+  "diagContains": "break"
+}

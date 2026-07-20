@@ -1,0 +1,6 @@
+{
+  "desc": "a malformed pattern aborts loud at top level naming the op; awk's own stderr does not leak",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "regex_replace: regex failed" }
+}

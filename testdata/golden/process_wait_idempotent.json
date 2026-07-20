@@ -1,0 +1,5 @@
+{
+  "desc": "AC2: second wait returns the cached RunResult (no second shell wait; temps already deleted)",
+  "stdout": "hi\n\nhi\n\n0-0\n",
+  "exit": 0
+}

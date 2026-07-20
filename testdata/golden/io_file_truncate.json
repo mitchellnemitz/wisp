@@ -1,0 +1,5 @@
+{
+  "desc": "write_file truncates an existing file and adds no newline",
+  "stdout": "[x]\n",
+  "exit": 0
+}

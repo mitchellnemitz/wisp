@@ -1,0 +1,1 @@
+{"desc": "debug compose: stderr print and string concat", "stdout": "val=42\n", "stderr": {"contains": "42"}, "exit": 0}

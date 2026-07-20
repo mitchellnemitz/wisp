@@ -1,0 +1,1 @@
+{ "desc": "interpolating a tuple value is a compile error", "compileError": true, "diagContains": "cannot interpolate a tuple value" }

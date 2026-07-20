@@ -1,0 +1,5 @@
+{
+  "desc": "anchor-per-window lock: ^ anchors to each successive window of rest, so ^a over aaa yields three matches",
+  "stdout": "a,a,a\n3\n",
+  "exit": 0
+}

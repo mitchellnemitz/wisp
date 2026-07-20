@@ -1,0 +1,1 @@
+{ "desc": "unwrap of Err aborts (located, carrying the error message) and is catchable", "stdout": "caught\n", "exit": 0 }

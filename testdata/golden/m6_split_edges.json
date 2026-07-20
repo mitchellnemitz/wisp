@@ -1,0 +1,5 @@
+{
+  "desc": "split trailing-sep, empty subject ([\"\"]), multi-char sep",
+  "stdout": "3\n1\n[]\na-b-c\n",
+  "exit": 0
+}

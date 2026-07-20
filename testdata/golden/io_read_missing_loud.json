@@ -1,0 +1,6 @@
+{
+  "desc": "reading a missing file aborts loud, message names the path",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "does_not_exist", "nonEmpty": true }
+}

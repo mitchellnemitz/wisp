@@ -1,0 +1,1 @@
+{ "desc": "count with empty search aborts located", "stdout": "", "exit": 1, "stderr": { "contains": "count(): empty search string", "nonEmpty": true } }

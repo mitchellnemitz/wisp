@@ -1,0 +1,5 @@
+{
+  "desc": "bool() int rows: 0->false, 1->true, -5->true",
+  "stdout": "false\ntrue\ntrue\n",
+  "exit": 0
+}

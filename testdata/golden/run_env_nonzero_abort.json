@@ -1,0 +1,6 @@
+{
+  "desc": "run_env of a nonzero-exit command aborts located, like run (AC1)",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "run", "nonEmpty": true }
+}

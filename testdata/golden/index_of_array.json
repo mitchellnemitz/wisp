@@ -1,0 +1,1 @@
+{ "desc": "index_of([int], int) -> Optional[int]: Some on hit, None on miss", "stdout": "true\n1\ntrue\n", "exit": 0 }

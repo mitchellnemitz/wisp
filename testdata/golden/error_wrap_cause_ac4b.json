@@ -1,0 +1,1 @@
+{"desc": "AC4b: an outer wrapped error pending across an inner try (whose finally body throws+catches its own wrapped error) is restored with ITS OWN cause, never the inner try's, never None -- genTry body+finally save/restore of __wisp_err_cause", "stdout": "inner-caught:inner-rethrown\ninner-cause:inner-cause\nouter-msg:outer-rethrown\nouter-cause:outer-cause\n", "exit": 0}

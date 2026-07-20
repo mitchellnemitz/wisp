@@ -1,0 +1,6 @@
+{
+  "desc": "read_line: loop reads lines until EOF",
+  "stdin": "hello\nworld\n",
+  "stdout": "Some(hello)\nSome(world)\nNone\n",
+  "exit": 0
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "array.unique on a Color[] admits the enum element type: dedups [Red, Green, Red, Blue] to [Red, Green, Blue], preserving first-occurrence order",
+  "stdout": "3\n0\n1\n2\n",
+  "exit": 0
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "contains byte model: UTF-8 multibyte search string found in subject",
+  "stdout": "true\n",
+  "exit": 0
+}

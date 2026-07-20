@@ -1,0 +1,4 @@
+{
+  "desc": "call skipping a middle argument",
+  "compileError": true
+}

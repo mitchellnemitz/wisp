@@ -1,0 +1,5 @@
+{
+  "desc": "regex_find_all returns every non-empty whole match left to right",
+  "stdout": "1,22,333\n3\n",
+  "exit": 0
+}

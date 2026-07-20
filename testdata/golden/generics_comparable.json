@@ -1,0 +1,5 @@
+{
+  "desc": "comparable bound unlocks ==/!= on a type parameter; contains_eq/index_of_eq instantiated at int and string, type-erased to one shell function each",
+  "stdout": "true\nfalse\ntrue\n2\ntrue\n",
+  "exit": 0
+}

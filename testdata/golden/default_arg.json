@@ -1,0 +1,5 @@
+{
+  "desc": "trailing default: omitted fill + supplied",
+  "stdout": "[info] hello\n[warn] hello\n",
+  "exit": 0
+}

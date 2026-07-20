@@ -1,0 +1,6 @@
+{
+  "desc": "uncaught throw aborts located, exit 1",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "exact": "wisp: error_uncaught_throw.wisp:2:3: uncaught\n" }
+}

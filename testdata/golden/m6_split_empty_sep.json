@@ -1,0 +1,6 @@
+{
+  "desc": "split with empty separator is a located abort",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "split", "nonEmpty": true }
+}

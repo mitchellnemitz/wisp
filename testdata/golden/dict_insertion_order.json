@@ -1,0 +1,5 @@
+{
+  "desc": "for-in yields insertion order; overwrite keeps original position",
+  "stdout": "zebra=1\napple=20\nmango=3\n",
+  "exit": 0
+}

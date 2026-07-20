@@ -1,0 +1,5 @@
+{
+  "desc": "run_input: tr upcases stdin and returns stdout",
+  "stdout": "HI\n",
+  "exit": 0
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "string.index_of on a Color[] admits the enum element type: a present element returns Some(i) at the right index, an absent element returns None",
+  "stdout": "true\n1\ntrue\n",
+  "exit": 0
+}

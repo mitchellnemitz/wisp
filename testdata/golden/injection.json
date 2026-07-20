@@ -1,0 +1,5 @@
+{
+  "desc": "injection: command-substitution/backticks/;/& inert",
+  "stdout": "$(echo PWNED)\npre $(echo PWNED) post\na;b&c`whoami`\n",
+  "exit": 0
+}

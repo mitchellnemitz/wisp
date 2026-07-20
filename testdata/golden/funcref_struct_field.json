@@ -1,0 +1,5 @@
+{
+  "desc": "funcref stored in a struct field then called indirectly",
+  "stdout": "mul=42\nadd=13\n",
+  "exit": 0
+}

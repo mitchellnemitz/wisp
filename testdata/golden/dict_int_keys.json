@@ -1,0 +1,5 @@
+{
+  "desc": "{int:V} keys round-trip and decoded keys stay int-valid for arithmetic",
+  "stdout": "sum=60\ndoubled=120\nk0=10\nat20=twenty\n",
+  "exit": 0
+}

@@ -1,0 +1,1 @@
+{ "desc": "blank match Err arm takes the branch without binding", "stdout": "caught\n", "exit": 0 }

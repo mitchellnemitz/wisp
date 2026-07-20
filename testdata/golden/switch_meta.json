@@ -1,0 +1,5 @@
+{
+  "desc": "switch string cases with shell metacharacters matched literally",
+  "stdout": "star\nbracket\npipe\nquestion\nother\nother\n",
+  "exit": 0
+}

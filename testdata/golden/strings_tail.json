@@ -1,0 +1,1 @@
+{ "desc": "strings-tail builtins: reverse_string, ord, chr", "stdout": "olleh\nhello\n\na\n65\n97\n104\n200\n255\nA\na\n1\n1\nh\no\nord-caught\nchr0-caught\nchrn1-caught\nchr256-caught\n169\n195\n", "exit": 0 }

@@ -1,0 +1,5 @@
+{
+  "desc": "reduce with a wrong-arity f is a compile error",
+  "compileError": true,
+  "diagContains": "reduce"
+}

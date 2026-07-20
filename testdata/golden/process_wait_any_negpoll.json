@@ -1,0 +1,1 @@
+{ "desc": "AC5: wait_any(ps, -1) aborts located, attributed to wait_any (not sleep)", "exit": 1, "stderr": {"contains": "wait_any"} }

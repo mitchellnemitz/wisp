@@ -1,0 +1,5 @@
+{
+  "desc": "wrong dict key type is a compile error",
+  "compileError": true,
+  "diagContains": "dict key must be string"
+}

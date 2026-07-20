@@ -1,0 +1,1 @@
+{ "desc": "AC1: spawn echo + wait -> stdout hi\\n (with trailing newline), code 0", "stdout": "hi\n\ncode=0\n", "exit": 0 }

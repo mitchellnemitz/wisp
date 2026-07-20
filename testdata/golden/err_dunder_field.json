@@ -1,0 +1,1 @@
+{"desc": "__-prefixed struct field is rejected", "compileError": true, "diagContains": "cannot be a field name"}

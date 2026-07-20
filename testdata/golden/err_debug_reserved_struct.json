@@ -1,0 +1,1 @@
+{"desc": "struct named debug is a compile error", "compileError": true, "diagContains": "reserved builtin or constant name"}

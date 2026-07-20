@@ -1,0 +1,1 @@
+{"desc": "debug() with 0 args is a compile error", "compileError": true, "diagContains": "debug expects 1 argument, got 0"}

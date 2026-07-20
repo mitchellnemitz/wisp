@@ -1,0 +1,5 @@
+{
+  "desc": "missing-return path (rule 4)",
+  "compileError": true,
+  "diagContains": "every path"
+}

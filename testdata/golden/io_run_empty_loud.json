@@ -1,0 +1,6 @@
+{
+  "desc": "run with empty argv aborts loud before anything runs",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "empty argv", "nonEmpty": true }
+}

@@ -1,0 +1,1 @@
+{"desc": "a faulting combinator function propagates the abort (caught by try/catch); combinator-with-try also exercises balanced if/fi under errMode", "stdout": "caught\n", "exit": 0}

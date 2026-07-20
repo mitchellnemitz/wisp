@@ -1,0 +1,2 @@
+#!/bin/sh
+printf 'EXTERNAL_PRINT:%s\n' "$1"

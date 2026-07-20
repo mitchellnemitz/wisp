@@ -1,0 +1,6 @@
+{
+  "desc": "AC2: exp(100.0) aborts located (finite-but-too-large, renders in exponent notation)",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "exp(): non-finite", "nonEmpty": true }
+}

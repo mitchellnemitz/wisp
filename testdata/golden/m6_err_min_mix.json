@@ -1,0 +1,5 @@
+{
+  "desc": "min mixing int and float is a compile error (no coercion)",
+  "compileError": true,
+  "diagContains": "min"
+}

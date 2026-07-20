@@ -1,0 +1,6 @@
+{
+  "desc": "chmod on a missing path aborts located (AC4)",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "chmod", "nonEmpty": true }
+}

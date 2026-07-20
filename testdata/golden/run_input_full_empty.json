@@ -1,0 +1,6 @@
+{
+  "desc": "run_input_full: empty argv aborts located with run_input_full: empty argv",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "run_input_full: empty argv", "nonEmpty": true }
+}

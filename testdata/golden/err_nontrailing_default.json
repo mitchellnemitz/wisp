@@ -1,0 +1,5 @@
+{
+  "desc": "default on a non-trailing parameter",
+  "compileError": true,
+  "diagContains": "trailing"
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "shell-active string inert through split/join/contains/index_of/repeat/starts_with/ends_with",
+  "stdout": "$(echo PWNED)\nls\n$(echo PWNED)|ls\ntrue\n14\n$(echo PWNED);ls$(echo PWNED);ls\ntrue\ntrue\n",
+  "exit": 0
+}

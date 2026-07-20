@@ -1,0 +1,1 @@
+{ "desc": "comparing handles is a compile error (opaque)", "compileError": true, "diagContains": "opaque" }

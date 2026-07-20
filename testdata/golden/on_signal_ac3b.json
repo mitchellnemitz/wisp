@@ -1,0 +1,5 @@
+{
+  "desc": "AC3b: second on_signal for USR1 replaces the first; only b runs; exit 0",
+  "stdout": "b\n",
+  "exit": 0
+}

@@ -1,0 +1,1 @@
+{ "desc": "Optional[string] with shell-metachar value: no injection, values compared as data", "stdout": "eq\nneq\n", "exit": 0 }

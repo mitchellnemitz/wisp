@@ -1,0 +1,1 @@
+{ "desc": "AC 21: trailing-comma type and literal behave identically to comma-free forms", "stdout": "1\n2\n1\n2\n", "exit": 0 }

@@ -1,0 +1,5 @@
+{
+  "desc": "regex_replace preserves a trailing newline in the subject (in-awk sentinel x); result is b\\n, print adds its own newline",
+  "stdout": "b\n\n",
+  "exit": 0
+}

@@ -1,0 +1,1 @@
+{ "desc": "Optional[int] does not satisfy the comparable bound", "compileError": true, "diagContains": "does not satisfy comparable" }

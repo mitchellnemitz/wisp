@@ -1,0 +1,5 @@
+{
+  "desc": "AC3: run_env overrides FOO for the child, inherits HOME (augment), and {} behaves like run",
+  "stdout": "inner\nfound\nhi\n",
+  "exit": 0
+}

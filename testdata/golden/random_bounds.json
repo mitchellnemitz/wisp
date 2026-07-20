@@ -1,0 +1,5 @@
+{
+  "desc": "random(1) is always 0 (only value in [0,1)); random(100) is in [0,100) (AC3)",
+  "stdout": "true\ntrue\n",
+  "exit": 0
+}

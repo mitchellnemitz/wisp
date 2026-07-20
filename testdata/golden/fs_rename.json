@@ -1,0 +1,5 @@
+{
+  "desc": "rename moves a file; the source no longer exists",
+  "stdout": "hi\nfalse\n",
+  "exit": 0
+}

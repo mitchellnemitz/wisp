@@ -1,0 +1,5 @@
+{
+  "desc": "run_env augments the child environment; the child reads back the var (AC1)",
+  "stdout": "hello\n",
+  "exit": 0
+}

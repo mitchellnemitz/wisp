@@ -1,0 +1,5 @@
+{
+  "desc": "INT_MIN poisons abs, division by -1, and gcd: each has an unrepresentable result (2^63 / -2^63 exceeds the int range, and a literal of that magnitude is mis-evaluated by zsh), so each aborts located and catchable, identically on every shell -- not a wrong/negative value. Normal gcd/lcm still work. Verifies H2.",
+  "stdout": "caught abs\ncaught div\ncaught gcd\n6\n12\n",
+  "exit": 0
+}

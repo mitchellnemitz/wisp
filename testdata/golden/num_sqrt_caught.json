@@ -1,0 +1,1 @@
+{ "desc": "sqrt of a negative is catchable", "stdout": "caught sqrt\n", "exit": 0 }

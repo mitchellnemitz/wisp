@@ -1,0 +1,1 @@
+{ "desc": "missing struct field is a compile error", "compileError": true, "diagContains": "missing field" }

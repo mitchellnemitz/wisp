@@ -1,0 +1,6 @@
+{
+  "desc": "file_size of a missing path aborts located (AC2)",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "cannot", "nonEmpty": true }
+}

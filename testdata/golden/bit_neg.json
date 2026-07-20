@@ -1,0 +1,5 @@
+{
+  "desc": "negative operands: two's-complement AND, arithmetic right shift",
+  "stdout": "255\n-4\n",
+  "exit": 0
+}

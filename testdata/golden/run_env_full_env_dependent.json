@@ -1,0 +1,5 @@
+{
+  "desc": "run_env_full captures stdout/stderr/code with env-dependent command (AC2)",
+  "stdout": "out\nerr\n2\n",
+  "exit": 0
+}

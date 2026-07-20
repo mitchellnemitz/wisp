@@ -1,0 +1,1 @@
+{ "desc": "calling a non-exported function through a namespace is a located error", "compileError": true, "diagContains": "not exported" }

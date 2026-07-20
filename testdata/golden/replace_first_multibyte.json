@@ -1,0 +1,5 @@
+{
+  "desc": "replace_first byte model: two-match input with multibyte needle; only first occurrence replaced, second left as UTF-8 e-acute",
+  "stdout": "e-é\n",
+  "exit": 0
+}

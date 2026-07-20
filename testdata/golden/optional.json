@@ -1,0 +1,1 @@
+{ "desc": "Optional Some/None, is_some/is_none, unwrap/unwrap_or, migrated find, dict get", "stdout": "some: 42\nnone is_none: true\nor: -1\nfirst even at: 2\nget x: 10\nget y: 0\n", "exit": 0 }

@@ -1,0 +1,1 @@
+{"desc":"stored builtin funcref direct calls (all five total string members)","stdout":"hi\nABC\nabc\nz.txt\n/x/y\n","exit":0}

@@ -1,0 +1,6 @@
+{
+  "desc": "read_line: empty stdin -> None",
+  "stdin": "",
+  "stdout": "None\n",
+  "exit": 0
+}

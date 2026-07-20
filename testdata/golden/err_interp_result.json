@@ -1,0 +1,1 @@
+{ "desc": "interpolating a Result value is a compile error", "compileError": true, "diagContains": "cannot interpolate a Result value" }

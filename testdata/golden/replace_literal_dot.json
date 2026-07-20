@@ -1,0 +1,5 @@
+{
+  "desc": "replace treats search as a literal string, not a regex: dot replaces all occurrences but is not a wildcard",
+  "stdout": "a-b-c\n",
+  "exit": 0
+}

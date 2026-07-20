@@ -1,0 +1,1 @@
+{ "desc": "AC4: signal TERM terminates the command -> nonzero code (assert code, not script stderr)", "stdout": "terminated\n", "exit": 0 }

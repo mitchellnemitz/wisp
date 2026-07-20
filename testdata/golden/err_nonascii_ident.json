@@ -1,0 +1,4 @@
+{
+  "desc": "non-ASCII identifier rejected (lex error)",
+  "compileError": true
+}

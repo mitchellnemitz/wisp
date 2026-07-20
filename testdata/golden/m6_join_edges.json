@@ -1,0 +1,5 @@
+{
+  "desc": "join([]) is empty; join(_, \"\") concatenates",
+  "stdout": "[]\nabc\na, b, c\n",
+  "exit": 0
+}

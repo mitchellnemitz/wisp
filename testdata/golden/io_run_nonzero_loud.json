@@ -1,0 +1,6 @@
+{
+  "desc": "run aborts loud when the command exits nonzero; message names argv[0] and the status",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "cat exited with status", "nonEmpty": true }
+}

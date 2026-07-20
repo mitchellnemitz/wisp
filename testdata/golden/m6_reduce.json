@@ -1,0 +1,5 @@
+{
+  "desc": "reduce sum, left-fold order (subtract), empty -> init",
+  "stdout": "10\n94\n42\n",
+  "exit": 0
+}

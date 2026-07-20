@@ -1,0 +1,5 @@
+{
+  "desc": "an exhaustive defaultless switch over an enum subject dispatches to each variant arm cross-shell; case values are inlined int literals and the empty *) default is unreachable",
+  "stdout": "red\ngreen\nblue\n",
+  "exit": 0
+}

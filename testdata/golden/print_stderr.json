@@ -1,0 +1,8 @@
+{
+  "desc": "print to stderr",
+  "stdout": "to-out\n",
+  "exit": 0,
+  "stderr": {
+    "exact": "to-err\n"
+  }
+}

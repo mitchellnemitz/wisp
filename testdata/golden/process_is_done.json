@@ -1,0 +1,5 @@
+{
+  "desc": "AC3: is_done false right after spawn(sleep 1) (marker mktemp'd EMPTY), true after wait",
+  "stdout": "false\ntrue\n",
+  "exit": 0
+}

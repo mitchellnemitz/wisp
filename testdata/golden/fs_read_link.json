@@ -1,0 +1,5 @@
+{
+  "desc": "read_link: symlink target returned verbatim (AC3+AC4 read_link half); non-symlink and missing are None",
+  "stdout": "target_file.txt\ntrue\ntrue\n",
+  "exit": 0
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "RunResult: string() conversion is a compile error",
+  "compileError": true,
+  "diagContains": "RunResult"
+}

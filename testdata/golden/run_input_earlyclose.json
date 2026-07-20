@@ -1,0 +1,5 @@
+{
+  "desc": "run_input: early-closing filter (head -n 1) does not abort; returns first line",
+  "stdout": "line1\n",
+  "exit": 0
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "multiple main",
+  "compileError": true,
+  "diagContains": "main"
+}

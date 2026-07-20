@@ -1,0 +1,5 @@
+{
+  "desc": "caught div-by-zero; e.message is the located fault text",
+  "stdout": "error_catch_div.wisp:5:23: division by zero\n",
+  "exit": 0
+}

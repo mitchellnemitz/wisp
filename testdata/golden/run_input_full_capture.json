@@ -1,0 +1,5 @@
+{
+  "desc": "run_input_full: captures stdout, stderr, and exit code; program exits 0",
+  "stdout": "out\nerr\n5\n",
+  "exit": 0
+}

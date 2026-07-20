@@ -1,0 +1,1 @@
+{ "desc": "unwrap of None is catchable via try/catch (exit 0)", "stdout": "caught\n", "exit": 0 }

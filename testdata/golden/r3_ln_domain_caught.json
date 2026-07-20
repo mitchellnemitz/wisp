@@ -1,0 +1,1 @@
+{ "desc": "ln domain abort is catchable", "stdout": "caught ln domain\n", "exit": 0 }

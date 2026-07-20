@@ -1,0 +1,125 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "wisp",
+  "scopeName": "source.wisp",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#type-params" },
+    { "include": "#function-decl" },
+    { "include": "#keywords" },
+    { "include": "#namespaced" },
+    { "include": "#types" },
+    { "include": "#constants" },
+    { "include": "#builtins" },
+    { "include": "#numbers" },
+    { "include": "#strings" },
+    { "include": "#operators" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        { "name": "comment.line.double-slash.wisp", "match": "//.*$" }
+      ]
+    },
+    "function-decl": {
+      "match": "\\b(fn)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+      "captures": {
+        "1": { "name": "keyword.control.wisp" },
+        "2": { "name": "entity.name.function.wisp" }
+      }
+    },
+    "type-params": {
+      "comment": "A function's type-parameter list: fn name[...]. comparable is highlighted as a bound ONLY inside this region, so an ordinary annotation like 'x: comparable' is unaffected. A begin/end region (no lookbehind) so the grammar always loads; fn and the name are re-scoped to match #function-decl.",
+      "begin": "\\b(fn)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*(\\[)",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.wisp" },
+        "2": { "name": "entity.name.function.wisp" },
+        "3": { "name": "punctuation.definition.typeparameters.begin.wisp" }
+      },
+      "end": "(\\])",
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.typeparameters.end.wisp" }
+      },
+      "patterns": [
+        {
+          "comment": "comparable/numeric only after a colon (bound position), so a type parameter NAMED comparable or numeric (fn k[comparable]) is not mis-highlighted.",
+          "match": "(:)\\s*(comparable|numeric)\\b",
+          "captures": {
+            "1": { "name": "keyword.operator.wisp" },
+            "2": { "name": "support.type.bound.wisp" }
+          }
+        }
+      ]
+    },
+    "keywords": {
+      "name": "keyword.control.wisp",
+      "match": "\\b(?:break|case|catch|const|continue|default|else|enum|export|false|final|finally|fn|for|if|import|include|let|match|return|struct|switch|test|throw|true|try|type|while)\\b"
+    },
+    "namespaced": {
+      "match": "\\b(array|dict|env|fs|json|math|process|regex|string)(\\.)([a-z][a-z0-9_]*)\\b",
+      "captures": {
+        "1": { "name": "support.other.namespace.wisp" },
+        "3": { "name": "support.function.builtin.wisp" }
+      }
+    },
+    "types": {
+      "name": "storage.type.wisp",
+      "match": "\\b(?:Optional|Process|RunResult|bool|error|float|int|string|void)\\b"
+    },
+    "constants": {
+      "name": "constant.language.wisp",
+      "match": "\\b(?:Err|None|Ok|Some|stderr|stdout)\\b"
+    },
+    "builtins": {
+      "name": "support.function.builtin.wisp",
+      "match": "\\b(?:and_then|assert|assert_contains|assert_eq|assert_err|assert_ne|assert_none|assert_ok|assert_some|cause|debug|error_with|exit|is_err|is_none|is_ok|is_some|length|map_err|now|on_exit|on_signal|or_else|parse_args|print|read_line|read_secret|read_stdin|set_stdin|skip|sleep|test_tmpdir|to_bool|to_float|to_int|to_string|unwrap|unwrap_err|unwrap_or|wrap)\\b"
+    },
+    "numbers": {
+      "patterns": [
+        { "name": "constant.numeric.float.wisp", "match": "\\b[0-9]+\\.[0-9]+\\b" },
+        { "name": "constant.numeric.integer.wisp", "match": "\\b[0-9]+\\b" }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.single.wisp",
+          "begin": "'",
+          "end": "'"
+        },
+        {
+          "name": "string.quoted.double.wisp",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            { "name": "constant.character.escape.wisp", "match": "\\\\." },
+            {
+              "name": "meta.interpolation.wisp",
+              "begin": "\\$\\{",
+              "end": "\\}",
+              "beginCaptures": {
+                "0": { "name": "punctuation.definition.interpolation.begin.wisp" }
+              },
+              "endCaptures": {
+                "0": { "name": "punctuation.definition.interpolation.end.wisp" }
+              },
+              "patterns": [
+                { "include": "#keywords" },
+                { "include": "#namespaced" },
+                { "include": "#types" },
+                { "include": "#constants" },
+                { "include": "#builtins" },
+                { "include": "#numbers" },
+                { "include": "#operators" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "operators": {
+      "name": "keyword.operator.wisp",
+      "match": "->|<<|>>|&&|\\|\\||==|!=|<=|>=|[-+*/%!<>=&|^]"
+    }
+  }
+}

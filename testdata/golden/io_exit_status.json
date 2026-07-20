@@ -1,0 +1,5 @@
+{
+  "desc": "exit terminates the program with the given status",
+  "stdout": "before\n",
+  "exit": 7
+}

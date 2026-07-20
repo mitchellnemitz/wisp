@@ -1,0 +1,1 @@
+{ "desc": "Optional[Optional[int]] == structural recursion (never inner-handle-id compare)", "stdout": "eq\nneq\nneq\neq\neq\nneq\n", "exit": 0 }

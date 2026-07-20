@@ -1,0 +1,5 @@
+{
+  "desc": "a malformed pattern is catchable; matches aborts (does not return false) under the conjunctive token rule",
+  "stdout": "caught\n",
+  "exit": 0
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "a try without a catch is a compile error",
+  "compileError": true,
+  "diagContains": "catch"
+}

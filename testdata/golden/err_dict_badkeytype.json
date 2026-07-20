@@ -1,0 +1,5 @@
+{
+  "desc": "a non-hashable dict key type (bool) is a compile error",
+  "compileError": true,
+  "diagContains": "dict key type must be int or string"
+}

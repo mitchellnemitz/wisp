@@ -1,0 +1,5 @@
+{
+  "desc": "bool == bool (lossy-rep soundness)",
+  "stdout": "true\nfalse\ntrue\n",
+  "exit": 0
+}

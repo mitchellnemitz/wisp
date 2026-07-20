@@ -1,0 +1,5 @@
+{
+  "desc": "change_dir: symlink to directory succeeds",
+  "stdout": "ok\n",
+  "exit": 0
+}

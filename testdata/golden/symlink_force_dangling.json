@@ -1,0 +1,5 @@
+{
+  "desc": "dangling target allowed -- symlink created, read_link returns literal target (AC4)",
+  "stdout": "/no/such/target\n",
+  "exit": 0
+}

@@ -1,0 +1,6 @@
+{
+  "desc": "dir_name/base_name arguments with $(...), backticks, ;, |, *, spaces are inert literal data across shells; no pwned* file ever appears",
+  "stdout": "/x/$(touch pwned1)\n*\n/y/`touch pwned2`\nz\na b ; c | d\nfalse\nfalse\n",
+  "exit": 0,
+  "stderr": { "exact": "" }
+}

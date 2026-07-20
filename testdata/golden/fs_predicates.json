@@ -1,0 +1,5 @@
+{
+  "desc": "file_exists/is_dir on dir, missing, file, and a symlink-to-dir; never abort",
+  "stdout": "true\ntrue\nfalse\nfalse\ntrue\nfalse\ntrue\ntrue\n",
+  "exit": 0
+}

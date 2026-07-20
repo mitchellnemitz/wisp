@@ -1,0 +1,5 @@
+{
+  "desc": "AC5: wait_any returns p2 (observed done first; p1 sleeps 2s); wait p1 after to avoid temp leak",
+  "stdout": "x\n\ndone\n",
+  "exit": 0
+}

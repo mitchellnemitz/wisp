@@ -1,0 +1,5 @@
+{
+  "desc": "change_dir: success on . and catchable abort on bad path",
+  "stdout": "ok\ncaught\n",
+  "exit": 0
+}

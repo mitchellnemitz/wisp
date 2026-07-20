@@ -1,0 +1,5 @@
+{
+  "desc": "regex_find returns None when the pattern does not match",
+  "stdout": "true\n",
+  "exit": 0
+}

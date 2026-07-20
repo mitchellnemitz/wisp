@@ -1,0 +1,5 @@
+{
+  "desc": "RunResult: passing to builtin expecting string is a compile error",
+  "compileError": true,
+  "diagContains": "RunResult"
+}

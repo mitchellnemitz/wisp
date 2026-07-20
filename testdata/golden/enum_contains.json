@@ -1,0 +1,5 @@
+{
+  "desc": "string.contains on a Color[] admits the enum element type: hit returns true, miss returns false",
+  "stdout": "true\nfalse\n",
+  "exit": 0
+}

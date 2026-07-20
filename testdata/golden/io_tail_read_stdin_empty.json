@@ -1,0 +1,6 @@
+{
+  "desc": "read_stdin: empty stdin returns empty string",
+  "stdin": "",
+  "stdout": "(empty)\n",
+  "exit": 0
+}

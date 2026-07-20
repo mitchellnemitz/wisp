@@ -1,0 +1,5 @@
+{
+  "desc": "int comparisons < <= > >= == !=",
+  "stdout": "true\ntrue\nfalse\ntrue\ntrue\ntrue\n",
+  "exit": 0
+}

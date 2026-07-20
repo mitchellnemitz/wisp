@@ -1,0 +1,5 @@
+{
+  "desc": "is_file/is_symlink on regular file, dir, symlink-to-file, and missing path (AC1)",
+  "stdout": "true\nfalse\ntrue\nfalse\ntrue\nfalse\nfalse\nfalse\n",
+  "exit": 0
+}

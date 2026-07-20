@@ -1,0 +1,5 @@
+{
+  "desc": "reassigning a final binding is a compile error",
+  "compileError": true,
+  "diagContains": "cannot assign to final"
+}

@@ -1,0 +1,6 @@
+{
+  "desc": "format_float with negative decimals aborts located under all target shells",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "format_float: decimals must be >= 0", "nonEmpty": true }
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "run_status of false returns 1 and does NOT abort (a line after still prints)",
+  "stdout": "1\nafter\n",
+  "exit": 0
+}

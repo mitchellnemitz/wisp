@@ -1,0 +1,5 @@
+{
+  "desc": "which of a shell builtin/keyword (cd) is Some of whatever command -v prints",
+  "stdout": "true\n",
+  "exit": 0
+}

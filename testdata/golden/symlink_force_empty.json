@@ -1,0 +1,6 @@
+{
+  "desc": "empty link_path aborts located -- ln -s refuses an empty destination (AC5)",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "symlink_force", "nonEmpty": true }
+}

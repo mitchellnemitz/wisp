@@ -1,0 +1,1 @@
+{ "desc": "error == error is a compile error (aggregate handles are opaque)", "compileError": true, "diagContains": "aggregate handles are opaque" }

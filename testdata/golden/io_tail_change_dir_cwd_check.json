@@ -1,0 +1,5 @@
+{
+  "desc": "change_dir: cwd() updates after change",
+  "stdout": "ok\n",
+  "exit": 0
+}

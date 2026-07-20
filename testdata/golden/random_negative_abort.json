@@ -1,0 +1,6 @@
+{
+  "desc": "random(-5) aborts located with a message containing 'positive' (AC3)",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "positive", "nonEmpty": true }
+}

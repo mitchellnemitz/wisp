@@ -1,0 +1,6 @@
+{
+  "desc": "zero main",
+  "compileError": true,
+  "diagContains": "main",
+  "allowNoPos": true
+}

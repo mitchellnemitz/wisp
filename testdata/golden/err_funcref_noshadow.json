@@ -1,0 +1,5 @@
+{
+  "desc": "a let may not reuse a declared function name",
+  "compileError": true,
+  "diagContains": "declared function and cannot be shadowed"
+}

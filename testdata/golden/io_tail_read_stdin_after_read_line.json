@@ -1,0 +1,6 @@
+{
+  "desc": "read_stdin after read_line returns remaining content",
+  "stdin": "line1\nrest",
+  "stdout": "rest",
+  "exit": 0
+}

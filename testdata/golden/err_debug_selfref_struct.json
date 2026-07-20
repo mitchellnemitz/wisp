@@ -1,0 +1,1 @@
+{"desc": "debug of a self-referential struct is a compile error, not a checker-time stack overflow", "compileError": true, "diagContains": "debug() cannot render"}

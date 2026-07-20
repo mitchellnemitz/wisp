@@ -1,0 +1,1 @@
+{ "desc": "AC4: signal KILL terminates the command -> nonzero code", "stdout": "killed\n", "exit": 0 }

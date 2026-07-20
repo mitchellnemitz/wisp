@@ -1,0 +1,5 @@
+{
+  "desc": "temp_file/temp_dir: paths exist as file/dir after creation; cleanup via remove_file/remove_dir exits 0 (AC6)",
+  "stdout": "true\ntrue\n",
+  "exit": 0
+}

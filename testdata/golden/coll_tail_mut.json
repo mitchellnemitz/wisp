@@ -1,0 +1,1 @@
+{ "desc": "collections-tail mutating array builtins (pop/remove_at/insert_at)", "stdout": "50\n4\n10 30 40\n10 99 30 40\n10 99 30 40 77\n", "exit": 0 }

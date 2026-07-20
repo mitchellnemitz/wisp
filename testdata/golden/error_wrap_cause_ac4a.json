@@ -1,0 +1,1 @@
+{"desc": "AC4a: after a caught wrapped throw (cause present -> is_none false), a later throw error(plain) caught has cause==None -- genThrow writes the empty cause sentinel unconditionally so no stale cause leaks", "stdout": "false\nplain\ntrue\n", "exit": 0}

@@ -1,0 +1,5 @@
+{
+  "desc": "if/elif/else",
+  "stdout": "big\nsmall\nnonpositive\n",
+  "exit": 0
+}

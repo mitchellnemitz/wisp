@@ -1,0 +1,1 @@
+{ "desc": "chr on out-of-range code is a located top-level abort", "stdout": "", "exit": 1, "stderr": { "contains": "chr(): code out of range 1-255", "nonEmpty": true } }

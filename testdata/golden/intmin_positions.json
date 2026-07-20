@@ -1,0 +1,1 @@
+{"desc":"INT_MIN in six word positions: let, string() arg, array element, function return, dict value, struct field","stdout":"-9223372036854775808\n-9223372036854775808\n-9223372036854775808\n-9223372036854775808\n-9223372036854775808\n-9223372036854775808\n","exit":0,"stderr":{"nonEmpty":false}}

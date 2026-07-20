@@ -1,0 +1,1 @@
+{ "desc": "Tuple destructuring: bare _ discards element, only named slot binds", "stdout": "kept\n", "exit": 0 }

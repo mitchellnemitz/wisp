@@ -1,0 +1,5 @@
+{
+  "desc": "non-constant default argument",
+  "compileError": true,
+  "diagContains": "constant"
+}

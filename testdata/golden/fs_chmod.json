@@ -1,0 +1,5 @@
+{
+  "desc": "chmod on an existing file completes without abort; is_file still true afterwards (AC4)",
+  "stdout": "true\n",
+  "exit": 0
+}

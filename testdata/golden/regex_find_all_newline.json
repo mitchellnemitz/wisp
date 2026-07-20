@@ -1,0 +1,5 @@
+{
+  "desc": "a match containing a newline round-trips byte-exactly through the length-prefixed framing (the decode reads exactly <len> bytes, never splitting on the match's own newline)",
+  "stdout": "1\n3\n[a\nb]\n",
+  "exit": 0
+}

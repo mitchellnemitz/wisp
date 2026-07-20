@@ -1,0 +1,1 @@
+{ "desc": "search/affix/fill metacharacters matched literally", "stdout": "aXb\n2\nx\n[*?z]\n1\n", "exit": 0 }

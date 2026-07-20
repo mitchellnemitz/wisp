@@ -1,0 +1,1 @@
+{ "desc": "first on empty array is a located top-level abort", "stdout": "", "exit": 1, "stderr": { "contains": "first: empty array", "nonEmpty": true } }

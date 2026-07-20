@@ -1,0 +1,5 @@
+{
+  "desc": "RunResult: != operator is a compile error",
+  "compileError": true,
+  "diagContains": "aggregate handles"
+}

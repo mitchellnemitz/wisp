@@ -1,0 +1,6 @@
+{
+  "desc": "AC2/T2-fix: exp(-40.0) ~= 4.2e-18 aborts located (correct tiny magnitude via reciprocal, non-representable -- not a wrong finite value)",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "exp(): non-finite", "nonEmpty": true }
+}

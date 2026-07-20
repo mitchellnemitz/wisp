@@ -1,0 +1,1 @@
+{"desc": "transparent funcref alias `type BinOp = fn(int, int) -> int` is interchangeable with the raw funcref through param and binding", "stdout": "apply=13\ndirect=7\n", "exit": 0}

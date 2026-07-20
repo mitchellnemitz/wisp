@@ -1,0 +1,1 @@
+{ "desc": "remove_at out-of-range is a located top-level abort", "stdout": "", "exit": 1, "stderr": { "contains": "remove_at: index out of range", "nonEmpty": true } }

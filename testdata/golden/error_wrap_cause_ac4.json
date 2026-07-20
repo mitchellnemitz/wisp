@@ -1,0 +1,1 @@
+{"desc": "AC4: after a caught wrapped error (cause present), a subsequent caught runtime fault (1/0) has cause==None -- __wisp_fail cleared __wisp_err_cause", "stdout": "outer\nfalse\ntrue\n", "exit": 0}

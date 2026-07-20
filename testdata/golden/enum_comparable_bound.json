@@ -1,0 +1,5 @@
+{
+  "desc": "comparable bound admits an enum type param: eq2[Color] compiles and runs, printing correct bools for an equal pair and an unequal pair",
+  "stdout": "true\nfalse\n",
+  "exit": 0
+}

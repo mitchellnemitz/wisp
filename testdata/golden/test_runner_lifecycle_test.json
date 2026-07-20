@@ -1,0 +1,5 @@
+{
+  "desc": "test-mode runner: setup runs before each body, teardown after each (pass+skip), per-test state does not leak (AC5); skip does not fail the suite",
+  "stdout": "TAP version 13\n1..3\nok 1 - 1 setup ran and tmpdir is empty of markers\nok 2 - 2 still isolated, prior marker not visible # SKIP intentionally skipped to prove teardown still runs\nok 3 - 3 teardown ran after each preceding test\n",
+  "exit": 0
+}

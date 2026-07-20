@@ -1,0 +1,5 @@
+{
+  "desc": "&& || ! short-circuit",
+  "stdout": "true\nfalse\ntrue\nfalse\nfalse\ntrue\n",
+  "exit": 0
+}

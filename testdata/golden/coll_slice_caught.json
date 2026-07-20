@@ -1,0 +1,1 @@
+{ "desc": "slice out-of-range is catchable", "stdout": "caught out-of-range\n", "exit": 0 }

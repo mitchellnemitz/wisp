@@ -1,0 +1,5 @@
+{
+  "desc": "AC3: on_signal fires and RESUMES; USR1 then TERM self-delivered via run_status; exit 0",
+  "stdout": "before\ncaught\nafter\ncaught-term\nafter-term\n",
+  "exit": 0
+}

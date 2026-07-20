@@ -1,0 +1,5 @@
+{
+  "desc": "PR C freed-positive: map is no longer reserved (moved to array.map), so a user may declare fn map(...) and call it; this compiles and runs.",
+  "stdout": "42\n",
+  "exit": 0
+}

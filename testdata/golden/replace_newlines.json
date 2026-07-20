@@ -1,0 +1,5 @@
+{
+  "desc": "replace embedded newline literally",
+  "stdout": "a-b-c\n",
+  "exit": 0
+}

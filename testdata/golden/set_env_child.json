@@ -1,0 +1,5 @@
+{
+  "desc": "set_env mutates the process env; env_or sees it and a run child inherits it (AC1)",
+  "stdout": "hello\nhello\n",
+  "exit": 0
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "argv reaches the exec'd process as inert data; no substitution/glob (AC5)",
+  "stdout": "$(touch PWNED); `id`; *",
+  "exit": 0
+}

@@ -1,0 +1,9 @@
+{
+  "desc": "division-by-zero abort",
+  "stdout": "",
+  "exit": 1,
+  "stderr": {
+    "contains": "division by zero",
+    "nonEmpty": true
+  }
+}

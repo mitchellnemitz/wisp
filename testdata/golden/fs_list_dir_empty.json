@@ -1,0 +1,5 @@
+{
+  "desc": "list_dir of an empty directory is [] (length 0)",
+  "stdout": "0\n",
+  "exit": 0
+}

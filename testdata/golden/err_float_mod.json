@@ -1,0 +1,5 @@
+{
+  "desc": "modulo on float is a compile error",
+  "compileError": true,
+  "diagContains": "modulo is undefined for float"
+}

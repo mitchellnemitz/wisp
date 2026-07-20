@@ -1,0 +1,1 @@
+{ "desc": "to_int(handle) is a compile error (handle opacity)", "compileError": true, "diagContains": "argument 1 of to_int" }

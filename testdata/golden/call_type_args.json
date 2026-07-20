@@ -1,0 +1,5 @@
+{
+  "desc": "explicit call-site type args: identity[int], empty_list[int] (return-only), add[float]/add[int] monomorphized; ShellCheck-clean under dash/busybox",
+  "stdout": "n=42\nlen=2\nf=3.5\ni=7\n",
+  "exit": 0
+}

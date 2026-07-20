@@ -1,0 +1,1 @@
+{"desc": "debug injection safety: attacker-controlled dict key renders inertly as literal text", "stdout": "{\"$(touch pwned_key)\": 1}\n", "exit": 0}

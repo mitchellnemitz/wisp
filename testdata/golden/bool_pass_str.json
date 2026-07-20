@@ -1,0 +1,5 @@
+{
+  "desc": "bool() string rows: \"true\"/\"false\"",
+  "stdout": "true\nfalse\n",
+  "exit": 0
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "modulo by zero in a constant expression is a compile error",
+  "compileError": true,
+  "diagContains": "constant expression: modulo by zero"
+}

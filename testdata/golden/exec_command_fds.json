@@ -1,0 +1,6 @@
+{
+  "desc": "exec'd process inherits stdout and stderr (AC3)",
+  "stdout": "out",
+  "exit": 0,
+  "stderr": { "contains": "err", "nonEmpty": true }
+}

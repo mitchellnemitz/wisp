@@ -1,0 +1,6 @@
+{
+  "desc": "glob injection (AC5+AC7 glob half): a matched filename containing $(...), backticks, ;, *, space, and a non-trailing newline round-trips verbatim through the unquoted glob -- no command execution (no pwned file), empty stderr",
+  "stdout": "1\ntrue\nfalse\nfalse\n",
+  "exit": 0,
+  "stderr": { "exact": "" }
+}

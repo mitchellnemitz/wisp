@@ -1,0 +1,5 @@
+{
+  "desc": "string length/index_of/last_index_of/count/pad are byte-oriented and identical on every shell for a UTF-8 multibyte input. The string aébéc is 7 bytes (each é is 2 bytes): length 7, é first at byte 1 and last at byte 4, count 2, and padding to width 9 prepends/appends 2 ASCII bytes. The helpers wrap measurement and search in LC_ALL=C awk so bash/zsh/busybox (codepoint-oriented for shell ${#}/${#?} under UTF-8) agree with dash. The harness runs in the C locale, so this is a stability check; the byte guarantee is also asserted at the source level in TestStringBytes_HelperBodies_AreByteOrientedViaAwk.",
+  "stdout": "7\n1\n4\n2\n..aébéc\naébéc..\n",
+  "exit": 0
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "int() parses signed integers",
+  "stdout": "42\n-7\n3\n",
+  "exit": 0
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "file_size of a file with 5 bytes returns 5 (AC2)",
+  "stdout": "5\n",
+  "exit": 0
+}

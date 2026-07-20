@@ -1,0 +1,1 @@
+{"desc": "AC6 injection: a wrap message with $(...), backticks, ;, *, spaces, and a newline renders literally (inert data); empty stderr proves nothing was executed; the cause still resolves", "stdout": "$(echo HACKED 1>&2) `echo BAD` ; rm -rf * end\nMSGEND\ninner-payloadCAUSEEND\n", "exit": 0, "stderr": {"exact": ""}}

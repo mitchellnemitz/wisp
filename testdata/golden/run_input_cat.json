@@ -1,0 +1,5 @@
+{
+  "desc": "run_input: cat feeds stdin and returns stdout",
+  "stdout": "hello\n",
+  "exit": 0
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "token-confusion guard: a matched value beginning with 0 or 1 is not confused with the one-byte status token (only the leading prefix byte is peeled)",
+  "stdout": "0xyz\n1abc\n",
+  "exit": 0
+}

@@ -1,0 +1,1 @@
+{"desc": "debug of void argument is a compile error", "compileError": true, "diagContains": "debug requires a value; got void"}

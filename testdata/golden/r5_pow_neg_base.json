@@ -1,0 +1,1 @@
+{"desc":"pow: negative base with integer exponent ((-2)^3=-8)","stdout":"-8\n","exit":0}

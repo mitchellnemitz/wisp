@@ -1,0 +1,1 @@
+{ "desc": "Optional[[int]] == is a compile error (arrays are not comparable)", "compileError": true, "diagContains": "is not defined for Optional values" }

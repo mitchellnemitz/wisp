@@ -1,0 +1,5 @@
+{
+  "desc": "five successive random(1000000000) draws are NOT all equal (AC3a seed-variation regression guard: deterministically fires under a constant-seed bug; ~1e-36 false-failure under a correct impl)",
+  "stdout": "true\n",
+  "exit": 0
+}

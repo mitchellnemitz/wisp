@@ -1,0 +1,6 @@
+{
+  "desc": "read_stdin: two-line input with trailing newline",
+  "stdin": "a\nb\n",
+  "stdout": "a\nb\n",
+  "exit": 0
+}

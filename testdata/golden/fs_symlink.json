@@ -1,0 +1,5 @@
+{
+  "desc": "symlink creates a symlink; is_symlink(link_path) is true afterwards (AC4)",
+  "stdout": "true\n",
+  "exit": 0
+}

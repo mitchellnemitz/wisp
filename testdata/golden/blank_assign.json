@@ -1,0 +1,1 @@
+{ "desc": "blank assignment evaluates the RHS for side effects, no write", "stdout": "beep\n", "exit": 0 }

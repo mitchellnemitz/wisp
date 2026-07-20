@@ -1,0 +1,5 @@
+{
+  "desc": "redefining a reserved constant (stdout)",
+  "compileError": true,
+  "diagContains": "reserved"
+}

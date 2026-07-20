@@ -1,0 +1,5 @@
+{
+  "desc": "break outside a loop (rule 12)",
+  "compileError": true,
+  "diagContains": "break outside"
+}

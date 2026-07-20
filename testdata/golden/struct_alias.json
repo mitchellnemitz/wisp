@@ -1,0 +1,5 @@
+{
+  "desc": "struct reference semantics: alias mutation visible through every binding",
+  "stdout": "a=100\nb=100\n",
+  "exit": 0
+}

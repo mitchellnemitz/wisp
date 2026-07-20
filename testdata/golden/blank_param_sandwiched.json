@@ -1,0 +1,1 @@
+{ "desc": "blank middle param; a binds $1 and c binds $3", "stdout": "103\n", "exit": 0 }

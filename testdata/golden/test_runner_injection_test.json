@@ -1,0 +1,5 @@
+{
+  "desc": "test-mode runner: a metacharacter-laden test name and skip reason render literally in TAP, no evaluation/globbing (N1/AC4)",
+  "stdout": "TAP version 13\n1..1\nok 1 - name $(echo PWNED) and *glob* and ; rm -rf and backtick id # SKIP reason $(echo PWNED) and *.go and ; echo X and backtick id\n",
+  "exit": 0
+}

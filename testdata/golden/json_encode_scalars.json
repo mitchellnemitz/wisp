@@ -1,0 +1,1 @@
+{"desc":"json constructors + encode","stdout":"42\n1.5\ntrue\n\"he\\\"llo\\\\world\"\nnull\n","exit":0}

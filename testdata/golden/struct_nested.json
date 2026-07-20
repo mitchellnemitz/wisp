@@ -1,0 +1,5 @@
+{
+  "desc": "struct as param/return, nested struct + array fields",
+  "stdout": "v=7\ntag=b\nv=42\n",
+  "exit": 0
+}

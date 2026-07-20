@@ -1,0 +1,5 @@
+{
+  "desc": "replace byte model: multibyte e-acute replaced by ASCII e, yielding pure-ASCII cafe",
+  "stdout": "cafe\n",
+  "exit": 0
+}

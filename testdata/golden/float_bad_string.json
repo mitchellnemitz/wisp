@@ -1,0 +1,9 @@
+{
+  "desc": "float(\"x\") aborts located",
+  "stdout": "",
+  "exit": 1,
+  "stderr": {
+    "contains": "float(",
+    "nonEmpty": true
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "desc": "a failing assert_eq exits the (sub)shell with the reserved code 122, renders BOTH operands via debug(), and the body after it does not run; identical on all four shells",
+  "stdout": "",
+  "exit": 122,
+  "stderr": { "contains": "assertion failed: 1 != 2", "nonEmpty": true }
+}

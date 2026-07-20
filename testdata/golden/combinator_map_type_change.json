@@ -1,0 +1,1 @@
+{"desc": "map changes element type: Optional[int]->Optional[string] and Result[int]->Result[string]", "stdout": "42\ntrue\n7\n", "exit": 0}

@@ -1,0 +1,5 @@
+{
+  "desc": "exit reached via a function from a try body terminates without running the pending finally",
+  "stdout": "in try\n",
+  "exit": 5
+}

@@ -1,0 +1,6 @@
+{
+  "desc": "AC2: log10(0.0) aborts located via the composed ln domain guard",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "ln(): non-finite", "nonEmpty": true }
+}

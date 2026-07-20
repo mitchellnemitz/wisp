@@ -1,0 +1,5 @@
+{
+  "desc": "no-match and empty input yield an empty array",
+  "stdout": "0\n0\n",
+  "exit": 0
+}

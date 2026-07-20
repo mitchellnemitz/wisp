@@ -1,0 +1,6 @@
+{
+  "desc": "missing-key lookup is a located abort",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "dict key not found", "nonEmpty": true }
+}

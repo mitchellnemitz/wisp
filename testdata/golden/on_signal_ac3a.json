@@ -1,0 +1,5 @@
+{
+  "desc": "AC3a: on_signal handler calls exit(3); TERM self-delivered terminates with exit 3",
+  "stdout": "before\n",
+  "exit": 3
+}

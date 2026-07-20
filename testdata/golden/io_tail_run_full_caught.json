@@ -1,0 +1,5 @@
+{
+  "desc": "run_full: empty argv abort catchable in try",
+  "stdout": "caught: run_full\n",
+  "exit": 0
+}

@@ -1,0 +1,1 @@
+{"desc": "debug does not mutate: array length unchanged after debug", "stdout": "3\n", "exit": 0}

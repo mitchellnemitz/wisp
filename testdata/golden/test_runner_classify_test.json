@@ -1,0 +1,5 @@
+{
+  "desc": "test-mode runner: pass/fail/skip TAP-13 classification; runner exits nonzero because a test failed (AC8/AC6)",
+  "stdout": "TAP version 13\n1..3\nok 1 - a passes\nnot ok 2 - b fails an assertion\n# test_runner_classify_test.wisp:6:3: assertion failed: 1 != 2\nok 3 - c is skipped # SKIP not ready yet\n",
+  "exit": 1
+}

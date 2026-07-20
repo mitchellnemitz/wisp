@@ -1,0 +1,1 @@
+{ "desc": "leading-underscore + digits-in-name are valid (AC4)", "stdout": "1\n2\n", "exit": 0 }

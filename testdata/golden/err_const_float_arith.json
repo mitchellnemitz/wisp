@@ -1,0 +1,5 @@
+{
+  "desc": "float arithmetic in a constant expression is a compile error",
+  "compileError": true,
+  "diagContains": "float arithmetic is not allowed"
+}

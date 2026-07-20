@@ -1,0 +1,5 @@
+{
+  "desc": "test-mode runner: an assertion failure is FAIL; an unexpected runtime fault is ERROR, reported distinctly (AC14)",
+  "stdout": "TAP version 13\n1..2\nnot ok 1 - assertion failure is FAIL\n# test_runner_fail_vs_error_test.wisp:2:3: assertion failed: boom\nnot ok 2 - an unexpected fault is ERROR\n# ERROR (unexpected fault)\n# wisp: test_runner_fail_vs_error_test.wisp:7:21: array index out of bounds: index 5, length 0\n",
+  "exit": 1
+}

@@ -1,0 +1,1 @@
+{ "desc": "a const initializer referencing ns.NAME is a compile error (const-exprs are file-local)", "compileError": true, "diagContains": "must be a constant expression" }

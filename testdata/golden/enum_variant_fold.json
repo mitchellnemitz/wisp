@@ -1,0 +1,5 @@
+{
+  "desc": "enum variant access folds to inlined int literals: comparison + int() conversion run cross-shell; the enum decl emits no runtime code",
+  "stdout": "c==Green\n2\n",
+  "exit": 0
+}

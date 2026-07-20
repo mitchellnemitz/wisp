@@ -1,0 +1,5 @@
+{
+  "desc": "reassigning a const is a compile error",
+  "compileError": true,
+  "diagContains": "cannot assign to constant"
+}

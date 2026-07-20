@@ -1,0 +1,1 @@
+{ "desc": "AC5: argv metachars inert through the pipeline-string eval; no PWNED file", "stdout": "$(touch PWNED); `touch PWNED`; a|b *\npwned=false\n", "exit": 0 }

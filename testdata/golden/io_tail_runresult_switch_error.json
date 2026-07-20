@@ -1,0 +1,5 @@
+{
+  "desc": "RunResult: switch subject is a compile error",
+  "compileError": true,
+  "diagContains": "RunResult"
+}

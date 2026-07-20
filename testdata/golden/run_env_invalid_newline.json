@@ -1,0 +1,6 @@
+{
+  "desc": "run_env rejects an env name with an embedded newline; the byte-walk rejects every non-conforming byte (AC4)",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "invalid environment variable name", "nonEmpty": true }
+}

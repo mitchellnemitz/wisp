@@ -1,0 +1,5 @@
+{
+  "desc": "make_dir creates nested dirs (-p); re-creating an existing dir is a success",
+  "stdout": "true\nok\n",
+  "exit": 0
+}

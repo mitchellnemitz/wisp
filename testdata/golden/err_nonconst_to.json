@@ -1,0 +1,5 @@
+{
+  "desc": "non-constant print `to` (rule 9)",
+  "compileError": true,
+  "diagContains": "stdout or stderr"
+}

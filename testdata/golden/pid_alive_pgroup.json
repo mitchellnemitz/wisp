@@ -1,0 +1,5 @@
+{
+  "desc": "pid_alive(0) targets the caller's process group, which always exists; total (no abort)",
+  "stdout": "true\n",
+  "exit": 0
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "referencing a builtin name as a value is a compile error",
+  "compileError": true,
+  "diagContains": "overloaded"
+}

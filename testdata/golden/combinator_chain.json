@@ -1,0 +1,1 @@
+{"desc": "chained combinators compose end to end: map->and_then->filter->or_else", "stdout": "40\n-1\n", "exit": 0}

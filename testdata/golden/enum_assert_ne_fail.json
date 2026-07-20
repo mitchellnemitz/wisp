@@ -1,0 +1,6 @@
+{
+  "desc": "a failing assert_ne over enums exits 122 and renders both operands via debug() as their canonical ints",
+  "stdout": "",
+  "exit": 122,
+  "stderr": { "contains": "assertion failed: 0 == 0", "nonEmpty": true }
+}

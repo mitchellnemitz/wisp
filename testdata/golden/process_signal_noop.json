@@ -1,0 +1,5 @@
+{
+  "desc": "AC4 GUARD: signal on a finished-but-unwaited process (is_done polled true, marker non-empty, state still running) is a NO-OP; wait still returns the real result; signaling the already-waited (state=done) process is also a no-op",
+  "stdout": "done\n\ncode=0\nafter-done-noop\n",
+  "exit": 0
+}

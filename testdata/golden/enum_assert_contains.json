@@ -1,0 +1,5 @@
+{
+  "desc": "assert_contains admits an enum array element type: a hit is a no-op and the program runs to completion",
+  "stdout": "passed\n",
+  "exit": 0
+}

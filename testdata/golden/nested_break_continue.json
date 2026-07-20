@@ -1,0 +1,5 @@
+{
+  "desc": "combined: break in inner while + continue in for body (post still runs)",
+  "stdout": "i0j0\ni0j1\nafter0\ni1j0\ni1j1\nafter1\nskip2\ni3j0\ni3j1\nafter3\ndone\n",
+  "exit": 0
+}

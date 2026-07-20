@@ -1,0 +1,5 @@
+{
+  "desc": "exec_command replaces the shell; the following print never runs (AC1)",
+  "stdout": "hi\n",
+  "exit": 0
+}

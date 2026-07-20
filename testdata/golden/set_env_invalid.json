@@ -1,0 +1,5 @@
+{
+  "desc": "set_env with an invalid name aborts located (AC4)",
+  "exit": 1,
+  "stderr": { "contains": "set_env: invalid environment variable name", "nonEmpty": true }
+}

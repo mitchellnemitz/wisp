@@ -1,0 +1,5 @@
+{
+  "desc": "side-effecting args evaluate left to right; add(mark(1), mark(2)) = 1+2 = 3 (sum3 -- the prior pinned sum2 was the temp-clobber miscompile, now fixed)",
+  "stdout": "mark1\nmark2\nsum3\n",
+  "exit": 0
+}

@@ -1,0 +1,1 @@
+{ "desc": "blank leading param; x binds the second positional argument", "stdout": "22\n", "exit": 0 }

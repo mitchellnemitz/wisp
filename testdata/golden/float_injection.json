@@ -1,0 +1,9 @@
+{
+  "desc": "crafted float string is inert: a clean located abort, never executed",
+  "stdout": "",
+  "exit": 1,
+  "stderr": {
+    "contains": "float(",
+    "nonEmpty": true
+  }
+}

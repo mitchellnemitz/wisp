@@ -1,0 +1,1 @@
+{"desc": "debug of int-keyed dict: int keys bare, string values double-quoted", "stdout": "{1: \"a\", 2: \"b\"}\n", "exit": 0}

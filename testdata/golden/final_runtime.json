@@ -1,0 +1,5 @@
+{
+  "desc": "final binding is evaluated once at runtime and printed",
+  "stdout": "42\n",
+  "exit": 0
+}

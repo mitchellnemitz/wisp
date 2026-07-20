@@ -1,0 +1,5 @@
+{
+  "desc": "hello/print",
+  "stdout": "hello, world\n",
+  "exit": 0
+}

@@ -1,0 +1,1 @@
+{"desc": "AC2: wrap nesting and cause walk: top.message==top; walk cause twice prints top, mid, root; cause(root) is None", "stdout": "top\nmid\nroot\ntrue\n", "exit": 0}

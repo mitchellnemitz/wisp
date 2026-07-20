@@ -1,0 +1,5 @@
+{
+  "desc": "char_at byte model: read ASCII byte and concatenate two bytes forming a multibyte codepoint",
+  "stdout": "c\né\n",
+  "exit": 0
+}

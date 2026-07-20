@@ -1,0 +1,1 @@
+{"desc":"fallible funcref abort reports the builtin name as position, not a source line","stdout":"","exit":1,"stderr":{"contains":"sqrt","nonEmpty":true}}

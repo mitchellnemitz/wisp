@@ -1,0 +1,6 @@
+{
+  "desc": "exec'd cat inherits the script's stdin (AC3)",
+  "stdin": "piped-in\n",
+  "stdout": "piped-in\n",
+  "exit": 0
+}

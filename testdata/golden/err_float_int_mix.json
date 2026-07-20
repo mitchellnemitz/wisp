@@ -1,0 +1,5 @@
+{
+  "desc": "mixing int and float in an operator is a compile error",
+  "compileError": true,
+  "diagContains": "float+float"
+}

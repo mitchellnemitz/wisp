@@ -1,0 +1,5 @@
+{
+  "desc": "AC6: hostile target metacharacters ($(...), backticks, ;, *) are inert -- read_link returns the exact literal target, no command substitution, no PWNED file",
+  "stdout": "$(touch PWNED); `id`; *\n",
+  "exit": 0
+}

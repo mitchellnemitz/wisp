@@ -1,0 +1,5 @@
+{
+  "desc": "a non-canonical int case literal (007) emits its folded canonical value (7), matching the subject 7 at runtime",
+  "stdout": "seven\nother\n",
+  "exit": 0
+}

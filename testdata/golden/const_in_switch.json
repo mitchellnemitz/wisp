@@ -1,0 +1,5 @@
+{
+  "desc": "const refs and folded const-exprs as switch case values emit folded literals",
+  "stdout": "hello\none hour\ntwo minutes\nother\n",
+  "exit": 0
+}

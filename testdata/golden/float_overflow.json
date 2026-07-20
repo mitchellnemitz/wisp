@@ -1,0 +1,9 @@
+{
+  "desc": "float overflow/exponent result aborts located (no inf/nan leaks)",
+  "stdout": "",
+  "exit": 1,
+  "stderr": {
+    "contains": "float",
+    "nonEmpty": true
+  }
+}

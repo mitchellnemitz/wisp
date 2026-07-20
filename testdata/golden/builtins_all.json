@@ -1,0 +1,5 @@
+{
+  "desc": "a handful of M1-era scalar/string builtins (print/string/int/bool/length/lower/upper/trim/replace); full builtin dispatch coverage is enforced separately by TestBuiltinDispatch_AllNamesCovered in internal/codegen, not by this fixture.",
+  "stdout": "plain\n42\ntrue\nkept\n8\nfalse\ntrue\ntrue\n5\nmixedcase\nMIXEDCASE\nspaced\na_b_c\n",
+  "exit": 0
+}

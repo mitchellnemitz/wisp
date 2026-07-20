@@ -1,0 +1,1 @@
+{"desc": "filter over array (regression): existing array behavior is unchanged after Optional overload", "stdout": "2\n4\n", "exit": 0}

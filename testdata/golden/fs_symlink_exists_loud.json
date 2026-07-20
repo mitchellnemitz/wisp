@@ -1,0 +1,6 @@
+{
+  "desc": "symlink whose link_path already exists aborts located (AC4)",
+  "stdout": "",
+  "exit": 1,
+  "stderr": { "contains": "symlink", "nonEmpty": true }
+}
