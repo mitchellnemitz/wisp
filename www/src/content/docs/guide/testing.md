@@ -1,4 +1,7 @@
-# Testing
+---
+title: Testing
+---
+
 
 wisp ships a native test framework integrated into the compiler. Tests are first-class:
 the `test` construct, the assertion builtins, and the `wisp test` runner are part of the
@@ -407,7 +410,7 @@ at least one shell.
 
 ## Complete example
 
-See [examples/testing/](../../examples/testing/) for a working example: `calc.wisp`
+See [examples/testing/](https://github.com/mitchellnemitz/wisp/tree/main/examples/testing/) for a working example: `calc.wisp`
 (library), `calc_test.wisp` (test file), and `wisp.json` (project root marker).
 
 Run it from the repository root:

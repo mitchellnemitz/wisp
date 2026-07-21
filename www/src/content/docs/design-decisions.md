@@ -1,12 +1,15 @@
-# Design decisions
+---
+title: Design decisions
+---
+
 
 wisp compiles a small, explicit, C-like language to POSIX shell. This document
 explains why it is shaped the way it is: the invariants it will not trade away,
 the alternatives it considered and rejected, and the features it deliberately
 leaves out. It condenses roughly 140 per-feature design specs into one durable
 record, organized by theme rather than by milestone. For syntax and semantics,
-see the [language reference](guide/language.md); for how the compiler is built,
-see [internals](guide/internals.md).
+see the [language reference](/guide/language/); for how the compiler is built,
+see [internals](/guide/internals/).
 
 ## Why compile to shell at all
 

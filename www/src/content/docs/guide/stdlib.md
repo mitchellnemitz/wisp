@@ -1,4 +1,7 @@
-# Standard library
+---
+title: Standard library
+---
+
 
 Every function here is a builtin provided by the compiler. A small set of
 always-in-scope builtins (`print`, `length`, the `to_<type>` conversions,
@@ -7,7 +10,7 @@ module and are reachable only as `<module>.<member>` after an `import
 "<module>"` (`fs`, `string`, `array`, `dict`, `math`, `env`, `process`,
 `regex`, `json`, ...); there is no bare/flat spelling for these. Builtin
 names that stay bare after the module migration (see
-[Referenceable builtins](language.md#referenceable-builtins) for the list of
+[Referenceable builtins](/guide/language/#referenceable-builtins) for the list of
 builtins that moved to a module) remain reserved — you cannot declare a
 function, parameter, or variable with one of those names, or with a reserved
 constant or type name (`Optional`, `Result`, `RunResult`, `Process`). Every
@@ -105,7 +108,7 @@ to_bool(x: int | float | string) -> bool
 
 From an int, `0` is false and nonzero is true. From a float, numeric zero is
 false. From a string, only `"true"` and `"false"` convert; anything else
-aborts. See the [language reference](language.md#booleans) for the full table.
+aborts. See the [language reference](/guide/language/#booleans) for the full table.
 
 ```wisp
 to_bool(0)        // false
@@ -119,7 +122,7 @@ error(msg: string) -> error
 ```
 
 Constructs an error handle whose `message` field is `msg` and `code` field is `0`.
-See [error handling](language.md#error-handling).
+See [error handling](/guide/language/#error-handling).
 
 ### error_with
 
@@ -382,7 +385,7 @@ The form is chosen by the type of the first argument.
 String form: `Some(i)` with the byte index of the first occurrence of `sub`, or
 `None` if absent. An empty `sub` returns `Some(0)`. The index is a byte offset
 and is the same under every shell, including for UTF-8 multibyte input. See
-[Optional](language.md#optional) for the access builtins
+[Optional](/guide/language/#optional) for the access builtins
 (`is_some`/`unwrap`/`unwrap_or`).
 
 Array form: `Some(i)` with the index of the first element equal to `x`, or
@@ -985,7 +988,7 @@ array.all(xs: T[], f: fn(T) -> bool) -> bool
 ```
 
 `find` returns `Some(i)` with the index of the first element where `f` is true,
-or `None` when no element matches (see [Optional](language.md#optional)). `any`
+or `None` when no element matches (see [Optional](/guide/language/#optional)). `any`
 is true when `f` holds for at least one element (false for an empty array); `all`
 is true when it holds for every element (true for an empty array). All three stop
 at the first decisive element.
@@ -1200,7 +1203,7 @@ dict.get(d: {K: V}, k: K) -> Optional[V]
 ```
 
 Returns `Some(d[k])` if `k` is present, otherwise `None` (see
-[Optional](language.md#optional)). The `Optional`-returning counterpart to
+[Optional](/guide/language/#optional)). The `Optional`-returning counterpart to
 `get_or`; use it when absence needs to be distinguished from a value rather than
 folded into a fallback.
 
@@ -1262,7 +1265,7 @@ dict.clear(d)   // d is now {}
 
 `Optional[T]` is a value that is either `Some(x)` or `None`. The access builtins
 are the only way to read the contained value; see the
-[Optional language guide](language.md#optional) for the full type, the `None`
+[Optional language guide](/guide/language/#optional) for the full type, the `None`
 rules, and the opacity (`to_string()`, interpolation, and use as a `switch` subject
 are rejected). `==`/`!=` are the one exception: they are supported when the inner
 type is comparable (`int`, `bool`, `string`, or a nested comparable `Optional`),
@@ -1323,7 +1326,7 @@ Here `xs` is an `int[]` and `isEven` is a user-defined predicate (`fn isEven(n: 
 
 `Result[T]` is a value that is either `Ok(x)` or `Err(e)` (where `e` is the
 built-in `error` handle). The access builtins are the only way to read the
-contents; see the [Result language guide](language.md#result) for the full type,
+contents; see the [Result language guide](/guide/language/#result) for the full type,
 the `Ok`/`Err` rules, and the opacity.
 
 ### is_ok, is_err
@@ -3262,7 +3265,7 @@ and walk it with `get` / `at` / the accessors.
 
 These builtins are available inside `test` blocks in `*_test.wisp` files. On failure
 they immediately fail the current test with a located message (file, line, column) and
-render values through `debug()` where applicable. See the [testing guide](testing.md)
+render values through `debug()` where applicable. See the [testing guide](/guide/testing/)
 for full usage.
 
 ### assert

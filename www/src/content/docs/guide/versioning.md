@@ -1,4 +1,7 @@
-# Versioning and compatibility
+---
+title: Versioning and compatibility
+---
+
 
 ## Policy
 
@@ -15,7 +18,7 @@ reaches `1.0.0`.
 
 ## Reading the CHANGELOG
 
-[`CHANGELOG.md`](../../CHANGELOG.md) at the repository root lists every
+[`CHANGELOG.md`](https://github.com/mitchellnemitz/wisp/blob/main/CHANGELOG.md) at the repository root lists every
 notable change, grouped under Keep a Changelog
 (https://keepachangelog.com/en/1.1.0/) categories:
 

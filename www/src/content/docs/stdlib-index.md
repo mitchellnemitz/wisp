@@ -1,12 +1,15 @@
-# Standard library index
+---
+title: Standard library index
+---
+
 
 A terse, complete index of the wisp standard library: what exists and what is
 proposed. It is the working list for future stdlib milestones, not a promise of
 final signatures. Every name is `snake_case` (the permanent convention; see
-[the stdlib guide](guide/stdlib.md#naming-convention)).
+[the stdlib guide](/guide/stdlib/#naming-convention)).
 
 Legend: `[x]` implemented, `[ ]` proposed. Implemented functions are documented
-in the [standard library reference](guide/stdlib.md). Signatures use `T`/`U` for
+in the [standard library reference](/guide/stdlib/). Signatures use `T`/`U` for
 generic element types and `K`/`V` for dict key/value types.
 
 A `[ref]` tag below marks a builtin that is also referenceable as a first-class
@@ -14,7 +17,7 @@ A `[ref]` tag below marks a builtin that is also referenceable as a first-class
 three classes: monomorphic (no annotation needed), overloaded (annotation
 selects the arm), and generic (annotation selects the container shape). All
 other builtins are call-only; wrap them in a `fn` to pass them as a value. See
-the [function references](guide/language.md#function-references) section for
+the [function references](/guide/language/#function-references) section for
 the full rules, per-class examples, and the fallible-funcref position-
 degradation note.
 
@@ -294,7 +297,7 @@ POSIX ERE, whole-match only, byte-based under `LC_ALL=C`. A malformed pattern is
 
 The first core module: a reserved namespace opted into with `import "json"`.
 `json.Value` is an opaque handle storing canonical JSON text (numbers/strings
-verbatim, so no precision loss). See the [stdlib guide](guide/stdlib.md#json-import-json).
+verbatim, so no precision loss). See the [stdlib guide](/guide/stdlib/#json-import-json).
 
 - `[x] json.decode[T](s: string) -> T` -- validate + parse; `T` defaults to `json.Value`, or `string`/`int`/`float`/`bool`; malformed aborts located
 - `[x] json.encode(v: json.Value) -> string` -- canonical text
@@ -383,7 +386,7 @@ These are a starting point, to be turned into specs one at a time.
 ## Testing
 
 These builtins are only meaningful inside `*_test.wisp` files (test bodies, `setup`, `teardown`).
-Documented in [the stdlib guide](guide/stdlib.md#testing) and the [testing guide](guide/testing.md).
+Documented in [the stdlib guide](/guide/stdlib/#testing) and the [testing guide](/guide/testing/).
 
 - `[x] assert(cond: bool, msg: string = "") -> void`
 - `[x] assert_eq[T: comparable](got: T, want: T) -> void`
