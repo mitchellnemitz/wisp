@@ -26,7 +26,7 @@ jobs:
       - uses: withastro/action@e84f40bd8d2caa9e768ec82ad30dd81f0b280853 # v6.1.2
         with:
           path: www
-          node-version: 20
+          node-version: 22
   deploy:
     needs: build
     runs-on: ubuntu-latest
