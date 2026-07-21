@@ -1,5 +1,49 @@
 ---
 title: wisp
+description: A small, explicit, C-like language that compiles to POSIX shell.
+template: splash
+hero:
+  tagline: "A small, explicit, C-like language that compiles to POSIX shell. One #!/bin/sh output that runs unmodified on ash, busybox, dash, bash, and zsh."
+  actions:
+    - text: Get started
+      link: /wisp/guide/getting-started/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/mitchellnemitz/wisp
+      icon: external
+      variant: minimal
 ---
 
-Placeholder home page. Replaced by the marketing landing page in a later task.
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Shell scripting without the footguns
+
+The compiler inserts every quote correctly and enforces an explicit type system, so the quoting, word-splitting, and implicit-coercion bugs that plague hand-written shell become structurally impossible.
+
+```wisp
+fn main() -> int {
+    print("hello, world")
+    return 0
+}
+```
+
+<CardGrid stagger>
+	<Card title="Runs on any POSIX shell" icon="seti:shell">
+		One `#!/bin/sh` output tested across dash, busybox ash, bash, and zsh. No runtime beyond POSIX sh and the applets busybox guarantees.
+	</Card>
+	<Card title="Type-safe by construction" icon="approve-check">
+		An explicit type system with no implicit coercion. The compiler quotes every expansion, so injection and word-splitting bugs cannot occur.
+	</Card>
+	<Card title="Single static binary" icon="rocket">
+		The compiler is written in Go and ships as a static binary that runs inside minimal containers.
+	</Card>
+	<Card title="Testing is first-class" icon="open-book">
+		`wisp test` runs `*_test.wisp` cross-shell; `--coverage` reports honest line coverage against the original source.
+	</Card>
+</CardGrid>
+
+## Install
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/mitchellnemitz/wisp/main/install.sh | sh
+```
