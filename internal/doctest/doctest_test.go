@@ -92,12 +92,12 @@ func TestExamplesCompileRunAndMatchOutput(t *testing.T) {
 func docFiles(t *testing.T) []string {
 	t.Helper()
 	var files []string
-	guide, err := filepath.Glob(filepath.Join(repoRoot, "docs", "guide", "*.md"))
+	guide, err := filepath.Glob(filepath.Join(repoRoot, "www", "src", "content", "docs", "guide", "*.md"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	files = append(files, guide...)
-	for _, f := range []string{"docs/README.md", "README.md", "CONTRIBUTING.md", "AGENTS.md"} {
+	for _, f := range []string{"README.md", "CONTRIBUTING.md", "AGENTS.md"} {
 		files = append(files, filepath.Join(repoRoot, f))
 	}
 	return files

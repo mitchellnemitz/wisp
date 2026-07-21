@@ -1,5 +1,6 @@
-// Package docslint guards docs/stdlib-index.md and docs/guide/language.md
-// against drift from the compiler's builtin tables.
+// Package docslint guards www/src/content/docs/stdlib-index.md and
+// www/src/content/docs/guide/language.md against drift from the compiler's
+// builtin tables.
 package docslint
 
 import (

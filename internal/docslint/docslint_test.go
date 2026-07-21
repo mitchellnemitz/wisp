@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	stdlibIndexPath = "../../docs/stdlib-index.md"
-	languageMdPath  = "../../docs/guide/language.md"
+	stdlibIndexPath = "../../www/src/content/docs/stdlib-index.md"
+	languageMdPath  = "../../www/src/content/docs/guide/language.md"
 )
 
 func TestStdlibIndexNoStaleBareSpelling(t *testing.T) {

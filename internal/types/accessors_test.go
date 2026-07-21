@@ -13,7 +13,7 @@ import (
 // TestBuiltinsAreSnakeCase enforces the standard library's permanent naming
 // convention: every builtin is snake_case (lowercase, digits, underscores). This
 // fails CI if a camelCase or PascalCase builtin is ever added. See AGENTS.md and
-// docs/guide/stdlib.md.
+// www/src/content/docs/guide/stdlib.md.
 func TestBuiltinsAreSnakeCase(t *testing.T) {
 	snake := regexp.MustCompile(`^[a-z][a-z0-9_]*$`)
 	for _, name := range types.BuiltinNames() {
