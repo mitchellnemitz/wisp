@@ -5,6 +5,10 @@ template: splash
 hero:
   tagline: "A small, explicit, C-like language that compiles to POSIX shell. One #!/bin/sh output that runs unmodified on ash, busybox, dash, bash, and zsh."
   actions:
+    # NOTE: this link hardcodes the `/wisp` base. Starlight does not
+    # base-prefix hero action links, and the link-validator rejects
+    # relative links, so the base must be inline here. If `base` in
+    # astro.config.mjs changes, update this literal too.
     - text: Get started
       link: /wisp/guide/getting-started/
       icon: right-arrow
