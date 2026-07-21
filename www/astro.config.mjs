@@ -5,6 +5,7 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import { unified } from '@astrojs/markdown-remark';
 import { visit } from 'unist-util-visit';
+import starlightLinksValidator from 'starlight-links-validator';
 
 // Resolve the wisp grammar relative to this config file, not the process cwd,
 // so the build works regardless of the directory it is invoked from.
@@ -62,7 +63,11 @@ export default defineConfig({
 					{ slug: 'design-decisions' },
 				] },
 			],
-			// plugins added in Task 4
+			plugins: [
+				starlightLinksValidator({
+					errorOnInvalidHashes: false, // FR-010: #anchor fragments out of scope
+				}),
+			],
 		}),
 	],
 });
