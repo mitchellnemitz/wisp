@@ -92,7 +92,7 @@ minor version bump, may contain a breaking language change. If a `.wisp` file
 that worked with an older `wisp` now fails with an opaque parse error, the
 syntax it uses may have been changed or removed -- check
 [`CHANGELOG.md`](https://github.com/mitchellnemitz/wisp/blob/main/CHANGELOG.md) for what changed. See
-[`docs/guide/versioning.md`](/guide/versioning/) for the full policy.
+[the versioning guide](/guide/versioning/) for the full policy.
 
 ## Write and run your first test (with coverage)
 
