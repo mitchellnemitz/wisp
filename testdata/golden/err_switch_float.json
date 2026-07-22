@@ -1,0 +1,1 @@
+{ "desc": "switch on a float subject is rejected (float is not comparable)", "compileError": true, "diagContains": "must be int, string, or bool, got float" }

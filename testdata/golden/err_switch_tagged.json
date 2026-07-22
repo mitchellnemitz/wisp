@@ -1,0 +1,1 @@
+{ "desc": "switch subject rejected for a tagged-union enum (match-only)", "compileError": true, "diagContains": "switch subject must be int, string, or bool, got Expr" }

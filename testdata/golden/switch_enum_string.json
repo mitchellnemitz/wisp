@@ -1,0 +1,5 @@
+{
+  "desc": "string value enum with shell metacharacters: switch matches each variant, == on string value enums",
+  "stdout": "semi\nstar\nnl\nquote\nfalse\n",
+  "exit": 0
+}

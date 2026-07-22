@@ -2,6 +2,7 @@ package types
 
 import (
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/mitchellnemitz/wisp/internal/ast"
@@ -773,26 +774,32 @@ func (c *checker) checkFor(n *ast.ForStmt) {
 
 func (c *checker) checkSwitch(n *ast.SwitchStmt) {
 	subj := c.checkExpr(n.Subject)
-	// rule 8: subject must be int or string. A bare type variable gets the
-	// dedicated bare-T message instead (and only that one).
+	// rule 8: subject must be int, string, or bool. A bare type variable gets
+	// the dedicated bare-T message instead (and only that one).
 	tvSubj := c.rejectTypeVar(n.Subject.Pos(), subj, "switch on")
-	// rule 8: subject must be int or string, or (R5) an enum -- an enum subject
-	// folds to its int at runtime and enables variant-coverage exhaustiveness.
-	isEnumSubj := !tvSubj && subj != Invalid && c.isEnumType(subj)
-	if !tvSubj && !isEnumSubj && subj != Invalid && subj != Int && subj != String {
-		c.errf(n.Subject.Pos(), "switch subject must be int or string, got %s", subj)
+	// A value enum (: int/string/bool) is a valid switch subject; a tagged-union
+	// enum is rejected as a handle. bool joins int/string as a discrete subject.
+	isEnumSubj := !tvSubj && subj != Invalid && c.isValueEnum(subj)
+	if !tvSubj && !isEnumSubj && subj != Invalid && subj != Int && subj != String && subj != Bool {
+		c.errf(n.Subject.Pos(), "switch subject must be int, string, or bool, got %s", subj)
 	}
 	// For an enum subject, track which variant values remain uncovered so a
 	// defaultless switch can be checked for exhaustiveness (mirrors the match
 	// machinery at the bottom of checkMatch).
-	var remaining map[int64]string
+	var remaining map[interface{}]string
 	var subjEnum *EnumInfo
 	if isEnumSubj {
 		subjEnum = c.info.Enums[string(subj)]
-		remaining = map[int64]string{}
+		remaining = map[interface{}]string{}
 		for i, name := range subjEnum.Variants {
-			remaining[subjEnum.Consts[i].(int64)] = name
+			remaining[subjEnum.Consts[i]] = name
 		}
+	}
+	// A bool subject has a fixed two-value domain; both case true and case false
+	// present makes it exhaustive with no default (mirroring an exhaustive enum).
+	var remainingBool map[bool]bool
+	if !isEnumSubj && subj == Bool {
+		remainingBool = map[bool]bool{true: true, false: true}
 	}
 	// seenCaseValues tracks folded values across all cases for duplicate detection.
 	seenCaseValues := map[interface{}]bool{}
@@ -829,8 +836,8 @@ func (c *checker) checkSwitch(n *ast.SwitchStmt) {
 					typeOK = true
 				}
 			} else {
-				typeOK = (subj == Int || subj == String) && vt != Invalid && vt == subj
-				if subj != Invalid && subj != Int && subj != String {
+				typeOK = (subj == Int || subj == String || subj == Bool) && vt != Invalid && vt == subj
+				if subj != Invalid && subj != Int && subj != String && subj != Bool {
 					// subject already errored; skip value type comparison
 				} else if vt != Invalid && subj != Invalid && vt != subj {
 					c.errf(v.Pos(), "case value has type %s, but switch subject is %s", vt, subj)
@@ -846,8 +853,11 @@ func (c *checker) checkSwitch(n *ast.SwitchStmt) {
 						c.errf(v.Pos(), "duplicate switch case: %v", fv)
 					} else {
 						seenCaseValues[fv] = true
-						if iv, ok := fv.(int64); ok {
-							delete(remaining, iv)
+						if remaining != nil {
+							delete(remaining, fv) // interface{} key: int64 | string | bool value-enum const
+						}
+						if bv, ok := fv.(bool); ok && remainingBool != nil {
+							delete(remainingBool, bv)
 						}
 					}
 				}
@@ -875,6 +885,19 @@ func (c *checker) checkSwitch(n *ast.SwitchStmt) {
 			}
 			sort.Strings(missing)
 			c.errf(n.KwPos, "switch is not exhaustive: missing %s", strings.Join(missing, ", "))
+		}
+		return
+	}
+	if remainingBool != nil {
+		// A bool subject is exhaustive iff both true and false are covered; no
+		// default is then required (mirrors the exhaustive-enum rule).
+		if len(remainingBool) > 0 {
+			missing := make([]string, 0, len(remainingBool))
+			for b := range remainingBool {
+				missing = append(missing, strconv.FormatBool(b))
+			}
+			sort.Strings(missing)
+			c.errf(n.KwPos, "switch on bool is not exhaustive: missing case %s", strings.Join(missing, ", "))
 		}
 		return
 	}

@@ -226,9 +226,11 @@ func TestRule8_SwitchString_Positive(t *testing.T) {
 switch (s) { case "a" { print("a") } default {} }`))
 }
 
-func TestRule8_SwitchBool_Negative(t *testing.T) {
-	expectErr(t, wrapMain(`let b: bool = true
-switch (b) { case true { print("t") } default {} }`), "subject must be int or string")
+func TestRule8_SwitchBool_Positive(t *testing.T) {
+	// bool joined int/string as a valid switch subject (Task 11); this no
+	// longer errors.
+	expectOK(t, wrapMain(`let b: bool = true
+switch (b) { case true { print("t") } default {} }`))
 }
 
 func TestRule8_CaseTypeMismatch_Negative(t *testing.T) {

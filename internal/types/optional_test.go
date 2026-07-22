@@ -174,7 +174,7 @@ func TestOptionalInterpolationRejected(t *testing.T) {
 }
 
 func TestOptionalSwitchSubjectRejected(t *testing.T) {
-	d := expectErr(t, wrapMain(`let o: Optional[int] = Some(1)`+"\n"+`switch (o) { default { } }`), "switch subject must be int or string")
+	d := expectErr(t, wrapMain(`let o: Optional[int] = Some(1)`+"\n"+`switch (o) { default { } }`), "switch subject must be int, string, or bool")
 	assertNoSentinel(t, d)
 }
 
