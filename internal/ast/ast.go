@@ -174,14 +174,17 @@ type EnumVariant struct {
 // EnumDecl is `enum Name { V1[ = expr], V2, ... }`. Variants are comma- and/or
 // newline-separated with an optional trailing comma; at least one is required.
 // Multiline is true iff a real newline (not `;`) separated variants in the body,
-// matching the StructDecl rule, so wisp fmt can preserve the layout. v1 enums are
-// module-local: there is no exported form (the parser rejects `export enum`).
+// matching the StructDecl rule, so wisp fmt can preserve the layout. Exported
+// records an `export` modifier, mirroring StructDecl; ExportPos is the position
+// of the `export` keyword when present.
 type EnumDecl struct {
 	KwPos     token.Position // position of the 'enum' keyword
 	NamePos   token.Position
 	Name      string
 	Variants  []EnumVariant
 	Multiline bool
+	Exported  bool
+	ExportPos token.Position
 }
 
 func (d *EnumDecl) Pos() token.Position { return d.KwPos }
