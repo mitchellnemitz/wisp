@@ -316,16 +316,23 @@ func (p *printer) structDecl(sd *ast.StructDecl) {
 // `export ` prefix, mirroring export struct/fn/const.
 func (p *printer) enumDecl(ed *ast.EnumDecl) {
 	variant := func(v ast.EnumVariant) string {
-		if v.Value != nil {
-			return v.Name + " = " + p.expr(v.Value, 0)
+		name := v.Name
+		if v.Payload != "" {
+			name += "(" + string(v.Payload) + ")"
 		}
-		return v.Name
+		if v.Value != nil {
+			return name + " = " + p.expr(v.Value, 0)
+		}
+		return name
 	}
 	prefix := ""
 	if ed.Exported {
 		prefix = "export "
 	}
 	head := prefix + "enum " + ed.Name
+	if ed.Backing != "" {
+		head += ": " + string(ed.Backing)
+	}
 	if ed.Multiline {
 		items := make([]string, len(ed.Variants))
 		for i, v := range ed.Variants {
