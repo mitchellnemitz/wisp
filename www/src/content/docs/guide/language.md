@@ -257,9 +257,8 @@ fn process(items: string[]) -> int {
 }
 ```
 
-`final` is now a reserved keyword. Any program that used `final` as an
-identifier - a variable name, parameter name, or function name - no longer
-compiles and must rename that binding.
+`final` is a reserved keyword and cannot be used as an identifier - a variable
+name, parameter name, or function name.
 
 ## Blank identifier
 
@@ -283,12 +282,8 @@ nothing, reading it as a value is a compile error:
 let x: int = _   // error: cannot use _ as a value
 ```
 
-This is a breaking change: earlier wisp let you bind `_` as an ordinary
-identifier and read it back. Any existing program that reads `_` as a value now
-fails to compile and must rename that binding to a normal identifier.
-
-In `match`, `_` remains the wildcard pattern and a `Variant(_)` arm still
-discards the payload, exactly as before.
+In `match`, `_` is the wildcard pattern and a `Variant(_)` arm discards the
+payload.
 
 ## Operators
 
@@ -917,7 +912,7 @@ membership builtins (`contains`, `index_of`, `unique`, `assert_eq`/`assert_ne`,
 of a comparable type also supports `==` without satisfying `comparable`.
 
 **`to_int()` conversion.** `to_int(e)` returns the underlying int value. The reverse
-(`int` to enum) is not provided in v1.
+(`int` to enum) is not provided.
 
 **Exhaustive `switch`.** When the subject of a `switch` is an enum, the
 checker requires every variant to appear in a `case`, unless a `default` arm
@@ -935,18 +930,17 @@ fn describe(c: Color) -> string {
 }
 ```
 
-Non-enum (`int` or `string`) switches still require a `default`, as before.
+Non-enum (`int` or `string`) switches require a `default`.
 
 Note: an exhaustive defaultless enum switch whose every case returns is a
 return-path terminator, the same as an exhaustive `match` -- a function
 whose non-void body ends with one needs no trailing `return`.
 
 **Name rendering deferred.** `to_string(e)` and `debug(e)` on an enum are
-compile errors in v1. Use `to_int(e)` for the value, or `switch` over the
+compile errors. Use `to_int(e)` for the value, or `switch` over the
 variants to produce a name.
 
-**Module scope.** Enums are module-local. `export enum` is not supported in
-v1.
+**Module scope.** Enums are module-local. `export enum` is not supported.
 
 ## Type aliases
 

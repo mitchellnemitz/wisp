@@ -328,7 +328,7 @@ verbatim, so no precision loss). See the [stdlib guide](/guide/stdlib/#json-impo
   - [x] M-gen-4: generic structs (`struct Box[T]`) -- IMPLEMENTED (R7-generics-mgen4).
   Explicit type arguments at call sites (`f[int](...)`) remain unsupported; the
   postfix `[` is array indexing, so that syntax is decided in a later slice.
-- [x] Tuples (`(T1, T2, ...)`, n >= 2): fixed-arity, immutable, opaque -- IMPLEMENTED (tuples milestone). `zip` also shipped. `run_full` and tuple destructuring remain deferred.
+- [x] Tuples (`(T1, T2, ...)`, n >= 2): fixed-arity, immutable, opaque -- IMPLEMENTED. `zip` is also implemented. `run_full` and tuple destructuring remain deferred.
 - [x] An optional/maybe type (`Optional[T]` = `Some(T) | None`) -- IMPLEMENTED.
   `find`/`index_of`/`last_index_of` now return `Optional[int]` and the dict
   accessor `get(d, k) -> Optional[V]` was added, alongside the access builtins
@@ -337,8 +337,7 @@ verbatim, so no precision loss). See the [stdlib guide](/guide/stdlib/#json-impo
   `first`/`last`/`char_at` keep their catchable aborts.
 - [x] `match` binding + `Result[T]` -- IMPLEMENTED. `match (o) { case Some(x) { }
   case None { } }` (and `Ok(x)`/`Err(e)`) binds the matched-variant payload into
-  the matching arm's block only. (`if let` was removed in favor of `match`;
-  see commit 38b4278.) `Result[T]` is a tagged
+  the matching arm's block only. `Result[T]` is a tagged
   `Ok(T) | Err(error)` value (single type parameter; the error payload is always
   the built-in `error` handle, conceptually `Result[T, error]`), with access
   builtins `is_ok`/`is_err`/`unwrap`/`unwrap_err`/`unwrap_or` -- `unwrap`/`unwrap_or`

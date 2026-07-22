@@ -8,16 +8,14 @@ always-in-scope builtins (`print`, `length`, the `to_<type>` conversions,
 `assert`, and similar) need no import. Most builtins, though, live in a
 module and are reachable only as `<module>.<member>` after an `import
 "<module>"` (`fs`, `string`, `array`, `dict`, `math`, `env`, `process`,
-`regex`, `json`, ...); there is no bare/flat spelling for these. Builtin
-names that stay bare after the module migration (see
-[Referenceable builtins](/guide/language/#referenceable-builtins) for the list of
-builtins that moved to a module) remain reserved — you cannot declare a
-function, parameter, or variable with one of those names, or with a reserved
-constant or type name (`Optional`, `Result`, `RunResult`, `Process`). Every
-builtin that moved to a core module had its bare spelling freed and may be
-reused as an identifier; this was a deliberate choice when builtins were
-moved into modules, not an oversight. Builtins are emitted into the output
-only when used, so unused ones cost nothing.
+`regex`, `json`, ...); there is no bare/flat spelling for these. The
+always-in-scope builtins (see
+[Referenceable builtins](/guide/language/#referenceable-builtins) for the list)
+are reserved — you cannot declare a function, parameter, or variable with one
+of those names, or with a reserved constant or type name (`Optional`,
+`Result`, `RunResult`, `Process`). A module member's bare name is not reserved
+and may be used as an identifier. Builtins are emitted into the output only
+when used, so unused ones cost nothing.
 
 String arguments and results are inert data. A value that contains shell-active
 text flows through these functions unchanged and is never executed. Operations
@@ -178,7 +176,7 @@ match (cause(cur)) {
 }
 ```
 
-**v1 non-goals:** there is no `e.cause` field (use the `cause` builtin); no
+**Non-goals:** there is no `e.cause` field (use the `cause` builtin); no
 automatic cause-chain printing on an uncaught abort (only the top-level message
 is printed); no `root_cause` or `errors.Is`-style helpers yet.
 
@@ -272,10 +270,8 @@ print(debug(xs), stderr)
 double-quote characters and newlines inside the string are NOT escaped. This
 is a best-effort debug representation, not a serialization format.
 
-**Compatibility note:** `debug` is a reserved builtin name. Any pre-existing
-user identifier named `debug` -- function, `let` binding, parameter,
-`struct`, or `const` -- must be renamed. This is the one source-breaking
-effect of adding this builtin.
+**Note:** `debug` is a reserved builtin name and cannot be used as a user
+identifier -- function, `let` binding, parameter, `struct`, or `const`.
 
 ## Strings
 
@@ -1664,7 +1660,7 @@ normally. The function is safe in pipelines and automated scripts; it never abor
 because `stty` failed.
 
 **Caveats:** a SIGINT (Ctrl-C) received during the read may leave the terminal
-with echo off. To recover, type `stty echo` blind and press Enter. v1 reads a
+with echo off. To recover, type `stty echo` blind and press Enter. It reads a
 whole line with echo suppressed; single-keypress raw-mode reads are not
 supported.
 
@@ -2199,7 +2195,7 @@ abort. Caller owns cleanup -- remove the file with `remove_file` and the
 directory with `remove_dir` when done.
 
 `mktemp` is not strict POSIX but is present on every target wisp supports.
-No template or suffix control in v1 (uses the system default `$TMPDIR`/`/tmp`
+No template or suffix control (uses the system default `$TMPDIR`/`/tmp`
 prefix).
 
 `mtime` (modification time as an epoch integer) is a documented non-goal: no
@@ -2380,7 +2376,7 @@ an option and an `=`-containing name as an assignment. Use a path-qualified
 form (`./cmd` or an absolute path). This is a documented limitation, not a
 checked error; the effect surfaces at runtime through the normal exit-code path.
 
-**Non-goals (v1).** No clean-slate environment (`env -i`); no env-var unset.
+**Non-goals.** No clean-slate environment (`env -i`); no env-var unset.
 
 **Dependency.** Uses the `env` utility (POSIX; present on every target).
 
@@ -2474,7 +2470,7 @@ fn main() -> int {
 Register a wisp function to run when the process receives a named signal or
 exits. These are exit and signal HOOKS for cleanup and graceful shutdown -- not
 full process supervision. Forwarding signals to or reaping a long-running child
-needs background processes and `wait` (a future feature); v1 delivers the hooks.
+needs background processes and `wait` (a future feature); wisp delivers the hooks.
 
 Both builtins lower to the shell `trap` builtin. The handler is a user-declared
 `fn() -> void`; its funcref lowers to its compiler-assigned mangled shell-function
@@ -3001,7 +2997,7 @@ fn main(args: string[]) -> int {
 }
 ```
 
-**Non-goals (v1).** No short-flag bundling (`-abc`), no attached short value
+**Non-goals.** No short-flag bundling (`-abc`), no attached short value
 (`-ovalue`); use `-o value` or `-o=value`. No alias resolution (`-v` vs
 `--verbose`); OR the alternatives yourself. No type coercion (values are
 strings; convert with `to_int(...)` etc.). No required-flag checks or

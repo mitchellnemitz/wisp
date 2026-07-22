@@ -15,7 +15,7 @@ structurally impossible.
 
 ## Status
 
-The full v1 language and its standard library are implemented: the type system,
+The full language and its standard library are implemented: the type system,
 control flow (including `match`), functions, structs, arrays, dicts, tuples,
 `Optional`/`Result`, generics with `comparable`/`numeric` bounds, error handling,
 constants (`const`/`final`, including `export const`), multi-file modules
@@ -134,31 +134,13 @@ language's design is recorded in [design decisions](https://mitchellnemitz.githu
   interpolation, switch cases, dict keys, and error messages are inert data, never executed.
 - Developer experience: clear diagnostics, readable output, and source maps.
 
-## Build history (delivered)
+## Testing and supported shells
 
-The language was built milestone by milestone; all of the below are implemented and
-merged:
-
-- M1 skeleton (lexer/parser/checker/codegen/CLI)
-- M2 source maps + located aborts + source-context diagnostics
-- M3 aggregates + float (struct, array, dict, `main(args)`)
-- M4 first-class function references + `map`/`filter`/`each`
-- M5 error handling (`try`/`catch`/`finally` + `throw` + `error`)
-- M6 core stdlib + `wisp fmt` formatter + "did you mean" diagnostics
-- M7 I/O builtins (`env`, `has_env`, `read_file`, `write_file`, `append_file`, `run`, `exit`)
-- M8 multi-file modules (`export`, `include`, `import`, tree-shaken into one `.sh`)
-- M9 package tool (`wisp add`/`install`/`remove`, `wisp.json` + `wisp.lock`)
-- `Optional[T]`/`Result[T]` with `match`, plus the access and combinator builtins
-- Generics with `comparable`/`numeric` bounds, and generic structs
-- Tuples, `const`/`final` (and `export const`), the `_` blank identifier, `debug(x)`
-- Stdlib expansion: collections, numeric/math, string round-out, regex, filesystem,
-  process, and I/O-tail builtins
-
-Each ships with golden fixtures run under busybox `ash`, `dash`, `bash`, and `zsh`, a
-pinned ShellCheck gate, and a static-binary-in-busybox check in CI. The supported shell
-set is exactly what the CI matrix pins (those four, at the versions CI installs); macOS
-system bash/zsh are covered by the same single-`#!/bin/sh`-script contract, with no
-minimum sub-version promised beyond a POSIX-mode-capable build.
+The compiler ships with golden fixtures run under busybox `ash`, `dash`, `bash`, and
+`zsh`, a pinned ShellCheck gate, and a static-binary-in-busybox check in CI. The
+supported shell set is exactly what the CI matrix pins (those four, at the versions CI
+installs); macOS system bash/zsh are covered by the same single-`#!/bin/sh`-script
+contract, with no minimum sub-version promised beyond a POSIX-mode-capable build.
 
 ## License
 

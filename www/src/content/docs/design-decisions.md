@@ -175,25 +175,20 @@ explicitly (`Some(name)` or `Some(_)`); a bare `Some` with no parentheses is a
 compile error, so there is no way to accidentally ignore a value you meant to
 use.
 
-This is the second design of variant destructuring, not the first. The
-original was `if let Some(x) = expr { ... } else { ... }`, and it shipped
-first because it was the natural follow-up to `Optional` alone. It was
-retired in favor of `match` for two concrete reasons. First, syntax
-inconsistency: every other conditional form in the language wraps its test in
-parentheses (`if (cond)`, `while (cond)`, `switch (subject)`); `if let` was the
-one construct where the scrutinee was unparenthesized and `=` was not the
-assignment operator, so every reader had to special-case one construct's
-grammar. Second, ergonomics: unwrapping a `Result` needs both arms
-simultaneously, and `if let` had no dual-arm form - you either evaluated the
-scrutinee twice (once per `if let`) or manually spilled it to a temporary
-yourself. `match` fixes both: the scrutinee is parenthesized like everything
+`match` is the destructurer for variants rather than a conditional-binding
+form like `if let Some(x) = expr { ... } else { ... }`, for two concrete
+reasons. First, syntax consistency: every conditional form in the language
+wraps its test in parentheses (`if (cond)`, `while (cond)`, `switch
+(subject)`); a construct where the scrutinee was unparenthesized and `=` was
+not the assignment operator would force every reader to special-case one
+construct's grammar. Second, ergonomics: unwrapping a `Result` needs both
+arms simultaneously, and a single-arm binding form has no dual-arm shape - you
+would either evaluate the scrutinee twice or manually spill it to a temporary
+yourself. `match` avoids both: the scrutinee is parenthesized like everything
 else, and exhaustiveness means both arms live in one statement, evaluating
-the scrutinee exactly once. `if let` was removed rather than kept as a second
-spelling, so `match` is now the sole destructurer for `Optional` and `Result`;
-this is also why the paren-keyword principle
-(below) is stated as an absolute rather than a preference - it was violated
-once, the violation was a design defect that had to be superseded, and the
-project does not want to repeat it.
+the scrutinee exactly once. `match` is the sole destructurer for `Optional`
+and `Result`; this is also why the paren-keyword principle (below) is stated
+as an absolute rather than a preference.
 
 ## The float domain: finite decimals via awk
 
@@ -363,11 +358,10 @@ namespaces from colliding.
 Every construct keyword in wisp takes a parenthesized head: `if (...)`,
 `while (...)`, `for (...)`, `match (...)`, `test ("name")`. There is never a
 non-parenthesized function-like keyword in wisp, under any circumstances.
-This is stated as an absolute, not a style preference, because it was
-violated once and the violation had to be walked back: `if let Some(x) = expr
-{ }` broke the pattern (the scrutinee unparenthesized, `=` doing something
-other than assignment), and that inconsistency was one of the two concrete
-reasons it was superseded by `match`. The principle exists to make the
+This is stated as an absolute, not a style preference: a construct with an
+unparenthesized scrutinee and `=` doing something other than assignment would
+break the pattern, and that inconsistency is one of the two concrete reasons
+variant destructuring is done with `match`. The principle exists to make the
 grammar predictable from a small number of rules rather than requiring a
 reader to remember which constructs are exceptions.
 
