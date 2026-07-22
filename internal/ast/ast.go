@@ -166,9 +166,11 @@ func (d *StructDecl) Pos() token.Position { return d.KwPos }
 // (the checker restricts it to an integer literal with an optional leading `-`).
 // NamePos is the variant's source position (the name token).
 type EnumVariant struct {
-	Name    string
-	NamePos token.Position
-	Value   Expr // nil if implicit
+	Name       string
+	NamePos    token.Position
+	Value      Expr     // nil if implicit
+	Payload    TypeName // "" if the variant carries no payload (tagged-union enum)
+	PayloadPos token.Position
 }
 
 // EnumDecl is `enum Name { V1[ = expr], V2, ... }`. Variants are comma- and/or
@@ -178,13 +180,16 @@ type EnumVariant struct {
 // records an `export` modifier, mirroring StructDecl; ExportPos is the position
 // of the `export` keyword when present.
 type EnumDecl struct {
-	KwPos     token.Position // position of the 'enum' keyword
-	NamePos   token.Position
-	Name      string
-	Variants  []EnumVariant
-	Multiline bool
-	Exported  bool
-	ExportPos token.Position
+	KwPos      token.Position // position of the 'enum' keyword
+	NamePos    token.Position
+	Name       string
+	Backing    TypeName // "" = bare (tagged-union); else the value-enum backing type name
+	BackingPos token.Position
+	TypeParams []string // non-empty only for a (rejected) generic user enum
+	Variants   []EnumVariant
+	Multiline  bool
+	Exported   bool
+	ExportPos  token.Position
 }
 
 func (d *EnumDecl) Pos() token.Position { return d.KwPos }
