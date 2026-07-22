@@ -921,6 +921,11 @@ func (c *checker) checkQualifiedEnumVariantAccess(n *ast.FieldAccess) (Type, boo
 	if !isEnum {
 		return Invalid, false
 	}
+	if ei.Kind == EnumTagged {
+		// A bare `Expr.Unit` / `Expr.IntLit` reference is construction-or-error;
+		// handled by checkFieldAccess (Task 7). Signal "not a value-enum fold".
+		return Invalid, false
+	}
 	nsName := inner.X.(*ast.Ident).Name
 	if !tctx.exportedEnums[enumName] {
 		// Gate on the dedicated exportedEnums set (Task 2), NOT the name-shared
@@ -932,7 +937,7 @@ func (c *checker) checkQualifiedEnumVariantAccess(n *ast.FieldAccess) (Type, boo
 		c.info.Types[n] = Invalid
 		return Invalid, true
 	}
-	val, found := ei.value(n.Field)
+	cv, found := ei.constValue(n.Field)
 	if !found {
 		c.errf(n.DotPos, "enum %q has no variant %q", enumName, n.Field)
 		c.info.Types[n] = Invalid
@@ -940,7 +945,7 @@ func (c *checker) checkQualifiedEnumVariantAccess(n *ast.FieldAccess) (Type, boo
 	}
 	tok := internalEnumName(enumName, modid)
 	c.info.Types[n] = tok
-	c.info.FoldedValues[n] = val
+	c.info.FoldedValues[n] = cv
 	return tok, true
 }
 
@@ -968,6 +973,14 @@ func (c *checker) checkFieldAccess(n *ast.FieldAccess, want Type) Type {
 		return t
 	}
 	if t, ok := c.checkQualifiedEnumVariantAccess(n); ok {
+		return t
+	}
+	// A bare (no-call) reference to a tagged-union variant: `Expr.Unit` constructs
+	// a no-payload value; `Expr.IntLit` (payload variant, no call) is an error --
+	// the SC-020 "function reference" diagnostic when `want` is a funcref, else the
+	// SC-030 "has a payload" diagnostic. `want` is threaded in so the helper can
+	// distinguish the two contexts.
+	if t, ok := c.checkBareTaggedVariant(n, want); ok {
 		return t
 	}
 	xt := c.checkExpr(n.X)

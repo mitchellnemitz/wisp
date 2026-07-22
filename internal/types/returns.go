@@ -84,9 +84,11 @@ func enumSwitchExhaustive(n *ast.SwitchStmt, info *Info) bool {
 	if !ok {
 		return false
 	}
-	remaining := make(map[int64]bool, len(enum.Values))
-	for _, v := range enum.Values {
-		remaining[v] = true
+	remaining := make(map[int64]bool, len(enum.Consts))
+	for _, cv := range enum.Consts {
+		if iv, ok := cv.(int64); ok {
+			remaining[iv] = true
+		}
 	}
 	for _, cs := range n.Cases {
 		for _, v := range cs.Values {
@@ -108,7 +110,7 @@ func matchReturns(n *ast.MatchStmt, info *Info) bool {
 		return false
 	}
 	st := info.Types[n.Scrutinee]
-	allVariants := variantsOf(st)
+	allVariants := variantsOf(st, info)
 	allVariantSet := make(map[string]bool, len(allVariants))
 	for _, v := range allVariants {
 		allVariantSet[v] = true

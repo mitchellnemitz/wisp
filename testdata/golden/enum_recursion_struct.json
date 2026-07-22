@@ -1,0 +1,1 @@
+{ "desc": "recursive tagged-union through a struct payload dispatches top/left/right", "stdout": "+\n1\n*\n2\n3\n", "exit": 0 }

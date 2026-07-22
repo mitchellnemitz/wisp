@@ -1,0 +1,1 @@
+{ "compileError": true, "diagContains": "cannot index-assign non-array, non-dict type Expr" }

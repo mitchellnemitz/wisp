@@ -1,0 +1,5 @@
+{
+  "desc": "switch on a bool subject, exhaustive over true/false, no default",
+  "stdout": "yes\nno\n",
+  "exit": 0
+}

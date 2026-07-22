@@ -40,6 +40,13 @@ func (c *checker) checkCall(n *ast.CallExpr) Type {
 	if n.CalleeName != "" {
 		return c.checkNamedCall(n)
 	}
+	// A tagged-union construction call `Enum.Variant(arg)`: the callee is a
+	// FieldAccess whose base names an enum type (checked before the namespace path,
+	// since an enum-variant callee and a namespace-member callee are both
+	// FieldAccess and the enum check must win when the base names an enum).
+	if t, ok := c.checkEnumConstruct(n); ok {
+		return t
+	}
 	// A qualified cross-module call `ns.fn(...)` (M8): the callee is a FieldAccess
 	// whose base is an in-scope namespace alias not shadowed by a local variable.
 	if field, modid, ok := c.qualifiedNsTarget(n.Callee); ok {
@@ -573,6 +580,10 @@ func (c *checker) checkBuiltinNamed(n *ast.CallExpr, name, dispName string) Type
 		if t, ok := c.checkStringEnumCall(n); ok {
 			return t
 		}
+	case "to_bool":
+		if t, ok := c.checkBoolEnumCall(n); ok {
+			return t
+		}
 	case "debug":
 		return c.checkDebugCall(n)
 	case "is_some":
@@ -969,7 +980,7 @@ func (c *checker) checkGenericUserCall(n *ast.CallExpr, fn *ast.FuncDecl, modid 
 		// comparable-bounded in the CALLER's scope: when a comparable generic is
 		// called from inside another generic, unification binds the callee's T to
 		// the caller's $U, and the bound propagates when U: comparable.
-		if !isComparableConcrete(ct) && !c.isComparableTypeVar(ct) && !c.isEnumType(ct) {
+		if !isComparableConcrete(ct) && !c.isComparableTypeVar(ct) && !c.isValueEnum(ct) {
 			pos := boundErrPos(n, tp, origin, typeArgPos)
 			shown := disp(ct) // strip struct @modid / typevar $ from the message
 			if isTypeVar(ct) {
@@ -1650,8 +1661,39 @@ func (c *checker) debugRenderable(t Type, visiting map[Type]bool) bool {
 		return false
 	case isTypeVar(t):
 		return false
-	case c.isEnumType(t):
-		return false
+	case c.isValueEnum(t):
+		return false // top-level subject or struct field: no variant-name render
+	case c.isTaggedEnum(t):
+		if visiting[t] {
+			return false // self-referential or mutually recursive: not renderable
+		}
+		ei := c.info.Enums[string(t)]
+		if ei == nil {
+			return false
+		}
+		if visiting == nil {
+			visiting = map[Type]bool{}
+		}
+		visiting[t] = true
+		for _, pt := range ei.Payloads {
+			if pt == Invalid {
+				continue // no-payload variant
+			}
+			if c.isValueEnum(pt) {
+				// A value-enum PAYLOAD renders by its backing scalar (codegen's
+				// debugPayloadType rewrites it to Int/String/Bool before dispatch);
+				// it is renderable here even though the general isValueEnum arm above
+				// rejects a value enum as a top-level subject or struct field. This is
+				// exactly the SC-036/SC-036b path (debug_enum_value_payload_string/_bool).
+				continue
+			}
+			if !c.debugRenderable(pt, visiting) {
+				delete(visiting, t)
+				return false
+			}
+		}
+		delete(visiting, t)
+		return true
 	case isProcessType(t):
 		return false
 	case t == Int, t == Float, t == Bool, t == String:
@@ -1727,9 +1769,9 @@ func (c *checker) checkDebugCall(n *ast.CallExpr) Type {
 		c.errf(n.Args[0].Pos(), "debug cannot render a value of generic type %s; it requires a concrete type", at)
 		return Invalid
 	}
-	// An enum has no v1 name-rendering (R4); debug would leak the underlying int.
-	if c.isEnumType(at) {
-		c.errf(n.Args[0].Pos(), "debug() is not defined for enum %s (variant-name rendering is not yet supported); use int() for the value", disp(at))
+	// A value enum has no v1 name-rendering; debug would leak its backing scalar.
+	if c.isValueEnum(at) {
+		c.errf(n.Args[0].Pos(), "debug() is not defined for enum %s (variant-name rendering is not supported); use to_int()/to_string()/to_bool() for the backing value", disp(at))
 		return Invalid
 	}
 	if !c.debugRenderable(at, nil) {

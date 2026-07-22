@@ -868,59 +868,108 @@ a compile error.
 
 ## Enums
 
-An enum declares a named, closed set of int-backed variants. Each variant is a
-compile-time constant of that enum type; the enum itself emits no runtime code.
+`enum` has two disjoint modes, chosen by whether the declaration carries a
+backing annotation:
+
+- **Value enum** (`enum Name: int|string|bool { ... }`): a closed set of
+  compile-time constants of that backing type. Comparable, usable in
+  `switch`, zero runtime cost.
+- **Tagged-union enum** (`enum Name { ... }`, no backing, at least one
+  variant with a payload): a closed set of constructors, at least one of
+  which carries a value. Dispatched only through `match`; it is a handle
+  type, like a struct.
+
+A bare enum with no backing and no payload variant at all is a compile
+error: it must either declare a backing (to become a value enum) or give at
+least one variant a payload (to become a tagged union).
+
+### Value enums
 
 ```wisp
-enum Color { Red, Green, Blue }
-enum ExitCode { Ok = 0, Fail = 1, Usage = 2 }
-enum Priority {
+enum Color: int { Red, Green, Blue }
+enum ExitCode: int { Ok = 0, Fail = 1, Usage = 2 }
+enum Priority: int {
     Low,
     Medium,
     High,
 }
 ```
 
-**Values.** Without an explicit value the first variant is `0` and each
-following variant is the previous value plus one (C-style auto-increment). An
-explicit `= <int literal>` sets the value and reseeds the counter from there.
-Negative values are allowed. Every value within one enum must be distinct; a
-duplicate (including one produced by auto-increment) is a compile error. An
-empty enum is a compile error.
+**Backing and defaults.** The backing is `int`, `string`, or `bool`
+(`float` is rejected, since floats are not comparable in wisp). Each
+backing has its own default rule for a variant with no explicit value:
+
+- `int`: C-style auto-increment. The first variant is `0`; each following
+  variant is the previous value plus one. An explicit `= <int literal>`
+  (negative allowed) sets the value and reseeds the counter from there.
+  ```wisp
+  enum E: int { A = 5, B, C }   // A=5, B=6, C=7
+  enum Offset: int { Before = -1, Zero = 0, After }  // After=1
+  ```
+- `string`: the variant's own name. An explicit `= "<string literal>"`
+  overrides it.
+  ```wisp
+  enum Dir: string { North, South = "s" }  // North="North", South="s"
+  ```
+- `bool`: no default. Every variant must declare an explicit `= true` or
+  `= false`.
+  ```wisp
+  enum Answer: bool { No = false, Yes = true }
+  ```
+
+Every value within one enum must be distinct; a duplicate (including one
+produced by int auto-increment or a string default colliding with an
+explicit value) is a compile error. An empty enum is a compile error.
+
+**Variant access.** Use `EnumName.VariantName`. For an `int`-backed enum
+the access is a constant expression that folds at compile time to its int
+value and is usable in `const`/`final` initializers and `switch` cases;
+`string`- and `bool`-backed variants are also usable directly as `switch`
+subjects and cases.
 
 ```wisp
-enum E { A = 5, B, C }   // A=5, B=6, C=7
-enum Offset { Before = -1, Zero = 0, After }  // After=1
-```
-
-**Variant access.** Use `EnumName.VariantName`. The access is a constant
-expression of the enum type and folds at compile time to its int value; it is
-usable in `const`/`final` initializers and `switch` cases.
-
-```wisp
-enum Color { Red, Green, Blue }
+enum Color: int { Red, Green, Blue }
 let c: Color = Color.Green
 ```
 
-**Type semantics.** An enum is a distinct comparable type. `==` and `!=` are
-supported between two values of the same enum. Comparing an enum to an `int`,
-to a different enum, assigning across enum types, and all arithmetic on enums
-(`+`, `-`, `<`, ...) are compile errors. An enum type also satisfies the
-generic [`comparable` bound](#the-comparable-bound) and the equality-derived
-membership builtins (`contains`, `index_of`, `unique`, `assert_eq`/`assert_ne`,
-`assert_contains`); this is a wider set than "supports `==`", since `Optional`
-of a comparable type also supports `==` without satisfying `comparable`.
+**Type semantics.** A value enum is a distinct comparable type. `==` and
+`!=` are supported between two values of the same enum. Comparing a value
+enum to its backing type, to a different enum, assigning across enum
+types, and all arithmetic on enum values (`+`, `-`, `<`, ...) are compile
+errors. A value enum type also satisfies the generic
+[`comparable` bound](#the-comparable-bound) and the equality-derived
+membership builtins (`array.contains`, `array.index_of`, `array.unique`,
+`assert_eq`/`assert_ne`, `assert_contains`); this is a wider set than
+"supports `==`", since `Optional` of a comparable type also supports `==`
+without satisfying `comparable`. A value enum cannot be used as a dict key
+(dict keys are restricted to `int` and `string`).
 
-**`to_int()` conversion.** `to_int(e)` returns the underlying int value. The reverse
-(`int` to enum) is not provided.
-
-**Exhaustive `switch`.** When the subject of a `switch` is an enum, the
-checker requires every variant to appear in a `case`, unless a `default` arm
-is present. Covering all variants removes the need for a `default`. A `default`
-is still allowed; omitting a variant with no `default` is a compile error.
+**`to_<backing>()` projection.** `to_int(e)`, `to_string(e)`, and `to_bool(e)`
+each return the underlying value, but only the one matching the enum's own
+backing: calling any other projection, or calling the matching one on the
+wrong backing, is a compile error that names the correct one to use.
 
 ```wisp
-enum Color { Red, Green, Blue }
+enum Color: int { Red, Green, Blue }
+print(to_string(to_int(Color.Green)))  // to_string(Color.Green) directly is an error
+```
+
+```wisp
+enum Dir: string { North, South = "s" }
+print(to_string(Dir.North))  // ok: to_string IS the string backing's projection
+```
+
+There is no reverse conversion (backing value to enum).
+
+**Exhaustive `switch`.** When the subject of a `switch` is a value enum
+(any backing) or a `bool`, the checker requires every variant (or both of
+`true`/`false`) to appear in a `case`, unless a `default` arm is present.
+Covering all cases removes the need for a `default`. A `default` is still
+allowed; omitting a case with no `default` is a compile error. A tagged-union
+enum is rejected as a switch subject (match-only); so is `float`.
+
+```wisp
+enum Color: int { Red, Green, Blue }
 fn describe(c: Color) -> string {
   switch (c) {
     case Color.Red   { return "stop" }
@@ -930,24 +979,95 @@ fn describe(c: Color) -> string {
 }
 ```
 
-Non-enum (`int` or `string`) switches require a `default`.
+Non-enum, non-`bool` (`int` or `string`) switches still require a `default`.
 
-Note: an exhaustive defaultless enum switch whose every case returns is a
+Note: an exhaustive defaultless switch whose every case returns is a
 return-path terminator, the same as an exhaustive `match` -- a function
 whose non-void body ends with one needs no trailing `return`.
 
-**Name rendering deferred.** `to_string(e)` and `debug(e)` on an enum are
-compile errors. Use `to_int(e)` for the value, or `switch` over the
-variants to produce a name.
+**`debug()` is not defined for a value enum.** Use the `to_<backing>()`
+projection, or `switch` over the variants, to render one.
+
+### Tagged-union enums
+
+A bare `enum` (no backing annotation) with at least one payload variant is a
+tagged union: each variant is a constructor, some of which carry a typed
+payload.
+
+```wisp
+enum Expr { IntLit(int), Ident(string), Unit }
+```
+
+A payload's type can be `int`, `float`, `string`, `bool`, a struct, an array,
+or another enum (including the enclosing enum itself, or a mutual reference
+between two enums declared in either order) -- there is no forward-declaration
+requirement.
+
+**Construction.** Call a variant like a function: `Enum.Variant(arg)` for a
+payload variant, or reference it bare, `Enum.Variant`, for one with none. A
+payload variant called with no parens, with wrong arity, or with the wrong
+argument type is a compile error; a no-payload variant called with any
+arguments (including empty parens `()`) is also a compile error.
+
+```wisp
+let e: Expr = Expr.IntLit(3)
+let u: Expr = Expr.Unit
+```
+
+**`match`.** A tagged-union enum is dispatched with `match`, using bare
+(unqualified) constructor names in each case. A payload variant's case must
+bind its payload to a name or discard it with `_`; a no-payload variant's
+case must be bare (no parens). `match` over a tagged-union enum must be
+exhaustive: every variant needs a case, or a wildcard `case _` arm, and a
+duplicate case or a case naming an unknown constructor is a compile error.
+
+```wisp
+enum Expr { IntLit(int), Ident(string), Unit }
+
+fn describe(e: Expr) -> string {
+  match (e) {
+    case IntLit(n)   { return to_string(n) }
+    case Ident(name) { return name }
+    case Unit        { return "u" }
+  }
+}
+```
+
+**Type semantics.** A tagged-union enum is a handle type, like a struct: no
+`==`/`!=`, no `to_int()`/`to_string()`/`to_bool()`, not usable as a `switch`
+subject, not usable at any of the comparability-gated sites (`array.contains`,
+`array.index_of`, `array.unique`, `assert_eq`/`assert_ne`, `assert_contains`,
+a `comparable`-bounded generic, or a dict key), and immutable (index-assigning
+into one is a compile error). A bare payload variant cannot be used as a
+function reference.
+
+**`debug()`.** `debug(e)` renders a tagged-union value as `Variant(payload)`
+(or bare `Variant` for a no-payload variant), recursing into struct, enum, and
+array payloads and rendering byte-safely (embedded newlines, quotes, and
+metacharacters in a string payload come through intact). A value-enum payload
+renders by its own backing (a quoted string, or a bare `true`/`false`), not a
+raw int. `debug()` on a self-referential or mutually-referential enum value
+is rejected at compile time (there is no way to bound the recursion
+statically), so `debug()` is only usable on a value whose static type has no
+recursive payload cycle reachable from it.
+
+```wisp
+enum Expr { IntLit(int), Unit }
+print(debug(Expr.IntLit(3)))  // "IntLit(3)"
+print(debug(Expr.Unit))       // "Unit"
+```
+
+### Both modes
 
 **Module scope.** An enum declared without `export` is module-local, exactly
-like a non-exported struct or const. `export enum Name { ... }` makes the
-enum's variants and the enum itself, as a type, reachable from an importing
-module through its namespace alias:
+like a non-exported struct or const. `export enum Name { ... }` (with or
+without a backing) makes the enum's variants and the enum itself, as a type,
+reachable from an importing module through its namespace alias:
 
 ```wisp
 // lib/pal.wisp
-export enum Color { Red, Green, Blue }
+export enum Color: int { Red, Green, Blue }
+export enum Expr { IntLit(int), Unit }
 ```
 
 ```wisp
@@ -958,13 +1078,22 @@ fn paint() -> int {
     let c: pal.Color = pal.Color.Green
     return to_int(c)
 }
+
+fn build() -> pal.Expr {
+    return pal.Expr.IntLit(7)
+}
 ```
 
-An exported enum behaves identically to a same-module enum in every respect:
-`==`/`!=`, exhaustive `switch`, `to_int(...)`, and use as a struct field,
-parameter, or return type all work the same across the module boundary.
-Referencing a non-exported enum, an unknown variant, or re-exporting an
-imported enum are each compile errors.
+An exported enum behaves identically to a same-module enum in every respect,
+across the module boundary. Construction is qualified (`pal.Expr.IntLit(7)`),
+and so is a value enum's `switch` case (`case pal.Color.Green { ... }`), but a
+tagged-union `match` case stays bare (`case IntLit(n) { ... }`) even for an
+imported enum, since the case names a constructor, not a value. Referencing a
+non-exported enum, an unknown variant, or re-exporting an imported enum are
+each compile errors.
+
+A generic user enum (`enum Box[T] { ... }`) is not supported; every payload
+type must be concrete.
 
 ## Type aliases
 

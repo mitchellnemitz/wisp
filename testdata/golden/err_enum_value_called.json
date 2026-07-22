@@ -1,0 +1,1 @@
+{ "desc": "value enum variant called like a constructor", "compileError": true, "diagContains": "not a constructor" }

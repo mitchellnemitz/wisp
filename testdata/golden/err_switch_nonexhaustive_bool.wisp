@@ -1,10 +1,7 @@
 fn main() -> int {
   let b: bool = true
   switch (b) {
-    case true {
-      return 1
-    }
-    default {}
+    case true { }
   }
   return 0
 }

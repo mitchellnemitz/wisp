@@ -1,0 +1,1 @@
+{"desc": "comparable-bounded generic rejects a tagged-union enum type argument", "compileError": true, "diagContains": "does not satisfy comparable"}

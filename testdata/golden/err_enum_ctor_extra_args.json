@@ -1,0 +1,1 @@
+{ "desc": "payload variant called with extra arguments", "compileError": true, "diagContains": "expects 1" }

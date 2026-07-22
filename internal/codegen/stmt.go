@@ -455,13 +455,15 @@ func (g *gen) genMatchStmt(n *ast.MatchStmt) {
 	}
 
 	// Read the tag once before the if/elif block (same field for all arms).
+	scrutType := g.info.Types[n.Scrutinee]
+	isEnum := g.info.Enums[string(scrutType)] != nil
 	firstPat := conArms[0].Pattern.(*ast.ConstructorPat)
-	tagField, _ := matchTagField(id, firstPat.Variant)
+	tagField, _ := g.matchTagField(id, firstPat.Variant, isEnum)
 	tag := g.readHandleVar(tagField)
 
 	for i, arm := range conArms {
 		pat := arm.Pattern.(*ast.ConstructorPat)
-		_, want := matchTagField(id, pat.Variant)
+		_, want := g.matchTagField(id, pat.Variant, isEnum)
 		if i == 0 {
 			g.line("if [ \"$%s\" = %s ]; then", tag.name, want)
 		} else {
@@ -501,9 +503,14 @@ func (g *gen) genMatchStmt(n *ast.MatchStmt) {
 	g.line("fi")
 }
 
-// matchTagField returns the single shared tag field and the expected lowercase
-// variant word for a given variant.
-func matchTagField(id, variant string) (tagField, want string) {
+// matchTagField returns the single shared tag field and the expected tag word for
+// a variant. For an Optional/Result builtin the word is the lowercase tag; for a
+// tagged-union enum it is the variant name verbatim (the compiler-emitted
+// identifier literal, injection-safe by the lexer charset).
+func (g *gen) matchTagField(id, variant string, isEnum bool) (tagField, want string) {
+	if isEnum {
+		return tagFieldName(id), variant
+	}
 	switch variant {
 	case "Some":
 		return tagFieldName(id), "some"

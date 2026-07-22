@@ -1,4 +1,4 @@
-enum Color { Red, Green, Blue }
+enum Color: int { Red, Green, Blue }
 
 fn main() -> int {
   assert_eq(Color.Red, Color.Red)

@@ -1,0 +1,1 @@
+{ "desc": "a bare match arm for a payload variant is a compile error", "compileError": true, "diagContains": "variant IntLit has a payload" }

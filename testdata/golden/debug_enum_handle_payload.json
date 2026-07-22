@@ -1,0 +1,1 @@
+{ "desc": "debug of a handle-typed (struct) payload recurses through readHandleVar", "stdout": "Wrap(Holder { s: \"a;b\n\" })\n", "exit": 0 }

@@ -1,4 +1,4 @@
-enum Color { Red, Green, Blue }
+enum Color: int { Red, Green, Blue }
 
 fn eq2[T: comparable](a: T, b: T) -> bool {
   return a == b

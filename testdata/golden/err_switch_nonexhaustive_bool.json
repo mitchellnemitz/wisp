@@ -1,0 +1,1 @@
+{ "desc": "switch on bool missing the false case, no default", "compileError": true, "diagContains": "exhaustive" }

@@ -1,0 +1,1 @@
+{"desc": "assert_eq rejects a tagged-union enum operand", "compileError": true, "diagContains": "requires a comparable value"}

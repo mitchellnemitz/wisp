@@ -448,6 +448,24 @@ func (p *parser) parseEnumDecl() (*ast.EnumDecl, error) {
 		return nil, err
 	}
 	ed := &ast.EnumDecl{KwPos: kw.Pos, NamePos: name.Pos, Name: name.Lit}
+	// Optional generic type parameters `[T, U]` (same bracket grammar as
+	// `struct Box[T]`) -- parsed so the checker can reject a generic user enum
+	// with a located type error (FR-019), not a bare parse error.
+	if p.curKind() == token.LBracket {
+		tps, err := p.parseStructTypeParams()
+		if err != nil {
+			return nil, err
+		}
+		ed.TypeParams = tps
+	}
+	// Optional backing-type annotation `: int|string|bool` marks a value enum.
+	if p.curKind() == token.Colon {
+		p.advance() // :
+		bt := p.cur()
+		ed.BackingPos = bt.Pos
+		ed.Backing = ast.TypeName(bt.Lit)
+		p.advance() // consume the backing type token (validated by the checker)
+	}
 	if _, err := p.expect(token.LBrace); err != nil {
 		return nil, err
 	}
@@ -461,6 +479,18 @@ func (p *parser) parseEnumDecl() (*ast.EnumDecl, error) {
 			return nil, err
 		}
 		variant := ast.EnumVariant{Name: vname.Lit, NamePos: vname.Pos}
+		if p.curKind() == token.LParen {
+			p.advance() // (
+			variant.PayloadPos = p.cur().Pos
+			pt, err := p.parseTypeName(false) // composite type: int, Ident, E[] (validated by the checker)
+			if err != nil {
+				return nil, err
+			}
+			variant.Payload = pt
+			if _, err := p.expect(token.RParen); err != nil {
+				return nil, err
+			}
+		}
 		if p.curKind() == token.Assign {
 			p.advance() // =
 			val, err := p.parseExpr()
@@ -471,11 +501,19 @@ func (p *parser) parseEnumDecl() (*ast.EnumDecl, error) {
 		}
 		ed.Variants = append(ed.Variants, variant)
 		// variants separated by ',' and/or a statement separator; allow either.
-		if p.curKind() == token.Comma {
+		sawComma := p.curKind() == token.Comma
+		if sawComma {
 			p.advance()
 		}
-		if nl, _ := p.skipSeparatorsNL(); nl {
+		nl, sawSep := p.skipSeparatorsNL()
+		if nl {
 			sawNL = true
+		}
+		if p.curKind() == token.RBrace {
+			break
+		}
+		if !sawComma && !sawSep {
+			return nil, p.errHere("expected ',' or newline between enum variants")
 		}
 	}
 	if len(ed.Variants) == 0 {

@@ -3289,7 +3289,7 @@ Fails if `got != want`. Renders both values via `debug()` in the failure message
 `T` admits int, bool, string, an enum type, or a nested comparable `Optional`.
 
 ```wisp
-enum Color { Red, Green, Blue }
+enum Color: int { Red, Green, Blue }
 
 test ("assert_eq example") {
     assert_eq(1 + 1, 2)

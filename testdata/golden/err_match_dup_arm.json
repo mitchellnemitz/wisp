@@ -1,0 +1,1 @@
+{ "desc": "a duplicate match arm on a tagged-union enum is a compile error", "compileError": true, "diagContains": "already covered" }

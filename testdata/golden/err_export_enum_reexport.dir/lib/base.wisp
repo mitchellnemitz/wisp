@@ -1,1 +1,1 @@
-export enum Color { Red, Green, Blue }
+export enum Color: int { Red, Green, Blue }

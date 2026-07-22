@@ -16,13 +16,13 @@ func enumValues(t *testing.T, info *Info, name string) map[string]int64 {
 	}
 	out := map[string]int64{}
 	for i, vn := range ei.Variants {
-		out[vn] = ei.Values[i]
+		out[vn] = ei.Consts[i].(int64)
 	}
 	return out
 }
 
 func TestEnum_ValueResolution_Default(t *testing.T) {
-	info := expectOK(t, `enum Color { Red, Green, Blue }
+	info := expectOK(t, `enum Color: int { Red, Green, Blue }
 fn main() -> int { return 0 }`)
 	got := enumValues(t, info, "Color")
 	want := map[string]int64{"Red": 0, "Green": 1, "Blue": 2}
@@ -34,7 +34,7 @@ fn main() -> int { return 0 }`)
 }
 
 func TestEnum_ValueResolution_ExplicitReseed(t *testing.T) {
-	info := expectOK(t, `enum E { A = 5, B, C }
+	info := expectOK(t, `enum E: int { A = 5, B, C }
 fn main() -> int { return 0 }`)
 	got := enumValues(t, info, "E")
 	want := map[string]int64{"A": 5, "B": 6, "C": 7}
@@ -46,7 +46,7 @@ fn main() -> int { return 0 }`)
 }
 
 func TestEnum_ValueResolution_NegativeExplicit(t *testing.T) {
-	info := expectOK(t, `enum E2 { X = -1, Y }
+	info := expectOK(t, `enum E2: int { X = -1, Y }
 fn main() -> int { return 0 }`)
 	got := enumValues(t, info, "E2")
 	if got["X"] != -1 || got["Y"] != 0 {
@@ -55,28 +55,28 @@ fn main() -> int { return 0 }`)
 }
 
 func TestEnum_DuplicateValueAfterAutoIncrement(t *testing.T) {
-	expectErr(t, `enum E { A = 1, B = 0, C }
+	expectErr(t, `enum E: int { A = 1, B = 0, C }
 fn main() -> int { return 0 }`, "duplicate")
 }
 
 func TestEnum_NonLiteralExplicitValue(t *testing.T) {
-	expectErr(t, `enum E { A = 1 + 1 }
+	expectErr(t, `enum E: int { A = 1 + 1 }
 fn main() -> int { return 0 }`, "integer literal")
 }
 
 func TestEnum_DuplicateVariantName(t *testing.T) {
-	expectErr(t, `enum E { A, A }
+	expectErr(t, `enum E: int { A, A }
 fn main() -> int { return 0 }`, "more than once")
 }
 
 func TestEnum_NameCollidesWithStruct(t *testing.T) {
 	expectErr(t, `struct Color { x: int }
-enum Color { Red }
+enum Color: int { Red }
 fn main() -> int { return 0 }`, "Color")
 }
 
 func TestEnum_VariantAccessTypesAndFolds(t *testing.T) {
-	info := expectOK(t, `enum Color { Red, Green, Blue }
+	info := expectOK(t, `enum Color: int { Red, Green, Blue }
 fn main() -> int {
 	let c: Color = Color.Green
 	return 0
@@ -107,7 +107,7 @@ fn main() -> int {
 }
 
 func TestEnum_UnknownVariant(t *testing.T) {
-	expectErr(t, `enum Color { Red, Green, Blue }
+	expectErr(t, `enum Color: int { Red, Green, Blue }
 fn main() -> int {
 	let c: Color = Color.Nope
 	return 0
@@ -115,7 +115,7 @@ fn main() -> int {
 }
 
 func TestEnum_SameEnumComparisonOK(t *testing.T) {
-	expectOK(t, `enum Color { Red, Green, Blue }
+	expectOK(t, `enum Color: int { Red, Green, Blue }
 fn main() -> int {
 	let c: Color = Color.Green
 	let b: bool = c == Color.Red
@@ -125,7 +125,7 @@ fn main() -> int {
 }
 
 func TestEnum_VsIntComparisonError(t *testing.T) {
-	expectErr(t, `enum Color { Red, Green, Blue }
+	expectErr(t, `enum Color: int { Red, Green, Blue }
 fn main() -> int {
 	let c: Color = Color.Green
 	let b: bool = c == 1
@@ -134,8 +134,8 @@ fn main() -> int {
 }
 
 func TestEnum_CrossEnumComparisonError(t *testing.T) {
-	expectErr(t, `enum Color { Red, Green }
-enum Mood { Sad, Glad }
+	expectErr(t, `enum Color: int { Red, Green }
+enum Mood: int { Sad, Glad }
 fn main() -> int {
 	let c: Color = Color.Red
 	let b: bool = c == Mood.Sad
@@ -144,7 +144,7 @@ fn main() -> int {
 }
 
 func TestEnum_ArithmeticError(t *testing.T) {
-	expectErr(t, `enum Color { Red, Green, Blue }
+	expectErr(t, `enum Color: int { Red, Green, Blue }
 fn main() -> int {
 	let c: Color = Color.Red + Color.Green
 	return 0
@@ -152,7 +152,7 @@ fn main() -> int {
 }
 
 func TestEnum_AssignIntError(t *testing.T) {
-	expectErr(t, `enum Color { Red, Green, Blue }
+	expectErr(t, `enum Color: int { Red, Green, Blue }
 fn main() -> int {
 	let c: Color = 1
 	return 0
@@ -160,7 +160,7 @@ fn main() -> int {
 }
 
 func TestEnum_IntConversion(t *testing.T) {
-	expectOK(t, `enum Color { Red, Green, Blue }
+	expectOK(t, `enum Color: int { Red, Green, Blue }
 fn main() -> int {
 	let n: int = to_int(Color.Blue)
 	return n
@@ -168,7 +168,7 @@ fn main() -> int {
 }
 
 func TestEnum_StringConversionError(t *testing.T) {
-	expectErr(t, `enum Color { Red, Green, Blue }
+	expectErr(t, `enum Color: int { Red, Green, Blue }
 fn main() -> int {
 	let s: string = to_string(Color.Red)
 	return 0
@@ -176,7 +176,7 @@ fn main() -> int {
 }
 
 func TestEnum_DebugError(t *testing.T) {
-	expectErr(t, `enum Color { Red, Green, Blue }
+	expectErr(t, `enum Color: int { Red, Green, Blue }
 fn main() -> int {
 	let s: string = debug(Color.Red)
 	return 0
@@ -186,7 +186,7 @@ fn main() -> int {
 func TestEnum_LocalShadowsEnum(t *testing.T) {
 	// A local variable named Color shadows the enum-type interpretation, so
 	// Color.Green is a field access on the local (a non-struct), not a variant.
-	expectErr(t, `enum Color { Red, Green, Blue }
+	expectErr(t, `enum Color: int { Red, Green, Blue }
 struct Pair { Green: int }
 fn main() -> int {
 	let Color: int = 3
@@ -198,7 +198,7 @@ fn main() -> int {
 func TestEnum_VariantInConstInitializer(t *testing.T) {
 	// A bare variant access is itself a constant expression of the enum type, so it
 	// is a valid const/final initializer (R3: foldConst folds it unconditionally).
-	info := expectOK(t, `enum Color { Red, Green, Blue }
+	info := expectOK(t, `enum Color: int { Red, Green, Blue }
 const C: Color = Color.Blue
 fn main() -> int { return to_int(C) }`)
 	if got, ok := info.ConstTable["C"]; !ok {

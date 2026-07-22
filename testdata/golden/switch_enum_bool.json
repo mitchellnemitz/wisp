@@ -1,0 +1,5 @@
+{
+  "desc": "switch on a bool-backed value enum, exhaustive over both variants",
+  "stdout": "yes\n",
+  "exit": 0
+}

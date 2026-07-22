@@ -226,9 +226,11 @@ func TestRule8_SwitchString_Positive(t *testing.T) {
 switch (s) { case "a" { print("a") } default {} }`))
 }
 
-func TestRule8_SwitchBool_Negative(t *testing.T) {
-	expectErr(t, wrapMain(`let b: bool = true
-switch (b) { case true { print("t") } default {} }`), "subject must be int or string")
+func TestRule8_SwitchBool_Positive(t *testing.T) {
+	// bool joined int/string as a valid switch subject (Task 11); this no
+	// longer errors.
+	expectOK(t, wrapMain(`let b: bool = true
+switch (b) { case true { print("t") } default {} }`))
 }
 
 func TestRule8_CaseTypeMismatch_Negative(t *testing.T) {
@@ -677,7 +679,7 @@ func TestDebug_ProcessArray_Negative(t *testing.T) {
 // own top-level type, so Color[] (an array, not an enum) sails through the
 // existing check and panics in genDebugStruct's array-element recursion.
 func TestDebug_EnumArray_Negative(t *testing.T) {
-	expectErr(t, `enum Color { Red, Green, Blue }
+	expectErr(t, `enum Color: int { Red, Green, Blue }
 fn main() -> int {
   let xs: Color[] = [Color.Red]
   let _ : string = debug(xs)
@@ -688,7 +690,7 @@ fn main() -> int {
 // TestDebug_OptionalEnum_Negative pins the same nested-enum rejection through
 // debugRenderable's isOptional branch.
 func TestDebug_OptionalEnum_Negative(t *testing.T) {
-	expectErr(t, `enum Color { Red, Green, Blue }
+	expectErr(t, `enum Color: int { Red, Green, Blue }
 fn main() -> int {
   let o: Optional[Color] = Some(Color.Red)
   let _ : string = debug(o)
@@ -700,7 +702,7 @@ fn main() -> int {
 // debugRenderable's isResult branch -- previously untested for rejection
 // (round-2 adversarial review finding).
 func TestDebug_ResultEnum_Negative(t *testing.T) {
-	expectErr(t, `enum Color { Red, Green, Blue }
+	expectErr(t, `enum Color: int { Red, Green, Blue }
 fn main() -> int {
   let r: Result[Color] = Ok(Color.Red)
   let _ : string = debug(r)
@@ -713,7 +715,7 @@ fn main() -> int {
 // or string per the existing dict-key restriction) -- previously untested
 // for rejection (round-2 adversarial review finding).
 func TestDebug_DictEnum_Negative(t *testing.T) {
-	expectErr(t, `enum Color { Red, Green, Blue }
+	expectErr(t, `enum Color: int { Red, Green, Blue }
 fn main() -> int {
   let d: {string: Color} = {"a": Color.Red}
   let _ : string = debug(d)
@@ -725,7 +727,7 @@ fn main() -> int {
 // debugRenderable's isTuple branch -- previously untested for rejection
 // (round-2 adversarial review finding).
 func TestDebug_TupleEnum_Negative(t *testing.T) {
-	expectErr(t, `enum Color { Red, Green, Blue }
+	expectErr(t, `enum Color: int { Red, Green, Blue }
 fn main() -> int {
   let tp: (Color, int) = (Color.Red, 1)
   let _ : string = debug(tp)
@@ -737,7 +739,7 @@ fn main() -> int {
 // through debugRenderable's non-cyclic isStructType field-traversal branch --
 // previously untested for rejection (round-2 adversarial review finding).
 func TestDebug_StructFieldEnum_Negative(t *testing.T) {
-	expectErr(t, `enum Color { Red, Green, Blue }
+	expectErr(t, `enum Color: int { Red, Green, Blue }
 struct Bad { c: Color }
 fn main() -> int {
   let s: Bad = Bad { c: Color.Red }

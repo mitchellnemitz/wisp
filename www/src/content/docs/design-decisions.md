@@ -456,12 +456,17 @@ deferred as future work:
   `fn`, not a closure.
 - **Interfaces and dynamic dispatch.** wisp has no interface types and no
   runtime polymorphism over user types. Structs are concrete, opaque
-  handles with a fixed field set; `Optional`/`Result` are the language's
-  only sum types, and dispatch over them is the compiler-verified
-  exhaustive `match`, not virtual method calls. Runtime dispatch would
-  require a vtable-like indirection mechanism lowered to shell - itself a
-  nontrivial and injection-adjacent piece of machinery - to buy
-  polymorphism that a small, explicit scripting language aimed at
+  handles with a fixed field set. A bare `enum Name { ... }` with at least
+  one payload variant is a general user-declared tagged-union sum type; a
+  backed `enum Name: int|string|bool { ... }` is a separate, comparable
+  value-enum mode. `Optional`/`Result` are the same idea, built in and made
+  generic over their payload type: `Some`/`None` and `Ok`/`Err` are
+  constructors dispatched by `match`, the same as any user tagged-union
+  enum's variants. Dispatch over any of them, built-in or user-declared, is the
+  compiler-verified exhaustive `match`, not virtual method calls. Runtime
+  dispatch would require a vtable-like indirection mechanism lowered to
+  shell - itself a nontrivial and injection-adjacent piece of machinery - to
+  buy polymorphism that a small, explicit scripting language aimed at
   entrypoints and CI glue rarely needs; generics with `comparable`/`numeric`
   bounds cover the realistic cases (a function that needs to compare or do
   arithmetic on a type it doesn't know yet) without it.

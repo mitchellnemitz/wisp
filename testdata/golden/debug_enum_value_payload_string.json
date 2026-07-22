@@ -1,0 +1,1 @@
+{ "desc": "a value-enum payload renders by its backing string, quote-wrapped, not a garbage int", "stdout": "W(\";\n\")\n", "exit": 0 }

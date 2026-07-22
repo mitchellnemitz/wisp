@@ -16,7 +16,7 @@ import (
 // No codegen change was made for export enum; this test is the regression
 // guard for that claim.
 func TestExportedEnumVariantInlinesSameAsLocal(t *testing.T) {
-	localSrc := `enum Color { Red, Green, Blue }
+	localSrc := `enum Color: int { Red, Green, Blue }
 fn main() -> int {
     print(to_string(to_int(Color.Green)))
     return 0
@@ -49,7 +49,7 @@ fn main() -> int {
 	if err != nil {
 		t.Fatalf("parse root: %v", err)
 	}
-	libProg, err := parser.Parse(`export enum Color { Red, Green, Blue }`, "pal.wisp")
+	libProg, err := parser.Parse(`export enum Color: int { Red, Green, Blue }`, "pal.wisp")
 	if err != nil {
 		t.Fatalf("parse lib: %v", err)
 	}
@@ -113,7 +113,7 @@ func TestUnusedExportedEnumLeavesNoTrace(t *testing.T) {
 	if err != nil {
 		t.Fatalf("parse root: %v", err)
 	}
-	libProg, err := parser.Parse(`export enum Color { Red, Green, Blue }`, "pal.wisp")
+	libProg, err := parser.Parse(`export enum Color: int { Red, Green, Blue }`, "pal.wisp")
 	if err != nil {
 		t.Fatalf("parse lib: %v", err)
 	}

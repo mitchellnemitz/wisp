@@ -1,0 +1,1 @@
+{ "desc": "bare enum with explicit values reports the FR-022 add-a-backing error, singly", "compileError": true, "diagContains": ": int" }

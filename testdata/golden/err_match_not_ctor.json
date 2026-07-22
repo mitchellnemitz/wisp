@@ -1,0 +1,1 @@
+{ "desc": "matching an unknown constructor of a tagged-union enum is a compile error", "compileError": true, "diagContains": "not a constructor" }

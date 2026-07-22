@@ -1,0 +1,1 @@
+{ "desc": "no-payload variant called with an argument", "compileError": true, "diagContains": "variant Unit has no payload" }

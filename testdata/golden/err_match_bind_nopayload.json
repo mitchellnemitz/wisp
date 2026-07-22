@@ -1,0 +1,1 @@
+{ "desc": "binding a no-payload variant's match arm is a compile error", "compileError": true, "diagContains": "variant Unit has no payload" }
