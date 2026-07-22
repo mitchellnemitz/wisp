@@ -126,6 +126,12 @@ func (g *gen) genExpr(e ast.Expr) atom {
 		if fv, ok := g.info.FoldedValues[n]; ok {
 			return g.foldedLitAtom(fv)
 		}
+		// Bare no-payload tagged-union construction (`Enum.Unit`): has no
+		// folded value, so must be caught before genFieldAccess, which would
+		// otherwise emit a struct field-load for an unset handle var.
+		if bc, ok := g.info.BareEnumConstructs[n]; ok {
+			return g.genBareEnumConstruct(bc)
+		}
 		return g.genFieldAccess(n)
 	case *ast.IndexExpr:
 		return g.genIndexExpr(n)
@@ -555,6 +561,8 @@ func (g *gen) genCall(n *ast.CallExpr) atom {
 		return g.genBuiltinCall(n, ci)
 	case types.CallIndirect:
 		return g.genIndirectCall(n, ci)
+	case types.CallEnumConstruct:
+		return g.genEnumConstruct(ci)
 	default:
 		panic(fmt.Sprintf("genCall: no codegen case for CallKind %d (checker/codegen drift)", ci.Kind))
 	}
