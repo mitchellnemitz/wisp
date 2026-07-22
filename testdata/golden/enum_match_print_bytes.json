@@ -1,0 +1,1 @@
+{ "desc": "construct->match->print preserves payload bytes verbatim (SC-019)", "stdout": "a;b|c$d`e\n\n", "exit": 0 }

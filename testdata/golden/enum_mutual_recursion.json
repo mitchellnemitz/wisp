@@ -1,0 +1,1 @@
+{ "desc": "mutual enum-to-enum payload recursion resolves regardless of order; nested construct+match dispatches", "stdout": "node\nwrap\nend\n", "exit": 0 }

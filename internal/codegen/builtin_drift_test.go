@@ -159,7 +159,8 @@ func TestMatchTagField_UnhandledVariantPanics(t *testing.T) {
 		}
 	}()
 
-	matchTagField("x", "NotAVariant")
+	g := &gen{}
+	g.matchTagField("x", "NotAVariant", false)
 }
 
 // TestEmitSortLess_UnhandledElemTypePanics: emitSortLess's default arm
