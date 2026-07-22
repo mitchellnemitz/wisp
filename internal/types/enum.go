@@ -197,8 +197,32 @@ func (c *checker) collectTaggedEnum(ctx *moduleCtx, ed *ast.EnumDecl, ei *EnumIn
 	}
 }
 
-// checkEnumPayloads is pass 2 of enum resolution (filled in the next task).
-func (c *checker) checkEnumPayloads(ctx *moduleCtx) {}
+// checkEnumPayloads is pass 2: it resolves each tagged-union variant's payload
+// type now that every enum and struct name in every module is registered, so a
+// payload may reference a forward or mutual enum (FR-014/SC-041). A value enum
+// has no payloads and is skipped. The caller sets c.cur = ctx first.
+func (c *checker) checkEnumPayloads(ctx *moduleCtx) {
+	for _, ed := range ctx.prog.Enums {
+		if ed.Backing != "" {
+			continue // value enum: no payloads
+		}
+		ei := ctx.enums[ed.Name]
+		if ei == nil {
+			continue // duplicate/malformed; already reported
+		}
+		for i, v := range ed.Variants {
+			if i >= len(ei.Payloads) {
+				break
+			}
+			if v.Payload == "" {
+				ei.Payloads[i] = Invalid // no-payload variant
+				continue
+			}
+			pt := c.resolveType(v.Payload, v.PayloadPos)
+			ei.Payloads[i] = pt
+		}
+	}
+}
 
 // isValueEnum reports whether t names a declared value enum (: int/string/bool).
 func (c *checker) isValueEnum(t Type) bool {
