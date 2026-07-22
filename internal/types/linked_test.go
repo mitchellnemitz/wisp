@@ -832,3 +832,51 @@ export fn Color() -> int { return 0 }`,
 		t.Fatalf("non-exported enum must stay invisible despite a same-named exported fn, got %v", errMsgs(info))
 	}
 }
+
+// Regression guard for the const.go switch-case fold path: foldConst's
+// FieldAccess arm delegates a qualified `ns.Enum.Variant` case value to
+// checkQualifiedEnumVariantAccess (const.go:154), the SAME function used for
+// value-position access (TestLinkedNonExportedEnumVariantErrors). That test
+// only exercises the value-position call site; this one forces the fold
+// through checkSwitch's per-case checkConstExpr (stmt.go:820) instead, so the
+// visibility gate is proven at both call sites. The switch subject is a plain
+// int (not pal.Color) so the only diagnostic in play is the visibility gate,
+// not a subject/case type mismatch.
+func TestLinkedNonExportedEnumVariantInSwitchCaseRejected(t *testing.T) {
+	root := mod(t, 0,
+		`fn main() -> int {
+  let n: int = 0
+  switch (n) {
+    case pal.Color.Green { return 1 }
+    default { return 0 }
+  }
+}`,
+		map[string]int{"pal": 1})
+	pal := mod(t, 1, `enum Color { Red, Green }`, nil) // not exported
+	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
+	if !hasErr(info, "not exported") {
+		t.Fatalf("want a not-exported error, got %v", errMsgs(info))
+	}
+}
+
+// Sibling to the above: an EXPORTED enum but an unknown variant referenced as
+// a switch-case constant, forcing the same const.go fold path to prove the
+// unknown-variant diagnostic (not just the exported one) also holds at the
+// switch-case call site. Wording matches TestLinkedExportedEnumUnknownVariantErrors
+// (expr.go:937, `enum %q has no variant %q`).
+func TestLinkedUnknownEnumVariantInSwitchCaseRejected(t *testing.T) {
+	root := mod(t, 0,
+		`fn main() -> int {
+  let n: int = 0
+  switch (n) {
+    case pal.Color.Purple { return 1 }
+    default { return 0 }
+  }
+}`,
+		map[string]int{"pal": 1})
+	pal := mod(t, 1, `export enum Color { Red, Green }`, nil)
+	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
+	if !hasErr(info, `no variant "Purple"`) {
+		t.Fatalf("want an unknown-variant error, got %v", errMsgs(info))
+	}
+}
