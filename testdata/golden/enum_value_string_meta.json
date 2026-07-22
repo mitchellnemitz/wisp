@@ -1,0 +1,1 @@
+{ "desc": "to_string() on a string value enum with shell metacharacters + embedded newline: byte-exact backing constants across all four shells", "stdout": ";\na*b\nx\n\na'b\n", "exit": 0 }

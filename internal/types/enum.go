@@ -345,12 +345,9 @@ func (c *checker) checkEnumVariantAccess(n *ast.FieldAccess) (Type, bool) {
 	return tok, true
 }
 
-// checkIntEnumCall handles `to_int(e)` when e is an enum value (R4): it returns Int
-// and records a builtin CallInfo so codegen lowers it (as identity -- the enum is
-// already its int). The fixed `to_int` param table ({String, Float}) cannot express
-// the enum operand, so this dedicated arm runs BEFORE the generic path. Returns
-// (_, false) for a non-enum single argument so the call falls through to the
-// generic table (to_int(string)/to_int(float)).
+// checkIntEnumCall handles to_int(e) for an enum operand: an int-backed value
+// enum is identity; a non-int value enum is directed to its own backing; a
+// tagged-union enum is rejected (handle opacity).
 func (c *checker) checkIntEnumCall(n *ast.CallExpr) (Type, bool) {
 	if len(n.Args) != 1 {
 		return Invalid, false
@@ -359,15 +356,22 @@ func (c *checker) checkIntEnumCall(n *ast.CallExpr) (Type, bool) {
 	if !c.isEnumType(at) {
 		return Invalid, false
 	}
+	ei := c.info.Enums[string(at)]
+	if ei.Kind == EnumTagged {
+		c.errf(n.Args[0].Pos(), "to_int() is not defined for enum %s (a tagged-union enum has no scalar value)", disp(at))
+		return Invalid, true
+	}
+	if ei.Backing != Int {
+		c.errf(n.Args[0].Pos(), "to_int() is not defined for enum %s; use to_%s() for its backing value", disp(at), backingName(ei.Backing))
+		return Invalid, true
+	}
 	c.info.Calls[n] = &CallInfo{Kind: CallBuiltin, Builtin: "to_int", Args: n.Args, Result: Int}
 	return Int, true
 }
 
-// checkStringEnumCall rejects `to_string(e)` on an enum operand (R4): name rendering
-// is deferred in v1, so leaking the underlying int is disallowed. Returns
-// (Invalid, true) when the single argument is an enum (handled here), else
-// (_, false) so the call falls through to the generic `to_string` table
-// (int/float/bool/string), which the enum case cannot express.
+// checkStringEnumCall handles to_string(e) for an enum operand: a string-backed
+// value enum returns its backing string; other value enums are directed to their
+// backing; a tagged-union enum is rejected.
 func (c *checker) checkStringEnumCall(n *ast.CallExpr) (Type, bool) {
 	if len(n.Args) != 1 {
 		return Invalid, false
@@ -376,8 +380,52 @@ func (c *checker) checkStringEnumCall(n *ast.CallExpr) (Type, bool) {
 	if !c.isEnumType(at) {
 		return Invalid, false
 	}
-	c.errf(n.Args[0].Pos(), "to_string() is not defined for enum %s (variant-name rendering is not yet supported); use to_int() for the value", disp(at))
-	return Invalid, true
+	ei := c.info.Enums[string(at)]
+	if ei.Kind == EnumTagged {
+		c.errf(n.Args[0].Pos(), "to_string() is not defined for enum %s (variant-name rendering is not supported)", disp(at))
+		return Invalid, true
+	}
+	if ei.Backing != String {
+		c.errf(n.Args[0].Pos(), "to_string() is not defined for enum %s; use to_%s() for its backing value", disp(at), backingName(ei.Backing))
+		return Invalid, true
+	}
+	c.info.Calls[n] = &CallInfo{Kind: CallBuiltin, Builtin: "to_string", Args: n.Args, Result: String}
+	return String, true
+}
+
+// checkBoolEnumCall handles to_bool(e) for an enum operand: a bool-backed value
+// enum returns its backing bool; others are rejected.
+func (c *checker) checkBoolEnumCall(n *ast.CallExpr) (Type, bool) {
+	if len(n.Args) != 1 {
+		return Invalid, false
+	}
+	at := c.checkExpr(n.Args[0])
+	if !c.isEnumType(at) {
+		return Invalid, false
+	}
+	ei := c.info.Enums[string(at)]
+	if ei.Kind == EnumTagged {
+		c.errf(n.Args[0].Pos(), "to_bool() is not defined for enum %s (a tagged-union enum has no scalar value)", disp(at))
+		return Invalid, true
+	}
+	if ei.Backing != Bool {
+		c.errf(n.Args[0].Pos(), "to_bool() is not defined for enum %s; use to_%s() for its backing value", disp(at), backingName(ei.Backing))
+		return Invalid, true
+	}
+	c.info.Calls[n] = &CallInfo{Kind: CallBuiltin, Builtin: "to_bool", Args: n.Args, Result: Bool}
+	return Bool, true
+}
+
+func backingName(t Type) string {
+	switch t {
+	case Int:
+		return "int"
+	case String:
+		return "string"
+	case Bool:
+		return "bool"
+	}
+	return "?"
 }
 
 // isEnumType reports whether t names a declared enum. The separate enum registry

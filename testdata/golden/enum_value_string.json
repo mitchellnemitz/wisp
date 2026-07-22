@@ -1,0 +1,1 @@
+{ "desc": "string value enum: name-default and explicit override, to_string projection, ==", "stdout": "North\ns\nfalse\n", "exit": 0 }

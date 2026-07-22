@@ -1,0 +1,1 @@
+{ "desc": "bool value enum: to_bool projection and ==", "stdout": "true\nfalse\n", "exit": 0 }
