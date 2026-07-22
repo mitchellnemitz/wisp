@@ -329,6 +329,11 @@ func (c *checker) checkEnumVariantAccess(n *ast.FieldAccess) (Type, bool) {
 	if !ok {
 		return Invalid, false
 	}
+	if ei.Kind == EnumTagged {
+		// A bare `Expr.Unit` / `Expr.IntLit` reference is construction-or-error;
+		// handled by checkFieldAccess (Task 7). Signal "not a value-enum fold".
+		return Invalid, false
+	}
 	cv, found := ei.constValue(n.Field)
 	if !found {
 		c.errf(n.DotPos, "enum %q has no variant %q", ei.Name, n.Field)

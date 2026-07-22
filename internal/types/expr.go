@@ -921,6 +921,11 @@ func (c *checker) checkQualifiedEnumVariantAccess(n *ast.FieldAccess) (Type, boo
 	if !isEnum {
 		return Invalid, false
 	}
+	if ei.Kind == EnumTagged {
+		// A bare `Expr.Unit` / `Expr.IntLit` reference is construction-or-error;
+		// handled by checkFieldAccess (Task 7). Signal "not a value-enum fold".
+		return Invalid, false
+	}
 	nsName := inner.X.(*ast.Ident).Name
 	if !tctx.exportedEnums[enumName] {
 		// Gate on the dedicated exportedEnums set (Task 2), NOT the name-shared
