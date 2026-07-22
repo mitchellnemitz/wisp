@@ -1,0 +1,1 @@
+{ "desc": "match over a tagged-union enum missing an arm is non-exhaustive", "compileError": true, "diagContains": "missing arms for Unit" }

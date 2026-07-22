@@ -75,20 +75,24 @@ func resultElemType(t Type) Type {
 func IsResult(t Type) bool       { return isResult(t) }
 func ResultElemType(t Type) Type { return resultElemType(t) }
 
-// variantsOf returns the ordered constructor names for a sum type, or nil.
-func variantsOf(t Type) []string {
+// variantsOf returns the ordered constructor names for a sum type or a
+// tagged-union enum, or nil for anything else.
+func variantsOf(t Type, info *Info) []string {
 	if isOptional(t) {
 		return []string{"Some", "None"}
 	}
 	if isResult(t) {
 		return []string{"Ok", "Err"}
 	}
+	if ei, ok := info.Enums[string(t)]; ok && ei.Kind == EnumTagged {
+		return ei.Variants
+	}
 	return nil
 }
 
-// matchArmBoundType returns the payload type for a variant arm and whether
-// a binding exists. Returns (Invalid, false) for payload-less variants (None).
-func matchArmBoundType(scrut Type, variant string) (Type, bool) {
+// matchArmBoundType returns the payload type for a variant arm and whether a
+// binding exists. Returns (Invalid, false) for a payload-less variant (None).
+func matchArmBoundType(scrut Type, variant string, info *Info) (Type, bool) {
 	if isOptional(scrut) {
 		switch variant {
 		case "Some":
@@ -104,6 +108,9 @@ func matchArmBoundType(scrut Type, variant string) (Type, bool) {
 		case "Err":
 			return ErrorType, true
 		}
+	}
+	if ei, ok := info.Enums[string(scrut)]; ok && ei.Kind == EnumTagged {
+		return ei.payload(variant)
 	}
 	return Invalid, false
 }

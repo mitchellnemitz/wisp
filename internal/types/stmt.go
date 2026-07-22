@@ -655,9 +655,9 @@ func (c *checker) checkMatch(n *ast.MatchStmt) {
 		}
 		return
 	}
-	variants := variantsOf(st)
+	variants := variantsOf(st, c.info)
 	if variants == nil {
-		c.errf(n.Scrutinee.Pos(), "match requires an Optional or Result scrutinee, got %s", st)
+		c.errf(n.Scrutinee.Pos(), "match requires an Optional, Result, or tagged-union enum scrutinee, got %s", st)
 		for _, arm := range n.Arms {
 			c.pushScope()
 			c.checkBlock(arm.Body)
@@ -699,7 +699,7 @@ func (c *checker) checkMatch(n *ast.MatchStmt) {
 				continue
 			}
 			delete(remaining, pat.Variant)
-			bound, hasPayload := matchArmBoundType(st, pat.Variant)
+			bound, hasPayload := matchArmBoundType(st, pat.Variant, c.info)
 			if hasPayload && pat.Name == "" {
 				c.errf(pat.VariantPos, "variant %s has a payload; write %s(name) to bind it or %s(_) to discard", pat.Variant, pat.Variant, pat.Variant)
 			}

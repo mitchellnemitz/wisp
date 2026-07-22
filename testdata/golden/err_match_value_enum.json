@@ -1,0 +1,1 @@
+{ "desc": "match rejects a value enum scrutinee even after tagged-union generalization", "compileError": true, "diagContains": "match requires an Optional, Result, or tagged-union enum scrutinee" }
