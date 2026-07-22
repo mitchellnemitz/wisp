@@ -312,8 +312,8 @@ func (p *printer) structDecl(sd *ast.StructDecl) {
 // enumDecl renders an enum declaration: single-line `enum Name { V, V = n }` when
 // the source was single-line, or multi-line (one variant per line at depth 1 with
 // a trailing comma, closer at depth 0) per the Multiline flag, mirroring
-// structDecl. An explicit `= value` is preserved. v1 enums are module-local, so
-// there is no `export` prefix.
+// structDecl. An explicit `= value` is preserved. An exported enum gets the
+// `export ` prefix, mirroring export struct/fn/const.
 func (p *printer) enumDecl(ed *ast.EnumDecl) {
 	variant := func(v ast.EnumVariant) string {
 		if v.Value != nil {
@@ -321,7 +321,11 @@ func (p *printer) enumDecl(ed *ast.EnumDecl) {
 		}
 		return v.Name
 	}
-	head := "enum " + ed.Name
+	prefix := ""
+	if ed.Exported {
+		prefix = "export "
+	}
+	head := prefix + "enum " + ed.Name
 	if ed.Multiline {
 		items := make([]string, len(ed.Variants))
 		for i, v := range ed.Variants {

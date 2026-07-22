@@ -940,8 +940,31 @@ whose non-void body ends with one needs no trailing `return`.
 compile errors. Use `to_int(e)` for the value, or `switch` over the
 variants to produce a name.
 
-**Module scope.** Enums are module-local and cannot be exported; `export enum`
-is a compile error.
+**Module scope.** An enum declared without `export` is module-local, exactly
+like a non-exported struct or const. `export enum Name { ... }` makes the
+enum's variants and the enum itself, as a type, reachable from an importing
+module through its namespace alias:
+
+```wisp
+// lib/pal.wisp
+export enum Color { Red, Green, Blue }
+```
+
+```wisp
+// app.wisp
+include "./lib/pal.wisp" as pal
+
+fn paint() -> int {
+    let c: pal.Color = pal.Color.Green
+    return to_int(c)
+}
+```
+
+An exported enum behaves identically to a same-module enum in every respect:
+`==`/`!=`, exhaustive `switch`, `to_int(...)`, and use as a struct field,
+parameter, or return type all work the same across the module boundary.
+Referencing a non-exported enum, an unknown variant, or re-exporting an
+imported enum are each compile errors.
 
 ## Type aliases
 

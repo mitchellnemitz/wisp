@@ -1,0 +1,1 @@
+{ "desc": "an export enum whose name collides with a same-module struct (here non-exported) is a compile error regardless of export status (FR-012)", "compileError": true, "diagContains": "cannot share a name" }

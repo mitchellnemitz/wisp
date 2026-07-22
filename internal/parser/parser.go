@@ -225,9 +225,9 @@ func (p *parser) parseProgram() (*ast.Program, error) {
 	return prog, nil
 }
 
-// parseExportDecl parses `export fn ...` or `export struct ...`, setting the
-// Exported flag and ExportPos on the resulting declaration. `export` modifying
-// anything else is a located error.
+// parseExportDecl parses `export fn ...`, `export struct ...`, `export const
+// ...`, or `export enum ...`, setting the Exported flag and ExportPos on the
+// resulting declaration. `export` modifying anything else is a located error.
 func (p *parser) parseExportDecl(prog *ast.Program) error {
 	kw := p.advance() // export
 	switch p.curKind() {
@@ -262,11 +262,18 @@ func (p *parser) parseExportDecl(prog *ast.Program) error {
 		prog.Consts = append(prog.Consts, cd)
 		return nil
 	case token.Enum:
-		return p.errf(kw.Pos, "exporting an enum is not yet supported; enums are currently module-local")
+		ed, err := p.parseEnumDecl()
+		if err != nil {
+			return err
+		}
+		ed.Exported = true
+		ed.ExportPos = kw.Pos
+		prog.Enums = append(prog.Enums, ed)
+		return nil
 	case token.Type:
 		return p.errf(kw.Pos, "type aliases are module-local and cannot be exported")
 	default:
-		return p.errf(kw.Pos, "export must modify a function, struct, or const, got %s", p.describe(p.cur()))
+		return p.errf(kw.Pos, "export must modify a function, struct, const, or enum, got %s", p.describe(p.cur()))
 	}
 }
 

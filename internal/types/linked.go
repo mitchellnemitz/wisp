@@ -11,16 +11,17 @@ import (
 
 // moduleCtx holds one module's symbol tables during checking.
 type moduleCtx struct {
-	id         int
-	prog       *ast.Program
-	namespaces map[string]int           // alias -> modid (from the loader)
-	core       string                   // non-empty iff a synthetic core module (reserved namespace name)
-	funcs      map[string]*ast.FuncDecl // this module's top-level functions
-	exported   map[string]bool          // exported func+struct source names
-	structs    map[string]*StructInfo   // by source name, this module
-	enums      map[string]*EnumInfo     // by source name, this module (separate from structs, R2)
-	aliases    map[string]*aliasInfo    // transparent type aliases, by source name, this module
-	chain      []token.Position         // import/include chain from root
+	id            int
+	prog          *ast.Program
+	namespaces    map[string]int           // alias -> modid (from the loader)
+	core          string                   // non-empty iff a synthetic core module (reserved namespace name)
+	funcs         map[string]*ast.FuncDecl // this module's top-level functions
+	exported      map[string]bool          // exported func+struct source names
+	structs       map[string]*StructInfo   // by source name, this module
+	enums         map[string]*EnumInfo     // by source name, this module (separate from structs, R2)
+	exportedEnums map[string]bool          // source names of THIS module's `export enum`s (R2: separate from the shared `exported` set)
+	aliases       map[string]*aliasInfo    // transparent type aliases, by source name, this module
+	chain         []token.Position         // import/include chain from root
 
 	// File-local const tables, scoped per module so a bare-name const reference
 	// cannot leak across module boundaries and same-named consts in different
@@ -53,8 +54,9 @@ func (c *checker) runLinked(linked *module.Linked) {
 			id: m.ID, prog: m.Prog, namespaces: m.Namespaces, core: m.Core,
 			funcs: map[string]*ast.FuncDecl{}, exported: map[string]bool{},
 			structs: map[string]*StructInfo{}, enums: map[string]*EnumInfo{}, chain: m.Chain,
-			aliases:    map[string]*aliasInfo{},
-			constTable: map[string]*ConstEntry{}, topConsts: map[string]*Var{},
+			exportedEnums: map[string]bool{},
+			aliases:       map[string]*aliasInfo{},
+			constTable:    map[string]*ConstEntry{}, topConsts: map[string]*Var{},
 		}
 	}
 	// Pass 1: collect structs (assigning internal tokens) and funcs; record exports.
@@ -209,15 +211,22 @@ func (c *checker) resolveNamedType(s string, pos token.Position) Type {
 			c.errf(pos, "module %q has no type %q", ns, typ)
 			return Invalid
 		}
-		if _, ok := tctx.structs[typ]; !ok {
-			c.errf(pos, "module %q has no type %q", ns, typ)
-			return Invalid
+		if _, ok := tctx.structs[typ]; ok {
+			if !tctx.exported[typ] {
+				c.errf(pos, "type %q is not exported by %q", typ, ns)
+				return Invalid
+			}
+			return internalStructName(typ, modid)
 		}
-		if !tctx.exported[typ] {
-			c.errf(pos, "type %q is not exported by %q", typ, ns)
-			return Invalid
+		if _, ok := tctx.enums[typ]; ok {
+			if !tctx.exportedEnums[typ] {
+				c.errf(pos, "type %q is not exported by %q", typ, ns)
+				return Invalid
+			}
+			return internalEnumName(typ, modid)
 		}
-		return internalStructName(typ, modid)
+		c.errf(pos, "module %q has no type %q", ns, typ)
+		return Invalid
 	}
 	if _, ok := c.cur.structs[s]; ok {
 		return internalStructName(s, c.cur.id)

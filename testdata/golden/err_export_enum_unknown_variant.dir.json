@@ -1,0 +1,1 @@
+{ "desc": "referencing an unknown variant on an exported enum is a compile error naming the unknown variant", "compileError": true, "diagContains": "no variant \"Purple\"" }

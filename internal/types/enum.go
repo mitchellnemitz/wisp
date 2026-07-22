@@ -15,6 +15,9 @@ import (
 // non-literal explicit value are located errors. The empty-enum case is rejected
 // by the parser (T1). The caller sets c.cur = ctx first; collectStructs must have
 // run already so the struct-name collision check sees this module's structs.
+// Exported enums are recorded in the dedicated ctx.exportedEnums set (NOT the
+// shared ctx.exported map), so a same-named exported fn/const cannot make a
+// non-exported enum visible across a module boundary, and vice versa.
 func (c *checker) collectEnums(ctx *moduleCtx) {
 	for _, ed := range ctx.prog.Enums {
 		if isReservedIdent(ed.Name) {
@@ -80,6 +83,9 @@ func (c *checker) collectEnums(ctx *moduleCtx) {
 
 		c.info.Enums[string(internalEnumName(ed.Name, ctx.id))] = ei
 		ctx.enums[ed.Name] = ei
+		if ed.Exported {
+			ctx.exportedEnums[ed.Name] = true
+		}
 	}
 }
 

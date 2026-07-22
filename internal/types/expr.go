@@ -897,6 +897,53 @@ func (c *checker) resolveQualifiedConst(n *ast.FieldAccess, field string, modid 
 	return Invalid, nil, true
 }
 
+// checkQualifiedEnumVariantAccess handles `ns.Enum.Variant`: a FieldAccess
+// whose base X is ITSELF a FieldAccess matching the `ns.NAME` shape
+// (qualifiedNsTarget), where NAME names an enum declared (and exported) in
+// the target module. It mirrors checkEnumVariantAccess's fold, but resolves
+// the enum in the TARGET module's tables rather than c.cur's. Returns
+// (_, false) when n.X is not a namespace-qualified enum reference at all (so
+// the caller falls through to the existing const/funcref/struct path, which
+// also handles the re-export misuse case: an enum only reaches tctx.enums
+// when THAT module declared it, so a merely-imported enum is invisible here
+// exactly as for consts, R2/AC7 mirrored).
+func (c *checker) checkQualifiedEnumVariantAccess(n *ast.FieldAccess) (Type, bool) {
+	inner, isFA := n.X.(*ast.FieldAccess)
+	if !isFA {
+		return Invalid, false
+	}
+	enumName, modid, ok := c.qualifiedNsTarget(inner)
+	if !ok {
+		return Invalid, false
+	}
+	tctx := c.modCtx[modid]
+	ei, isEnum := tctx.enums[enumName]
+	if !isEnum {
+		return Invalid, false
+	}
+	nsName := inner.X.(*ast.Ident).Name
+	if !tctx.exportedEnums[enumName] {
+		// Gate on the dedicated exportedEnums set (Task 2), NOT the name-shared
+		// `exported` map, so a same-named exported fn/const cannot make a
+		// non-exported enum visible here (FR-002/FR-006). Preposition "by"
+		// matches the existing struct "not exported by %q" message and Task 2's
+		// enum-type branch, so all three "not exported" sites read identically.
+		c.errf(inner.DotPos, "enum %q is not exported by %q", enumName, nsName)
+		c.info.Types[n] = Invalid
+		return Invalid, true
+	}
+	val, found := ei.value(n.Field)
+	if !found {
+		c.errf(n.DotPos, "enum %q has no variant %q", enumName, n.Field)
+		c.info.Types[n] = Invalid
+		return Invalid, true
+	}
+	tok := internalEnumName(enumName, modid)
+	c.info.Types[n] = tok
+	c.info.FoldedValues[n] = val
+	return tok, true
+}
+
 // checkFieldAccess type-checks `x.field`: x must be a struct value and field
 // must exist; the result is the field's type.
 func (c *checker) checkFieldAccess(n *ast.FieldAccess, want Type) Type {
@@ -918,6 +965,9 @@ func (c *checker) checkFieldAccess(n *ast.FieldAccess, want Type) Type {
 	// variant; the access types to the enum and FOLDS to the variant's int value
 	// (recorded in info.FoldedValues -- the codegen precondition for inlining).
 	if t, ok := c.checkEnumVariantAccess(n); ok {
+		return t
+	}
+	if t, ok := c.checkQualifiedEnumVariantAccess(n); ok {
 		return t
 	}
 	xt := c.checkExpr(n.X)

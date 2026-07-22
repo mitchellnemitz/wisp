@@ -1,0 +1,1 @@
+{ "desc": "referencing a non-exported (module-local) enum from another module is a compile error naming it not exported", "compileError": true, "diagContains": "not exported" }

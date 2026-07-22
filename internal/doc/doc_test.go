@@ -110,6 +110,12 @@ func TestRenderSignatures(t *testing.T) {
 	assertContains(t, r("fn withdef(a: int = 5) -> int { return a }"), "fn withdef(a: int) -> int")
 }
 
+func TestRenderExportEnumPrefix(t *testing.T) {
+	prog, comments := mustParse2(t, "export enum Color { Red, Green }\nfn main() -> int { return 0 }\n")
+	out := Render("t.wisp", prog, comments)
+	assertContains(t, out, "export enum Color { Red, Green }")
+}
+
 func TestRenderCanonical(t *testing.T) {
 	src := "/// Returns n doubled.\nfn foo(n: int) -> int { return n + n }\nfn bar() -> void { }"
 	prog, comments := mustParse(t, src)

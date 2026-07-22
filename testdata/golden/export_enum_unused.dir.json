@@ -1,0 +1,5 @@
+{
+  "desc": "an unused exported enum (SC-005) leaves no trace in generated output, same as an unused export const/struct/fn",
+  "stdout": "hello\n",
+  "exit": 0
+}

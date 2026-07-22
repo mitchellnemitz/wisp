@@ -103,10 +103,20 @@ func TestParseEnumEmptyError(t *testing.T) {
 	}
 }
 
-func TestParseExportEnumRejected(t *testing.T) {
-	err := parseErr(t, "export enum S { Idle }\nfn main() -> int { return 0 }")
-	if !strings.Contains(err.Error(), "not yet supported") {
-		t.Errorf("error = %q, want 'not yet supported'", err.Error())
+func TestParseExportEnumParses(t *testing.T) {
+	prog := parseOK(t, "export enum S { Idle, Running }\nfn main() -> int { return 0 }")
+	if len(prog.Enums) != 1 {
+		t.Fatalf("expected 1 enum, got %d", len(prog.Enums))
+	}
+	ed := prog.Enums[0]
+	if !ed.Exported {
+		t.Errorf("Exported = false, want true")
+	}
+	if ed.ExportPos.Line == 0 {
+		t.Errorf("ExportPos not set")
+	}
+	if ed.Name != "S" || len(ed.Variants) != 2 {
+		t.Errorf("enum S parsed wrong: name=%q variants=%d", ed.Name, len(ed.Variants))
 	}
 }
 
