@@ -1,0 +1,1 @@
+{ "desc": "debug of a string payload is byte-safe (embedded semicolon and newline)", "stdout": "Text(\"a;b\n\")\n", "exit": 0 }

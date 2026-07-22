@@ -1661,8 +1661,39 @@ func (c *checker) debugRenderable(t Type, visiting map[Type]bool) bool {
 		return false
 	case isTypeVar(t):
 		return false
-	case c.isEnumType(t):
-		return false
+	case c.isValueEnum(t):
+		return false // top-level subject or struct field: no variant-name render
+	case c.isTaggedEnum(t):
+		if visiting[t] {
+			return false // self-referential or mutually recursive: not renderable
+		}
+		ei := c.info.Enums[string(t)]
+		if ei == nil {
+			return false
+		}
+		if visiting == nil {
+			visiting = map[Type]bool{}
+		}
+		visiting[t] = true
+		for _, pt := range ei.Payloads {
+			if pt == Invalid {
+				continue // no-payload variant
+			}
+			if c.isValueEnum(pt) {
+				// A value-enum PAYLOAD renders by its backing scalar (codegen's
+				// debugPayloadType rewrites it to Int/String/Bool before dispatch);
+				// it is renderable here even though the general isValueEnum arm above
+				// rejects a value enum as a top-level subject or struct field. This is
+				// exactly the SC-036/SC-036b path (debug_enum_value_payload_string/_bool).
+				continue
+			}
+			if !c.debugRenderable(pt, visiting) {
+				delete(visiting, t)
+				return false
+			}
+		}
+		delete(visiting, t)
+		return true
 	case isProcessType(t):
 		return false
 	case t == Int, t == Float, t == Bool, t == String:
@@ -1738,9 +1769,9 @@ func (c *checker) checkDebugCall(n *ast.CallExpr) Type {
 		c.errf(n.Args[0].Pos(), "debug cannot render a value of generic type %s; it requires a concrete type", at)
 		return Invalid
 	}
-	// An enum has no v1 name-rendering (R4); debug would leak the underlying int.
-	if c.isEnumType(at) {
-		c.errf(n.Args[0].Pos(), "debug() is not defined for enum %s (variant-name rendering is not yet supported); use int() for the value", disp(at))
+	// A value enum has no v1 name-rendering; debug would leak its backing scalar.
+	if c.isValueEnum(at) {
+		c.errf(n.Args[0].Pos(), "debug() is not defined for enum %s (variant-name rendering is not supported); use to_int()/to_string()/to_bool() for the backing value", disp(at))
 		return Invalid
 	}
 	if !c.debugRenderable(at, nil) {

@@ -1,0 +1,1 @@
+{ "desc": "a bool-backed value-enum payload renders by its backing bool", "stdout": "B(true)\n", "exit": 0 }

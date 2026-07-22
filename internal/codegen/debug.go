@@ -71,9 +71,14 @@ func (g *gen) genDebugValue(id atom, t types.Type) atom {
 		// handle-var read, no re-serialization.
 		idTemp := g.spillToTemp(id)
 		return g.readHandleVar(jsonTextName(idTemp))
+	case g.isTaggedEnumType(t):
+		return g.genDebugEnum(id, t)
 	case g.info.Enums[string(t)] != nil:
-		// An enum value already IS its canonical int (to_int(enum) is identity,
-		// expr.go:743); render like Int. Variant-name rendering is deferred (R4).
+		// value enum: unreachable as a debug SUBJECT (checker-rejected); left
+		// unchanged. Reached only if a value enum ever slips through -- it then
+		// spills its folded backing constant verbatim (the int for an int backing,
+		// the raw string for a string backing): wrong-shaped but injection-safe,
+		// and dead by construction (the checker rejects a value enum here).
 		return varAtom(g.spillToTemp(id))
 	default:
 		// struct (checker rejected everything else; resolveType gave concrete type)
@@ -289,4 +294,63 @@ func (g *gen) genDebugRunResult(id atom) atom {
 	g.line(`%s="RunResult { stdout: ${%s}, stderr: ${%s}, code: $%s }"`,
 		tmp, stdoutQ, stderrQ, codeTemp)
 	return varAtom(tmp)
+}
+
+// isTaggedEnumType mirrors the checker's isTaggedEnum: codegen has g.info.Enums
+// but not the checker type itself.
+func (g *gen) isTaggedEnumType(t types.Type) bool {
+	ei, ok := g.info.Enums[string(t)]
+	return ok && ei.Kind == types.EnumTagged
+}
+
+// genDebugEnum renders a tagged-union enum: VariantName(<debug payload>) for a
+// payload variant, bare VariantName for a no-payload variant. The variant name is
+// a compiler-emitted identifier literal; the payload flows only through
+// double-quoted expansions and the print()-via-%s discipline genDebug already
+// uses, so trailing bytes/metacharacters in a string payload survive byte-exact.
+func (g *gen) genDebugEnum(id atom, t types.Type) atom {
+	ei := g.info.Enums[string(t)]
+	idTemp := g.spillToTemp(id)
+	tag := g.readHandleVar(tagFieldName(idTemp))
+	res := g.newTemp()
+	g.line(`case "$%s" in`, tag.name)
+	g.indent++
+	for i, name := range ei.Variants {
+		g.line(`%s)`, name) // variant-name identifier literal: injection-safe, unquoted
+		g.indent++
+		payload := ei.Payloads[i]
+		if payload == types.Invalid {
+			g.line(`%s="%s"`, res, name) // bare variant
+		} else {
+			valAtom := g.readHandleVar(tagValueName(idTemp))
+			rendered := g.genDebugValue(valAtom, g.debugPayloadType(payload))
+			renderedTemp := g.spillToTemp(rendered)
+			g.line(`%s="%s($%s)"`, res, name, renderedTemp)
+		}
+		g.indent--
+		g.line(`;;`)
+	}
+	// Defense-in-depth default arm, matching genDebugOptional/genDebugResult:
+	// the tag is always a compiler-emitted declared variant, so this cannot fire
+	// through the type system, but a `*)` arm avoids leaving res unset (silent
+	// empty render) on any future codegen/checker drift.
+	g.line(`*)`)
+	g.indent++
+	g.line(`%s="<?>"`, res)
+	g.indent--
+	g.line(`;;`)
+	g.indent--
+	g.line(`esac`)
+	return varAtom(res)
+}
+
+// debugPayloadType maps a value-enum payload type to its backing scalar so the
+// renderer dispatches by backing (FR-020/SC-036/SC-036b) and never reaches the
+// dead int-render branch, which would mis-render a string/bool-backed payload. A
+// non-value-enum payload type is returned unchanged.
+func (g *gen) debugPayloadType(pt types.Type) types.Type {
+	if ei, ok := g.info.Enums[string(pt)]; ok && ei.Kind == types.EnumValue {
+		return ei.Backing // Int/String/Bool -> the matching genDebugValue leaf case
+	}
+	return pt
 }

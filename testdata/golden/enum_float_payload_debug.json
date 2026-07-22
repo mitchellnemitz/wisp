@@ -1,0 +1,1 @@
+{ "desc": "a float payload renders through the fstr canonicalization path", "stdout": "F(1.5)\n", "exit": 0 }
