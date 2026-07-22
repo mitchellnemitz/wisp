@@ -112,3 +112,20 @@ func TestNoEnumUnchanged(t *testing.T) {
 		t.Fatalf("no-enum file changed:\n--got--\n%s\n--want--\n%s", got, src)
 	}
 }
+
+// TestExportEnumSingleLineRoundTrip: an exported enum renders with the
+// `export ` prefix, single-line, mirroring export struct/fn/const.
+func TestExportEnumSingleLineRoundTrip(t *testing.T) {
+	src := "export enum Color { Red, Green, Blue }\n" +
+		"fn main() -> int { return 0 }\n"
+	want := "export enum Color { Red, Green, Blue }\n\n" + mainTail
+	got := mustFormat(t, src)
+	if got != want {
+		t.Fatalf("export enum round trip:\n--got--\n%s\n--want--\n%s", got, want)
+	}
+	// Idempotence (SC-007): formatting the formatted output is a no-op.
+	got2 := mustFormat(t, got)
+	if got2 != got {
+		t.Fatalf("export enum not idempotent:\n--first--\n%s\n--second--\n%s", got, got2)
+	}
+}

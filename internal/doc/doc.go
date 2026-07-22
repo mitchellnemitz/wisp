@@ -149,6 +149,9 @@ func viewStruct(s *ast.StructDecl) declView {
 
 func viewEnum(e *ast.EnumDecl) declView {
 	var b strings.Builder
+	if e.Exported {
+		b.WriteString("export ")
+	}
 	b.WriteString("enum ")
 	b.WriteString(e.Name)
 	b.WriteString(" { ")
