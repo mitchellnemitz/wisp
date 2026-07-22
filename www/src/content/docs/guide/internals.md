@@ -21,7 +21,7 @@ returns the script bytes, a per-line source map, and diagnostics. A parse or
 link error becomes a diagnostic. Any checker error stops the build before
 codegen, so codegen only ever runs on a program that type-checks.
 (`codegen.GenerateWithMap` is a lower-level single-program entry point that the
-driver no longer calls directly.)
+driver does not call directly.)
 
 ## Packages
 
