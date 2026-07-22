@@ -1,0 +1,5 @@
+{
+  "desc": "export enum: variant access, switch exhaustiveness, to_int, ==/!=, struct field of imported enum type, a library fn taking/returning its own exported enum, and a consuming-module fn with pal.Color param+return round-trip (FR-004a/b, SC-002), across include; ShellCheck-clean under dash/busybox/bash/zsh",
+  "stdout": "a-is-green\na-ne-b\n1\n2\ngreen\nblue\nblue\ne-is-blue\n2\nblue\nbl\n",
+  "exit": 0
+}

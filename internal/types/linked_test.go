@@ -722,3 +722,113 @@ func TestQualifiedUserFuncAsDefaultArgumentStillErrors(t *testing.T) {
 		t.Fatalf("want a not-a-constant-expression error, got %v", errMsgs(info))
 	}
 }
+
+// FR-009 (to_string half).
+func TestLinkedExportedEnumToStringStillRejected(t *testing.T) {
+	root := mod(t, 0,
+		`fn main() -> int { print(to_string(pal.Color.Green)); return 0 }`,
+		map[string]int{"pal": 1})
+	pal := mod(t, 1, `export enum Color { Red, Green }`, nil)
+	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
+	if !hasErr(info, "to_string() is not defined for enum") {
+		t.Fatalf("want to_string-on-enum rejected, got %v", errMsgs(info))
+	}
+}
+
+// FR-009 (debug half). Exact diagnostic verified against
+// internal/types/call.go:1732 ("debug() is not defined for enum %s ...").
+func TestLinkedExportedEnumDebugStillRejected(t *testing.T) {
+	root := mod(t, 0,
+		`fn main() -> int { print(debug(pal.Color.Green)); return 0 }`,
+		map[string]int{"pal": 1})
+	pal := mod(t, 1, `export enum Color { Red, Green }`, nil)
+	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
+	if !hasErr(info, "debug() is not defined for enum") {
+		t.Fatalf("want debug-on-enum rejected, got %v", errMsgs(info))
+	}
+}
+
+// SC-008: int-to-enum conversion remains unavailable. There is no conversion
+// syntax/constructor, so the reachable surface is assigning an int where the
+// imported enum type is expected -- a let-initializer type error. Exact
+// diagnostic verified against internal/types/stmt.go:162
+// ("initializer of %q has type %s, want %s"); `1` has type int, so the
+// leading "initializer of \"c\" has type int" is stable and unique to this test.
+func TestLinkedIntToExportedEnumRejected(t *testing.T) {
+	root := mod(t, 0,
+		`fn main() -> int {
+  let c: pal.Color = 1
+  return to_int(c)
+}`,
+		map[string]int{"pal": 1})
+	pal := mod(t, 1, `export enum Color { Red, Green }`, nil)
+	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
+	if !hasErr(info, `initializer of "c" has type int`) {
+		t.Fatalf("want int-to-enum assignment rejected with a type-mismatch, got %v", errMsgs(info))
+	}
+}
+
+// FR-005b (negative half): a defaultless switch on an IMPORTED enum that omits
+// a variant is a compile error, exactly as for a same-module enum. Exact
+// diagnostic verified against internal/types/stmt.go:877
+// ("switch is not exhaustive: missing %s"). The positive/exhaustive direction
+// is covered by export_enum.dir's switches; this is the required missing-arm
+// error direction.
+func TestLinkedImportedEnumSwitchNotExhaustive(t *testing.T) {
+	root := mod(t, 0,
+		`fn main() -> int {
+  let c: pal.Color = pal.Color.Green
+  switch (c) {
+    case pal.Color.Red   { return 0 }
+    case pal.Color.Green { return 1 }
+  }
+  return -1
+}`,
+		map[string]int{"pal": 1})
+	pal := mod(t, 1, `export enum Color { Red, Green, Blue }`, nil)
+	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
+	if !hasErr(info, "switch is not exhaustive: missing") {
+		t.Fatalf("want a non-exhaustive-switch error naming the missing variant, got %v", errMsgs(info))
+	}
+}
+
+// FR-013: two aliases to the SAME exported enum denote one type, so a value
+// obtained via one alias is accepted where the other alias's type is expected.
+// Both "pa" and "pb" map to module id 1, so pa.Color and pb.Color both resolve
+// to internalEnumName("Color", 1) -- alias-independent identity.
+func TestLinkedExportedEnumTwoAliasesSameType(t *testing.T) {
+	root := mod(t, 0,
+		`fn take(c: pa.Color) -> int { return to_int(c) }
+fn main() -> int {
+  let g: pb.Color = pb.Color.Green
+  return take(g)
+}`,
+		map[string]int{"pa": 1, "pb": 1})
+	pal := mod(t, 1, `export enum Color { Red, Green, Blue }`, nil)
+	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
+	if len(info.Errors) != 0 {
+		t.Fatalf("two aliases to one exported enum must be one type: %v", errMsgs(info))
+	}
+}
+
+// FR-002/FR-006 visibility integrity: a NON-exported enum stays invisible
+// cross-module even when the defining module exports a SAME-NAMED function.
+// This is the regression guard for the dedicated `exportedEnums` gate (Task 2):
+// under the old name-shared `exported` map, `export fn Color` would have set
+// `exported["Color"]=true` and leaked the non-exported `enum Color`. pal
+// declares `enum Color` (not exported) AND `export fn Color`; root must be
+// unable to reach `pal.Color.Green`. (enum-vs-fn is not a same-module collision
+// error today, so this compiles far enough to exercise the gate.)
+func TestLinkedEnumHiddenDespiteSameNameExportedFunc(t *testing.T) {
+	root := mod(t, 0,
+		`fn main() -> int { return to_int(pal.Color.Green) }`,
+		map[string]int{"pal": 1})
+	pal := mod(t, 1,
+		`enum Color { Red, Green }
+export fn Color() -> int { return 0 }`,
+		nil)
+	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
+	if !hasErr(info, "not exported") {
+		t.Fatalf("non-exported enum must stay invisible despite a same-named exported fn, got %v", errMsgs(info))
+	}
+}

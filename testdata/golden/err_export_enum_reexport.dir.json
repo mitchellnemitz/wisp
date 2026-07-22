@@ -1,0 +1,1 @@
+{ "desc": "re-exporting an imported enum (mid never itself declares/exports Color) is rejected, mirroring err_export_const_reexport", "compileError": true, "diagContains": "has no exported constant" }

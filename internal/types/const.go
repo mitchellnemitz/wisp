@@ -144,6 +144,19 @@ func (c *checker) foldConst(e ast.Expr) (Type, interface{}) {
 			c.errf(n.DotPos, "enum %q has no variant %q", ei.Name, n.Field)
 			return Invalid, nil
 		}
+		// Qualified enum variant access `ns.Enum.Variant` also folds UNCONDITIONALLY
+		// (R3), mirroring the local-enum case directly above: a namespace-qualified
+		// variant is just as much a constant as a local one, so it must be usable in
+		// a switch case (FR-005b) without the default-argument-only gate below.
+		// checkQualifiedEnumVariantAccess fully handles resolution (success or the
+		// right diagnostic -- not-exported, unknown variant, or not-an-enum-there)
+		// and records info.FoldedValues[n] itself on success.
+		if tok, ok := c.checkQualifiedEnumVariantAccess(n); ok {
+			if tok == Invalid {
+				return Invalid, nil
+			}
+			return tok, c.info.FoldedValues[n]
+		}
 		// A cross-module `ns.NAME` const is permitted in a const-expr ONLY in a
 		// default-argument context (foldAllowsQualified, AC3/R10). When the base is a
 		// namespace alias there, resolveQualifiedConst fully handles it (resolve or
