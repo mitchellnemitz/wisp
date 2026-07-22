@@ -1,0 +1,1 @@
+{ "desc": "payload variant called with the wrong argument type", "compileError": true, "diagContains": "IntLit" }

@@ -1,0 +1,1 @@
+{ "desc": "payload variant called with no argument", "compileError": true, "diagContains": "variant IntLit has a payload" }

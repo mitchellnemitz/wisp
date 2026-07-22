@@ -386,3 +386,146 @@ func (c *checker) isEnumType(t Type) bool {
 	_, ok := c.info.Enums[string(t)]
 	return ok
 }
+
+// variantExists reports whether ei declares a variant named name.
+func variantExists(ei *EnumInfo, name string) bool {
+	for _, v := range ei.Variants {
+		if v == name {
+			return true
+		}
+	}
+	return false
+}
+
+// qualifiedEnumOfBase resolves the cross-module construction base `ns.Enum` of a
+// callee `ns.Enum.Variant`, mirroring checkQualifiedEnumVariantAccess's target-
+// module resolution (internal/types/expr.go). It returns the internal enum
+// token and its EnumInfo when fa.X is `ns.Enum` naming an enum EXPORTED by the
+// target module; otherwise (_, _, false) so the caller falls through to its
+// other paths -- which surface the same "not a namespace" / "not exported"
+// diagnostics the bare qualified-access path already produces, so no error is
+// duplicated here.
+func (c *checker) qualifiedEnumOfBase(fa *ast.FieldAccess) (Type, *EnumInfo, bool) {
+	inner, isFA := fa.X.(*ast.FieldAccess)
+	if !isFA {
+		return Invalid, nil, false
+	}
+	enumName, modid, ok := c.qualifiedNsTarget(inner)
+	if !ok {
+		return Invalid, nil, false
+	}
+	tctx := c.modCtx[modid]
+	ei, isEnum := tctx.enums[enumName]
+	if !isEnum || !tctx.exportedEnums[enumName] {
+		return Invalid, nil, false
+	}
+	return internalEnumName(enumName, modid), ei, true
+}
+
+// checkEnumConstruct type-checks a tagged-union construction call
+// `Enum.Variant(arg)` (callee is a FieldAccess naming an enum variant). It
+// validates arity and the payload type and records a CallEnumConstruct
+// CallInfo. Returns (_, false) when the callee's base does not name an enum
+// variant, so checkCall falls through to its other paths.
+func (c *checker) checkEnumConstruct(n *ast.CallExpr) (Type, bool) {
+	fa, ok := n.Callee.(*ast.FieldAccess)
+	if !ok {
+		return Invalid, false
+	}
+	tok, ei, ok := c.enumTypeOfBase(fa) // same-module `Enum.Variant`
+	if !ok {
+		// Cross-module `ns.Enum.Variant(arg)`: fa.X is itself `ns.Enum`.
+		tok, ei, ok = c.qualifiedEnumOfBase(fa)
+	}
+	if !ok {
+		return Invalid, false
+	}
+	if ei.Kind == EnumValue {
+		// FR-022/SC-037: a value-enum variant is a folded constant, not a constructor.
+		c.errf(fa.DotPos, "variant %q of value enum %q is not a constructor and cannot be called", fa.Field, ei.Name)
+		c.typeArgs(n.Args)
+		return Invalid, true
+	}
+	payload, hasPayload := ei.payload(fa.Field)
+	if !variantExists(ei, fa.Field) {
+		c.errf(fa.DotPos, "enum %q has no variant %q", ei.Name, fa.Field)
+		c.typeArgs(n.Args)
+		return Invalid, true
+	}
+	if !hasPayload {
+		// SC-022/SC-024: any call form on a no-payload variant is an arity error.
+		c.errf(fa.DotPos, "variant %s has no payload; write %s with no parentheses", fa.Field, fa.Field)
+		c.typeArgs(n.Args)
+		c.info.Types[n] = tok
+		return tok, true
+	}
+	if len(n.Args) != 1 {
+		// SC-023 (zero args) and SC-024 (extra args).
+		c.errf(n.CalleePos, "variant %s has a payload; it expects 1 argument, got %d", fa.Field, len(n.Args))
+		c.typeArgs(n.Args)
+		c.info.Types[n] = tok
+		return tok, true
+	}
+	at := c.checkExprExpecting(n.Args[0], payload)
+	if at != Invalid && at != payload {
+		c.errf(n.Args[0].Pos(), "variant %s payload has type %s, want %s", fa.Field, at, payload)
+	}
+	c.info.Calls[n] = &CallInfo{Kind: CallEnumConstruct, EnumTok: tok, Variant: fa.Field, Args: n.Args, Result: tok}
+	c.info.Types[n] = tok
+	return tok, true
+}
+
+// checkBareTaggedVariant handles a bare (no-call) `Enum.Variant` reference where
+// Enum is a tagged-union enum: a no-payload variant is a construction expression;
+// a payload variant is an error -- the SC-020 FuncRef-exclusion (FR-017) when the
+// reference is in a FuncRef-expecting position (`want` is a funcref), else the
+// SC-030 "variant has a payload" diagnostic. `want` is the expected type threaded
+// from checkFieldAccess so the two contexts are distinguished here.
+func (c *checker) checkBareTaggedVariant(n *ast.FieldAccess, want Type) (Type, bool) {
+	tok, ei, ok := c.enumTypeOfBase(n) // same-module `Enum.Variant`
+	if !ok {
+		// Cross-module bare `ns.Enum.Variant` (e.g. e.Expr.Unit): n.X is `ns.Enum`.
+		// Task 6's tagged short-circuit makes checkQualifiedEnumVariantAccess return
+		// (Invalid,false) for a cross-module tagged access, so checkFieldAccess falls
+		// through to here; resolve the base the same way checkEnumConstruct does.
+		tok, ei, ok = c.qualifiedEnumOfBase(n)
+	}
+	if !ok {
+		return Invalid, false
+	}
+	if ei.Kind != EnumTagged {
+		return Invalid, false
+	}
+	if !variantExists(ei, n.Field) {
+		c.errf(n.DotPos, "enum %q has no variant %q", ei.Name, n.Field)
+		c.info.Types[n] = Invalid
+		return Invalid, true
+	}
+	_, hasPayload := ei.payload(n.Field)
+	if hasPayload {
+		// SC-020/FR-017: in a FuncRef-expecting position a payload variant looks
+		// like a constructor function but is not a first-class function value.
+		// This gate fires BEFORE the SC-030 branch (spec: FuncRef context governs).
+		if want != Invalid && isFuncref(want) {
+			c.errf(n.DotPos, "tagged-union variant %q cannot be used as a function reference; construct it with %s(...)", n.Field, n.Field)
+			c.info.Types[n] = Invalid
+			return Invalid, true
+		}
+		// SC-030: a bare payload-variant reference is neither construction nor fold.
+		c.errf(n.DotPos, "variant %s has a payload; write %s(name) to construct it", n.Field, n.Field)
+		c.info.Types[n] = Invalid
+		return Invalid, true
+	}
+	// No-payload construction: record a CallEnumConstruct-equivalent so codegen
+	// allocates a tag-only handle. A FieldAccess cannot live in Calls, so record
+	// via Types + a dedicated map.
+	c.info.Types[n] = tok
+	c.markBareEnumConstruct(n, tok, n.Field)
+	return tok, true
+}
+
+// markBareEnumConstruct records a bare no-payload variant construction
+// (`Expr.Unit`) so codegen can allocate the tag-only handle.
+func (c *checker) markBareEnumConstruct(n *ast.FieldAccess, tok Type, variant string) {
+	c.info.BareEnumConstructs[n] = &BareEnumConstruct{EnumTok: tok, Variant: variant}
+}

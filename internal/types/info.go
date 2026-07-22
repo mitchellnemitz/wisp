@@ -100,6 +100,10 @@ const (
 	// element, a dict value, or another call's result). Codegen spills the callee
 	// to a temp and invokes it as `"$ftmp" "$a" "$b"`.
 	CallIndirect
+	// CallEnumConstruct is a tagged-union construction call `Enum.Variant(arg)`.
+	// EnumTok and Variant identify the enum and variant; Args holds the single
+	// payload argument.
+	CallEnumConstruct
 )
 
 // CallInfo is the resolved form of a call expression. Args is the full,
@@ -116,6 +120,8 @@ type CallInfo struct {
 	Args      []ast.Expr      // full argument list, defaults filled in
 	Result    Type            // call result type
 	TypeSubst map[string]Type // non-nil for numeric-bounded instantiations; maps param name -> concrete type (or type var for recursive calls)
+	EnumTok   Type            // set when Kind == CallEnumConstruct: the constructed enum's internal token
+	Variant   string          // set when Kind == CallEnumConstruct: the constructed variant's name
 }
 
 // FuncRef is a resolved function reference (M4): a bare function name used in a
@@ -125,6 +131,15 @@ type CallInfo struct {
 type FuncRef struct {
 	Mangled string
 	Type    Type
+}
+
+// BareEnumConstruct is the resolved form of a bare (no-call) reference to a
+// tagged-union no-payload variant (`Expr.Unit`), which constructs a tag-only
+// enum value. A FieldAccess cannot be keyed in Calls (that map is CallExpr
+// only), so it gets its own map on Info.
+type BareEnumConstruct struct {
+	EnumTok Type
+	Variant string
 }
 
 // StructFieldInfo is one resolved struct field: its source name and type, in
@@ -256,6 +271,11 @@ type Info struct {
 	MatchArmVars map[*ast.MatchArm]*Var
 	// Calls maps each call expression to its resolved form.
 	Calls map[*ast.CallExpr]*CallInfo
+	// BareEnumConstructs maps each bare (no-call) FieldAccess reference to a
+	// tagged-union no-payload variant (`Expr.Unit`) to its resolved form, so
+	// codegen can allocate the tag-only handle. A FieldAccess is not a CallExpr,
+	// so it cannot live in Calls.
+	BareEnumConstructs map[*ast.FieldAccess]*BareEnumConstruct
 	// Funcs maps each function declaration to its resolved per-function data.
 	Funcs map[*ast.FuncDecl]*FuncInfo
 	// Tests maps each `test (...)` declaration to the per-test-body FuncInfo
@@ -305,23 +325,24 @@ type Info struct {
 
 func newInfo() *Info {
 	return &Info{
-		Types:          map[ast.Expr]Type{},
-		FoldedValues:   map[ast.Expr]interface{}{},
-		Vars:           map[*ast.LetStmt]*Var{},
-		Uses:           map[*ast.Ident]*Var{},
-		FuncRefs:       map[*ast.Ident]*FuncRef{},
-		MemberFuncRefs: map[*ast.FieldAccess]*FuncRef{},
-		ForInVars:      map[*ast.ForInStmt]*Var{},
-		CatchVars:      map[*ast.TryStmt]*Var{},
-		MatchArmVars:   map[*ast.MatchArm]*Var{},
-		Calls:          map[*ast.CallExpr]*CallInfo{},
-		Funcs:          map[*ast.FuncDecl]*FuncInfo{},
-		Tests:          map[*ast.TestDecl]*FuncInfo{},
-		Structs:        map[string]*StructInfo{},
-		Enums:          map[string]*EnumInfo{},
-		ConstTable:     map[string]*ConstEntry{},
-		ConstVars:      map[*ast.ConstStmt]*Var{},
-		TopConstVars:   map[*ast.ConstDecl]*Var{},
-		FinalVars:      map[*ast.FinalStmt]*Var{},
+		Types:              map[ast.Expr]Type{},
+		FoldedValues:       map[ast.Expr]interface{}{},
+		Vars:               map[*ast.LetStmt]*Var{},
+		Uses:               map[*ast.Ident]*Var{},
+		FuncRefs:           map[*ast.Ident]*FuncRef{},
+		MemberFuncRefs:     map[*ast.FieldAccess]*FuncRef{},
+		ForInVars:          map[*ast.ForInStmt]*Var{},
+		CatchVars:          map[*ast.TryStmt]*Var{},
+		MatchArmVars:       map[*ast.MatchArm]*Var{},
+		Calls:              map[*ast.CallExpr]*CallInfo{},
+		BareEnumConstructs: map[*ast.FieldAccess]*BareEnumConstruct{},
+		Funcs:              map[*ast.FuncDecl]*FuncInfo{},
+		Tests:              map[*ast.TestDecl]*FuncInfo{},
+		Structs:            map[string]*StructInfo{},
+		Enums:              map[string]*EnumInfo{},
+		ConstTable:         map[string]*ConstEntry{},
+		ConstVars:          map[*ast.ConstStmt]*Var{},
+		TopConstVars:       map[*ast.ConstDecl]*Var{},
+		FinalVars:          map[*ast.FinalStmt]*Var{},
 	}
 }

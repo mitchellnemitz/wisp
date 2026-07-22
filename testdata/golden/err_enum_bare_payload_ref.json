@@ -1,0 +1,1 @@
+{ "desc": "bare reference to a payload variant with no call", "compileError": true, "diagContains": "variant IntLit has a payload" }

@@ -40,6 +40,13 @@ func (c *checker) checkCall(n *ast.CallExpr) Type {
 	if n.CalleeName != "" {
 		return c.checkNamedCall(n)
 	}
+	// A tagged-union construction call `Enum.Variant(arg)`: the callee is a
+	// FieldAccess whose base names an enum type (checked before the namespace path,
+	// since an enum-variant callee and a namespace-member callee are both
+	// FieldAccess and the enum check must win when the base names an enum).
+	if t, ok := c.checkEnumConstruct(n); ok {
+		return t
+	}
 	// A qualified cross-module call `ns.fn(...)` (M8): the callee is a FieldAccess
 	// whose base is an in-scope namespace alias not shadowed by a local variable.
 	if field, modid, ok := c.qualifiedNsTarget(n.Callee); ok {

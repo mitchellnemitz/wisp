@@ -975,6 +975,14 @@ func (c *checker) checkFieldAccess(n *ast.FieldAccess, want Type) Type {
 	if t, ok := c.checkQualifiedEnumVariantAccess(n); ok {
 		return t
 	}
+	// A bare (no-call) reference to a tagged-union variant: `Expr.Unit` constructs
+	// a no-payload value; `Expr.IntLit` (payload variant, no call) is an error --
+	// the SC-020 "function reference" diagnostic when `want` is a funcref, else the
+	// SC-030 "has a payload" diagnostic. `want` is threaded in so the helper can
+	// distinguish the two contexts.
+	if t, ok := c.checkBareTaggedVariant(n, want); ok {
+		return t
+	}
 	xt := c.checkExpr(n.X)
 	if xt == Invalid {
 		return Invalid

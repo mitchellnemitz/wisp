@@ -1,0 +1,1 @@
+{ "desc": "payload variant passed where a function reference is expected", "compileError": true, "diagContains": "function reference" }
