@@ -940,7 +940,8 @@ whose non-void body ends with one needs no trailing `return`.
 compile errors. Use `to_int(e)` for the value, or `switch` over the
 variants to produce a name.
 
-**Module scope.** Enums are module-local. `export enum` is not supported.
+**Module scope.** Enums are module-local and cannot be exported; `export enum`
+is a compile error.
 
 ## Type aliases
 
