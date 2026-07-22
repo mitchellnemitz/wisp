@@ -1,1 +1,1 @@
-{ "desc": "int value enum: explicit-then-auto-increment fold, ==", "stdout": "6\nfalse\ntrue\n", "exit": 0 }
+{ "desc": "int value enum: explicit-then-auto-increment fold, ==, contains/index_of/unique stay comparable", "stdout": "6\nfalse\ntrue\nfalse\ntrue\n1\n2\n", "exit": 0 }

@@ -980,7 +980,7 @@ func (c *checker) checkGenericUserCall(n *ast.CallExpr, fn *ast.FuncDecl, modid 
 		// comparable-bounded in the CALLER's scope: when a comparable generic is
 		// called from inside another generic, unification binds the callee's T to
 		// the caller's $U, and the bound propagates when U: comparable.
-		if !isComparableConcrete(ct) && !c.isComparableTypeVar(ct) && !c.isEnumType(ct) {
+		if !isComparableConcrete(ct) && !c.isComparableTypeVar(ct) && !c.isValueEnum(ct) {
 			pos := boundErrPos(n, tp, origin, typeArgPos)
 			shown := disp(ct) // strip struct @modid / typevar $ from the message
 			if isTypeVar(ct) {

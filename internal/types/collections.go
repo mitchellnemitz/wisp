@@ -393,7 +393,7 @@ func (c *checker) checkIndexOfCall(n *ast.CallExpr, dispName string) Type {
 		}
 	case isArray(a1):
 		et := elemType(a1)
-		if !isComparableElem(et) && !c.isEnumType(et) {
+		if !isComparableElem(et) && !c.isValueEnum(et) {
 			c.errf(n.Args[0].Pos(), "%s on an array is defined only for comparable element types int/bool/string/enum, got [%s]", dispName, et)
 			return res
 		}
@@ -469,7 +469,7 @@ func (c *checker) checkUniqueCall(n *ast.CallExpr, dispName string) Type {
 		return Invalid
 	}
 	et := elemType(at)
-	if !isComparableElem(et) && !c.isEnumType(et) {
+	if !isComparableElem(et) && !c.isValueEnum(et) {
 		c.errf(n.Args[0].Pos(), "%s on an array is defined only for comparable element types int/bool/string/enum, got [%s]", dispName, et)
 		return Invalid
 	}
