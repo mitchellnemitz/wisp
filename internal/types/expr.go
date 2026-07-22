@@ -932,7 +932,7 @@ func (c *checker) checkQualifiedEnumVariantAccess(n *ast.FieldAccess) (Type, boo
 		c.info.Types[n] = Invalid
 		return Invalid, true
 	}
-	val, found := ei.value(n.Field)
+	cv, found := ei.constValue(n.Field)
 	if !found {
 		c.errf(n.DotPos, "enum %q has no variant %q", enumName, n.Field)
 		c.info.Types[n] = Invalid
@@ -940,7 +940,7 @@ func (c *checker) checkQualifiedEnumVariantAccess(n *ast.FieldAccess) (Type, boo
 	}
 	tok := internalEnumName(enumName, modid)
 	c.info.Types[n] = tok
-	c.info.FoldedValues[n] = val
+	c.info.FoldedValues[n] = cv
 	return tok, true
 }
 

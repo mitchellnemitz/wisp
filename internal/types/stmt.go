@@ -791,7 +791,7 @@ func (c *checker) checkSwitch(n *ast.SwitchStmt) {
 		subjEnum = c.info.Enums[string(subj)]
 		remaining = map[int64]string{}
 		for i, name := range subjEnum.Variants {
-			remaining[subjEnum.Values[i]] = name
+			remaining[subjEnum.Consts[i].(int64)] = name
 		}
 	}
 	// seenCaseValues tracks folded values across all cases for duplicate detection.

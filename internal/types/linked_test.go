@@ -387,7 +387,7 @@ fn main() -> int {
   return to_int(w.c)
 }`,
 		map[string]int{"pal": 1})
-	pal := mod(t, 1, `export enum Color { Red, Green, Blue }`, nil)
+	pal := mod(t, 1, `export enum Color: int { Red, Green, Blue }`, nil)
 	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
 	if len(info.Errors) != 0 {
 		t.Fatalf("unexpected errors: %v", errMsgs(info))
@@ -399,7 +399,7 @@ func TestLinkedNonExportedEnumTypeErrors(t *testing.T) {
 		`struct Wrapper { c: pal.Color }
 fn main() -> int { return 0 }`,
 		map[string]int{"pal": 1})
-	pal := mod(t, 1, `enum Color { Red, Green }`, nil) // not exported
+	pal := mod(t, 1, `enum Color: int { Red, Green }`, nil) // not exported
 	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
 	if !hasErr(info, "not exported") {
 		t.Fatalf("want a not-exported error, got %v", errMsgs(info))
@@ -416,7 +416,7 @@ func TestLinkedExportedEnumVariantResolves(t *testing.T) {
   return -1
 }`,
 		map[string]int{"pal": 1})
-	pal := mod(t, 1, `export enum Color { Red, Green, Blue }`, nil)
+	pal := mod(t, 1, `export enum Color: int { Red, Green, Blue }`, nil)
 	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
 	if len(info.Errors) != 0 {
 		t.Fatalf("unexpected errors: %v", errMsgs(info))
@@ -427,7 +427,7 @@ func TestLinkedNonExportedEnumVariantErrors(t *testing.T) {
 	root := mod(t, 0,
 		`fn main() -> int { return to_int(pal.Color.Green) }`,
 		map[string]int{"pal": 1})
-	pal := mod(t, 1, `enum Color { Red, Green }`, nil) // not exported
+	pal := mod(t, 1, `enum Color: int { Red, Green }`, nil) // not exported
 	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
 	if !hasErr(info, "not exported") {
 		t.Fatalf("want a not-exported error, got %v", errMsgs(info))
@@ -438,7 +438,7 @@ func TestLinkedExportedEnumUnknownVariantErrors(t *testing.T) {
 	root := mod(t, 0,
 		`fn main() -> int { return to_int(pal.Color.Purple) }`,
 		map[string]int{"pal": 1})
-	pal := mod(t, 1, `export enum Color { Red, Green, Blue }`, nil)
+	pal := mod(t, 1, `export enum Color: int { Red, Green, Blue }`, nil)
 	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
 	if !hasErr(info, `no variant "Purple"`) {
 		t.Fatalf("want an unknown-variant error, got %v", errMsgs(info))
@@ -461,7 +461,7 @@ func TestLinkedEnumReExportRejected(t *testing.T) {
 		`fn main() -> int { return to_int(mid.Color.Green) }`,
 		map[string]int{"mid": 1})
 	mid := mod(t, 1, `fn use_it() -> int { return to_int(base.Color.Green) }`, map[string]int{"base": 2})
-	base := mod(t, 2, `export enum Color { Red, Green }`, nil)
+	base := mod(t, 2, `export enum Color: int { Red, Green }`, nil)
 	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, mid, base}})
 	if !hasErr(info, "has no exported constant") {
 		t.Fatalf("want re-export rejected as no-exported-member, got %v", errMsgs(info))
@@ -728,7 +728,7 @@ func TestLinkedExportedEnumToStringStillRejected(t *testing.T) {
 	root := mod(t, 0,
 		`fn main() -> int { print(to_string(pal.Color.Green)); return 0 }`,
 		map[string]int{"pal": 1})
-	pal := mod(t, 1, `export enum Color { Red, Green }`, nil)
+	pal := mod(t, 1, `export enum Color: int { Red, Green }`, nil)
 	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
 	if !hasErr(info, "to_string() is not defined for enum") {
 		t.Fatalf("want to_string-on-enum rejected, got %v", errMsgs(info))
@@ -741,7 +741,7 @@ func TestLinkedExportedEnumDebugStillRejected(t *testing.T) {
 	root := mod(t, 0,
 		`fn main() -> int { print(debug(pal.Color.Green)); return 0 }`,
 		map[string]int{"pal": 1})
-	pal := mod(t, 1, `export enum Color { Red, Green }`, nil)
+	pal := mod(t, 1, `export enum Color: int { Red, Green }`, nil)
 	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
 	if !hasErr(info, "debug() is not defined for enum") {
 		t.Fatalf("want debug-on-enum rejected, got %v", errMsgs(info))
@@ -761,7 +761,7 @@ func TestLinkedIntToExportedEnumRejected(t *testing.T) {
   return to_int(c)
 }`,
 		map[string]int{"pal": 1})
-	pal := mod(t, 1, `export enum Color { Red, Green }`, nil)
+	pal := mod(t, 1, `export enum Color: int { Red, Green }`, nil)
 	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
 	if !hasErr(info, `initializer of "c" has type int`) {
 		t.Fatalf("want int-to-enum assignment rejected with a type-mismatch, got %v", errMsgs(info))
@@ -785,7 +785,7 @@ func TestLinkedImportedEnumSwitchNotExhaustive(t *testing.T) {
   return -1
 }`,
 		map[string]int{"pal": 1})
-	pal := mod(t, 1, `export enum Color { Red, Green, Blue }`, nil)
+	pal := mod(t, 1, `export enum Color: int { Red, Green, Blue }`, nil)
 	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
 	if !hasErr(info, "switch is not exhaustive: missing") {
 		t.Fatalf("want a non-exhaustive-switch error naming the missing variant, got %v", errMsgs(info))
@@ -804,7 +804,7 @@ fn main() -> int {
   return take(g)
 }`,
 		map[string]int{"pa": 1, "pb": 1})
-	pal := mod(t, 1, `export enum Color { Red, Green, Blue }`, nil)
+	pal := mod(t, 1, `export enum Color: int { Red, Green, Blue }`, nil)
 	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
 	if len(info.Errors) != 0 {
 		t.Fatalf("two aliases to one exported enum must be one type: %v", errMsgs(info))
@@ -824,7 +824,7 @@ func TestLinkedEnumHiddenDespiteSameNameExportedFunc(t *testing.T) {
 		`fn main() -> int { return to_int(pal.Color.Green) }`,
 		map[string]int{"pal": 1})
 	pal := mod(t, 1,
-		`enum Color { Red, Green }
+		`enum Color: int { Red, Green }
 export fn Color() -> int { return 0 }`,
 		nil)
 	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
@@ -852,7 +852,7 @@ func TestLinkedNonExportedEnumVariantInSwitchCaseRejected(t *testing.T) {
   }
 }`,
 		map[string]int{"pal": 1})
-	pal := mod(t, 1, `enum Color { Red, Green }`, nil) // not exported
+	pal := mod(t, 1, `enum Color: int { Red, Green }`, nil) // not exported
 	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
 	if !hasErr(info, "not exported") {
 		t.Fatalf("want a not-exported error, got %v", errMsgs(info))
@@ -874,7 +874,7 @@ func TestLinkedUnknownEnumVariantInSwitchCaseRejected(t *testing.T) {
   }
 }`,
 		map[string]int{"pal": 1})
-	pal := mod(t, 1, `export enum Color { Red, Green }`, nil)
+	pal := mod(t, 1, `export enum Color: int { Red, Green }`, nil)
 	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
 	if !hasErr(info, `no variant "Purple"`) {
 		t.Fatalf("want an unknown-variant error, got %v", errMsgs(info))

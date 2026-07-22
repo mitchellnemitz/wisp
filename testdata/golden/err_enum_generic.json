@@ -1,0 +1,1 @@
+{ "desc": "generic user enum rejected with a located type error", "compileError": true, "diagContains": "generic" }

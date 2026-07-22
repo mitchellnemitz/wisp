@@ -137,7 +137,7 @@ func (c *checker) foldConst(e ast.Expr) (Type, interface{}) {
 		// initializers and switch cases. The base must name an enum type (not be
 		// shadowed by a local or namespace); an unknown variant is a located error.
 		if tok, ei, ok := c.enumTypeOfBase(n); ok {
-			if v, found := ei.value(n.Field); found {
+			if v, found := ei.constValue(n.Field); found {
 				c.info.Types[n] = tok
 				return tok, v
 			}

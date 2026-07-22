@@ -12,7 +12,7 @@ import (
 // (a still-excluded type, e.g. float or struct, is still rejected with the
 // reworded diagnostic) proving the enum arm did not widen the set further.
 
-const enumColorDecl = "enum Color { Red, Green, Blue }\n"
+const enumColorDecl = "enum Color: int { Red, Green, Blue }\n"
 
 // --- 1. comparable bound (call.go:960) ---
 

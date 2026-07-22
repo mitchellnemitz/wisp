@@ -134,27 +134,54 @@ type StructFieldInfo struct {
 	Type Type
 }
 
-// EnumInfo is a resolved enum declaration (R2): the declaration node, the source
-// name, the defining module's id, and the variant names with their resolved int
-// values in declaration order (Variants[i] has value Values[i]). An enum is a
-// distinct comparable int-backed type stored in its OWN registry (Info.Enums),
-// separate from Structs, so isStructType/isHandle are false for it and == works.
+// EnumKind is an enum's declared mode: a scalar-backed value enum or a
+// payload-carrying tagged-union enum. The two are disjoint (FR-022).
+type EnumKind int
+
+const (
+	EnumValue  EnumKind = iota // enum Name: int|string|bool { ... }
+	EnumTagged                 // bare enum Name { Variant(T), ... }
+)
+
+// EnumInfo is a resolved enum declaration. Variants[i] pairs with Consts[i]
+// (value enums: int64/string/bool; tagged: nil) and Payloads[i] (tagged: the
+// resolved payload type or Invalid for a no-payload variant; value enums:
+// Invalid). Kind and Backing record the declared mode; the two per-variant
+// fields are mutually exclusive by mode.
 type EnumInfo struct {
 	Decl     *ast.EnumDecl
 	Name     string
 	ID       int
+	Kind     EnumKind
+	Backing  Type // Int/String/Bool for EnumValue; Invalid for EnumTagged
 	Variants []string
-	Values   []int64
+	Consts   []interface{}
+	Payloads []Type
 }
 
-// value returns the resolved int value of variant name and whether it exists.
-func (e *EnumInfo) value(name string) (int64, bool) {
+// constValue returns the folded backing constant of a value-enum variant.
+func (e *EnumInfo) constValue(name string) (interface{}, bool) {
 	for i, v := range e.Variants {
 		if v == name {
-			return e.Values[i], true
+			return e.Consts[i], true
 		}
 	}
-	return 0, false
+	return nil, false
+}
+
+// payload returns a tagged-union variant's resolved payload type and whether the
+// variant carries a payload. (Invalid, false) when the variant is unknown or has
+// no payload.
+func (e *EnumInfo) payload(name string) (Type, bool) {
+	for i, v := range e.Variants {
+		if v == name {
+			if e.Payloads[i] == Invalid {
+				return Invalid, false
+			}
+			return e.Payloads[i], true
+		}
+	}
+	return Invalid, false
 }
 
 // StructInfo is a resolved struct declaration codegen and the checker share:

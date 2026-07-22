@@ -59,18 +59,23 @@ func (c *checker) runLinked(linked *module.Linked) {
 			constTable:    map[string]*ConstEntry{}, topConsts: map[string]*Var{},
 		}
 	}
-	// Pass 1: collect structs (assigning internal tokens) and funcs; record exports.
+	// Pass 1: collect structs (assigning internal tokens), enum names/backing,
+	// aliases, and funcs; record exports. All names + value-enum constants are
+	// known before any field/payload type resolves, so struct fields and enum
+	// payloads may reference forward/mutual enums.
 	for _, ctx := range c.modCtx {
 		c.cur = ctx
 		c.collectStructs(ctx)
-		c.collectEnums(ctx)
+		c.collectEnumNames(ctx)
 		c.collectAliases(ctx)
 		c.collectFuncs(ctx)
 	}
-	// Pass 2: resolve struct field types now every module's structs are known.
+	// Pass 2: resolve struct field types and enum payload types now every
+	// module's structs and enums are known.
 	for _, ctx := range c.modCtx {
 		c.cur = ctx
 		c.checkStructFields(ctx)
+		c.checkEnumPayloads(ctx)
 	}
 	// Pass 2.5: force-resolve every type alias, now that struct/enum names AND
 	// struct field types are known (an alias RHS may be a generic instantiation
@@ -186,7 +191,7 @@ func internalStructName(name string, modid int) Type {
 // internalEnumName is an enum's globally-unique type token Name@modid, the same
 // shape as a struct token (disp strips the @<modid> suffix for diagnostics). An
 // enum and a struct may not share a name (a located collision error in
-// collectEnums), so the two registries' tokens never overlap in practice.
+// collectEnumNames), so the two registries' tokens never overlap in practice.
 func internalEnumName(name string, modid int) Type {
 	return Type(name + "@" + strconv.Itoa(modid))
 }

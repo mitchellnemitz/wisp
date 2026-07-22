@@ -34,7 +34,7 @@ func TestAliasToStructAnnotationAndFieldAccess(t *testing.T) {
 }
 
 func TestAliasToEnumInterchangeable(t *testing.T) {
-	src := "enum Color { Red, Green, Blue }\n" +
+	src := "enum Color: int { Red, Green, Blue }\n" +
 		"type C = Color\n" +
 		wrapMain("let c: C = Color.Red\nlet d: Color = c\nreturn 0")
 	expectOK(t, src)
@@ -110,7 +110,7 @@ func TestAliasNameRejections(t *testing.T) {
 		{"type Result = int" + main, "reserved builtin"},
 		{"type _ = int" + main, "cannot be blank"},
 		{"struct S { x: int }\ntype S = int" + main, "already declared as a struct"},
-		{"enum E { A }\ntype E = int" + main, "already declared as an enum"},
+		{"enum E: int { A }\ntype E = int" + main, "already declared as an enum"},
 		{"type D = int\ntype D = string" + main, "declared more than once"},
 	}
 	for _, c := range cases {
@@ -154,7 +154,7 @@ func TestAliasNotAStructConstructor(t *testing.T) {
 }
 
 func TestAliasNotAnEnumBase(t *testing.T) {
-	src := "enum Color { Red, Green }\n" +
+	src := "enum Color: int { Red, Green }\n" +
 		"type C = Color\n" +
 		wrapMain("let v: Color = C.Red\nreturn 0")
 	// The alias name is not an enum name, so the base ident is undeclared.

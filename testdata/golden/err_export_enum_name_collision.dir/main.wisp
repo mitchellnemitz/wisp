@@ -3,7 +3,7 @@
 // mixing the two export states proves the check does not depend on both being
 // exported (or on export status at all).
 struct Color { r: int }
-export enum Color { Red, Green }
+export enum Color: int { Red, Green }
 
 fn main() -> int {
     return 0

@@ -31,7 +31,7 @@ type aliasInfo struct {
 // rejects a blank name, a reserved name, a primitive type name, and a name that
 // collides with a struct, an enum, or another alias in the module. RHS resolution
 // happens later (resolveAliases). The caller sets c.cur = ctx first; collectStructs
-// and collectEnums must have run so the collision checks see this module's types.
+// and collectEnumNames must have run so the collision checks see this module's types.
 func (c *checker) collectAliases(ctx *moduleCtx) {
 	for _, ad := range ctx.prog.Aliases {
 		if ad.Name == "_" {

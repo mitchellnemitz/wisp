@@ -84,9 +84,11 @@ func enumSwitchExhaustive(n *ast.SwitchStmt, info *Info) bool {
 	if !ok {
 		return false
 	}
-	remaining := make(map[int64]bool, len(enum.Values))
-	for _, v := range enum.Values {
-		remaining[v] = true
+	remaining := make(map[int64]bool, len(enum.Consts))
+	for _, cv := range enum.Consts {
+		if iv, ok := cv.(int64); ok {
+			remaining[iv] = true
+		}
 	}
 	for _, cs := range n.Cases {
 		for _, v := range cs.Values {

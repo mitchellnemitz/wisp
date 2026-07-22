@@ -1,7 +1,7 @@
 // Enums: declaration, variant access, exhaustive switch, to_int() conversion.
-enum Color { Red, Green, Blue }
+enum Color: int { Red, Green, Blue }
 
-enum ExitCode { Ok = 0, Fail = 1, Usage = 2 }
+enum ExitCode: int { Ok = 0, Fail = 1, Usage = 2 }
 
 fn describe(c: Color) -> string {
     switch (c) {

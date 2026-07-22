@@ -12,7 +12,7 @@ import "testing"
 // TestEnumSwitch_ExhaustiveNoDefault_OK: covering every variant without a
 // default compiles (the mandatory-default rule is lifted for enum subjects).
 func TestEnumSwitch_ExhaustiveNoDefault_OK(t *testing.T) {
-	expectOK(t, `enum Color { Red, Green, Blue }
+	expectOK(t, `enum Color: int { Red, Green, Blue }
 fn main() -> int {
   let c: Color = Color.Green
   switch (c) {
@@ -27,7 +27,7 @@ fn main() -> int {
 // TestEnumSwitch_MissingVariantNoDefault_Err: a defaultless enum switch that
 // omits a variant is not exhaustive.
 func TestEnumSwitch_MissingVariantNoDefault_Err(t *testing.T) {
-	expectErr(t, `enum Color { Red, Green, Blue }
+	expectErr(t, `enum Color: int { Red, Green, Blue }
 fn main() -> int {
   let c: Color = Color.Green
   switch (c) {
@@ -40,7 +40,7 @@ fn main() -> int {
 
 // TestEnumSwitch_PartialWithDefault_OK: a default arm allows partial coverage.
 func TestEnumSwitch_PartialWithDefault_OK(t *testing.T) {
-	expectOK(t, `enum Color { Red, Green, Blue }
+	expectOK(t, `enum Color: int { Red, Green, Blue }
 fn main() -> int {
   let c: Color = Color.Green
   switch (c) {
@@ -53,7 +53,7 @@ fn main() -> int {
 
 // TestEnumSwitch_RawIntCase_Err: a raw-int case in an enum switch is rejected.
 func TestEnumSwitch_RawIntCase_Err(t *testing.T) {
-	expectErr(t, `enum Color { Red, Green, Blue }
+	expectErr(t, `enum Color: int { Red, Green, Blue }
 fn main() -> int {
   let c: Color = Color.Green
   switch (c) {
@@ -66,8 +66,8 @@ fn main() -> int {
 
 // TestEnumSwitch_WrongEnumCase_Err: a different enum's variant is rejected.
 func TestEnumSwitch_WrongEnumCase_Err(t *testing.T) {
-	expectErr(t, `enum Color { Red, Green, Blue }
-enum Size { Small, Large }
+	expectErr(t, `enum Color: int { Red, Green, Blue }
+enum Size: int { Small, Large }
 fn main() -> int {
   let c: Color = Color.Green
   switch (c) {
@@ -82,7 +82,7 @@ fn main() -> int {
 // TestEnumSwitch_DuplicateCase_Err: a duplicate variant case uses the existing
 // dedup error.
 func TestEnumSwitch_DuplicateCase_Err(t *testing.T) {
-	expectErr(t, `enum Color { Red, Green, Blue }
+	expectErr(t, `enum Color: int { Red, Green, Blue }
 fn main() -> int {
   let c: Color = Color.Green
   switch (c) {

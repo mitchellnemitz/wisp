@@ -354,7 +354,7 @@ func TestDocumentSymbolKindsAndNameRanges(t *testing.T) {
 func TestHoverAndCompletionEnum(t *testing.T) {
 	// `Color` used as a type annotation on line 1; hovering it yields enum hover
 	// text. "  let c: " is 9 chars, so `Color` starts at character 9 on line 1.
-	src := "enum Color { Red, Green, Blue }\n" +
+	src := "enum Color: int { Red, Green, Blue }\n" +
 		"fn main() -> int {\n" +
 		"  let c: Color = Color.Red\n" +
 		"  return to_int(c)\n" +
@@ -399,7 +399,7 @@ func TestHoverAndCompletionEnum(t *testing.T) {
 }
 
 func TestDocumentSymbolEnum(t *testing.T) {
-	src := "enum Color {\n  Red,\n  Green,\n  Blue,\n}\nfn main() -> int {\n  return 0\n}\n"
+	src := "enum Color: int {\n  Red,\n  Green,\n  Blue,\n}\nfn main() -> int {\n  return 0\n}\n"
 	_, msgs := runServer(didOpenFrame(uri, src) + docReqFrame(2, "textDocument/documentSymbol", uri))
 	resp := respForID(msgs, 2)
 	syms, _ := resp["result"].([]any)

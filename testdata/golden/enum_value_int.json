@@ -1,0 +1,1 @@
+{ "desc": "int value enum: explicit-then-auto-increment fold, ==", "stdout": "6\nfalse\ntrue\n", "exit": 0 }
