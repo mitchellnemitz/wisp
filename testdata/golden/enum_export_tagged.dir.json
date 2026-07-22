@@ -1,0 +1,5 @@
+{
+  "desc": "cross-module tagged-union: payload construct (e.Expr.IntLit(7)) AND bare no-payload construct (e.Expr.Unit), both matched",
+  "stdout": "7\nu\n",
+  "exit": 0
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "cross-module tagged-union: struct payload construct (a.Tree.Leaf(a.Node{val: 9})) and match binding into a.Node field access",
+  "stdout": "9\n",
+  "exit": 0
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "cross-module value enums across all three backings (int/string/bool): switch, ==, and projection each exercised per backing (SC-031)",
+  "stdout": "0\ncode-fail\nfalse\nNorth\ndir-south\ntrue\ntrue\nans-no\nfalse\n",
+  "exit": 0
+}
