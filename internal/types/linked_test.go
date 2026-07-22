@@ -379,6 +379,33 @@ func TestLinkedNoSuchConstErrors(t *testing.T) {
 	}
 }
 
+func TestLinkedExportedEnumAsStructFieldType(t *testing.T) {
+	// Exercises only Task 2's scope: resolveNamedType resolving a qualified
+	// ns.Enum type annotation. Constructing/accessing a pal.Color.Green value
+	// is Task 3's qualified-variant resolver (checkFieldAccess), not yet wired.
+	root := mod(t, 0,
+		`struct Wrapper { c: pal.Color }
+fn main() -> int { return 0 }`,
+		map[string]int{"pal": 1})
+	pal := mod(t, 1, `export enum Color { Red, Green, Blue }`, nil)
+	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
+	if len(info.Errors) != 0 {
+		t.Fatalf("unexpected errors: %v", errMsgs(info))
+	}
+}
+
+func TestLinkedNonExportedEnumTypeErrors(t *testing.T) {
+	root := mod(t, 0,
+		`struct Wrapper { c: pal.Color }
+fn main() -> int { return 0 }`,
+		map[string]int{"pal": 1})
+	pal := mod(t, 1, `enum Color { Red, Green }`, nil) // not exported
+	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
+	if !hasErr(info, "not exported") {
+		t.Fatalf("want a not-exported error, got %v", errMsgs(info))
+	}
+}
+
 func TestLinkedReExportRejected(t *testing.T) {
 	// mid imports base.X but does not `export const` it; root.mid.X must NOT
 	// silently resolve to base's value -- it is a no-exported-constant error.
