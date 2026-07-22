@@ -380,12 +380,12 @@ func TestLinkedNoSuchConstErrors(t *testing.T) {
 }
 
 func TestLinkedExportedEnumAsStructFieldType(t *testing.T) {
-	// Exercises only Task 2's scope: resolveNamedType resolving a qualified
-	// ns.Enum type annotation. Constructing/accessing a pal.Color.Green value
-	// is Task 3's qualified-variant resolver (checkFieldAccess), not yet wired.
 	root := mod(t, 0,
 		`struct Wrapper { c: pal.Color }
-fn main() -> int { return 0 }`,
+fn main() -> int {
+  let w: Wrapper = Wrapper { c: pal.Color.Green }
+  return to_int(w.c)
+}`,
 		map[string]int{"pal": 1})
 	pal := mod(t, 1, `export enum Color { Red, Green, Blue }`, nil)
 	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
@@ -403,6 +403,68 @@ fn main() -> int { return 0 }`,
 	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
 	if !hasErr(info, "not exported") {
 		t.Fatalf("want a not-exported error, got %v", errMsgs(info))
+	}
+}
+
+func TestLinkedExportedEnumVariantResolves(t *testing.T) {
+	root := mod(t, 0,
+		`fn main() -> int {
+  let g: pal.Color = pal.Color.Green
+  if (g == pal.Color.Green) {
+    return to_int(g)
+  }
+  return -1
+}`,
+		map[string]int{"pal": 1})
+	pal := mod(t, 1, `export enum Color { Red, Green, Blue }`, nil)
+	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
+	if len(info.Errors) != 0 {
+		t.Fatalf("unexpected errors: %v", errMsgs(info))
+	}
+}
+
+func TestLinkedNonExportedEnumVariantErrors(t *testing.T) {
+	root := mod(t, 0,
+		`fn main() -> int { return to_int(pal.Color.Green) }`,
+		map[string]int{"pal": 1})
+	pal := mod(t, 1, `enum Color { Red, Green }`, nil) // not exported
+	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
+	if !hasErr(info, "not exported") {
+		t.Fatalf("want a not-exported error, got %v", errMsgs(info))
+	}
+}
+
+func TestLinkedExportedEnumUnknownVariantErrors(t *testing.T) {
+	root := mod(t, 0,
+		`fn main() -> int { return to_int(pal.Color.Purple) }`,
+		map[string]int{"pal": 1})
+	pal := mod(t, 1, `export enum Color { Red, Green, Blue }`, nil)
+	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, pal}})
+	if !hasErr(info, `no variant "Purple"`) {
+		t.Fatalf("want an unknown-variant error, got %v", errMsgs(info))
+	}
+}
+
+func TestLinkedEnumReExportRejected(t *testing.T) {
+	// FR-008 derivation note: wisp has NO `export <imported-name>` re-export
+	// syntax for any declaration (enum, struct, or const) -- you cannot write
+	// `export enum base.Color` or alias an imported enum under a local name.
+	// So "an imported enum cannot be re-exported" is realized exactly as the
+	// own-source-only / no-transitive-visibility rule: mid imports base's
+	// exported enum but never re-declares/re-exports it itself; root reaching
+	// it as mid.Color must NOT silently resolve to base's enum -- it is a
+	// no-exported-member error. This is the identical shape tested for consts
+	// (TestLinkedReExportRejected / err_export_const_reexport), so the enum
+	// case is faithful to FR-008's stated "same own-source-only rule that
+	// applies to imported constants," not a substitution.
+	root := mod(t, 0,
+		`fn main() -> int { return to_int(mid.Color.Green) }`,
+		map[string]int{"mid": 1})
+	mid := mod(t, 1, `fn use_it() -> int { return to_int(base.Color.Green) }`, map[string]int{"base": 2})
+	base := mod(t, 2, `export enum Color { Red, Green }`, nil)
+	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, mid, base}})
+	if !hasErr(info, "has no exported constant") {
+		t.Fatalf("want re-export rejected as no-exported-member, got %v", errMsgs(info))
 	}
 }
 
