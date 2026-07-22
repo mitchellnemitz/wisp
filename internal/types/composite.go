@@ -287,13 +287,17 @@ func isRunResultType(t Type) bool { return t == RunResult }
 func isProcessType(t Type) bool { return t == Process }
 
 // isHandle reports whether t is a reference-handle (aggregate) type: an array, a
-// dict, a declared struct, the built-in error type, an Optional, a Result, or a
-// tuple. Handle types are opaque per spec 4.1 (no int/arith/compare).
+// dict, a declared struct, the built-in error type, an Optional, a Result, a
+// tuple, or a tagged-union enum. Handle types are opaque per spec 4.1 (no
+// int/arith/compare).
 func (c *checker) isHandle(t Type) bool {
 	if t == Invalid {
 		return false
 	}
 	if isArray(t) || isDict(t) || isErrorType(t) || isRunResultType(t) || isProcessType(t) || isOptional(t) || isResult(t) || isTuple(t) || t == jsonValueType {
+		return true
+	}
+	if c.isTaggedEnum(t) {
 		return true
 	}
 	return c.isStructType(t)
