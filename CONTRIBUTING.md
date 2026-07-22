@@ -62,6 +62,7 @@ fastest path.
 
 ## Design docs
 
-The rationale behind wisp's design is recorded in
-[docs/design-decisions.md](docs/design-decisions.md). User-facing documentation
-lives in `docs/guide/`.
+The rationale behind wisp's design is recorded in the
+[design decisions](https://mitchellnemitz.github.io/wisp/design-decisions/) doc.
+User-facing documentation lives in `www/src/content/docs/guide/` (published at
+the [docs site](https://mitchellnemitz.github.io/wisp/)).

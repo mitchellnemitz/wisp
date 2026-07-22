@@ -1,4 +1,7 @@
-# Language reference
+---
+title: Language reference
+---
+
 
 wisp is small, explicit, and C-like. There is no implicit coercion and no
 implicit truthiness. `let` bindings and function parameters carry explicit
@@ -133,7 +136,7 @@ The value types are:
   read `e.message` and `e.code`.
 - `RunResult`, `Process`: built-in handle types returned by the process builtins
   (`RunResult` from `process.run_full`, `Process` from `process.spawn`). They are valid in `let`,
-  parameter, and return annotations; see the [standard library](stdlib.md) for
+  parameter, and return annotations; see the [standard library](/guide/stdlib/) for
   their fields and the builtins that produce them.
 
 `void` is a return type only; it is never the type of a value.
@@ -149,7 +152,7 @@ The composite types are:
 Structs, arrays, dicts, errors, and function references are reference handles.
 Assigning one or passing it to a function shares the same instance. Handles are
 opaque: you cannot convert with `to_string()`, compare, or do arithmetic on them.
-Use `debug(x)` to render any value structurally for inspection (see the [stdlib guide](stdlib.md#debug)).
+Use `debug(x)` to render any value structurally for inspection (see the [stdlib guide](/guide/stdlib/#debug)).
 
 ### Constant argument domains
 
@@ -1126,11 +1129,11 @@ explicit workaround applies: `is_none(a) && is_none(b)`, or
 The standard-library functions that once used a `-1` sentinel now return
 `Optional[int]`: `array.find`, `string.index_of`, `string.last_index_of`. The dict accessor
 `dict.get(d, k) -> Optional[V]` joins `dict.has`/`dict.get_or`. See
-[the stdlib guide](stdlib.md#optional).
+[the stdlib guide](/guide/stdlib/#optional).
 
 Bind the contained value with `match`, or transform with the combinators
-(`array.map`/`and_then`/`array.filter`/`or_else`; see the [stdlib guide](stdlib.md#combinators)).
-To render an `Optional` for debugging, use `debug(x)` (see the [stdlib guide](stdlib.md#debug));
+(`array.map`/`and_then`/`array.filter`/`or_else`; see the [stdlib guide](/guide/stdlib/#combinators)).
+To render an `Optional` for debugging, use `debug(x)` (see the [stdlib guide](/guide/stdlib/#debug));
 `to_string()` is strict and rejects `Optional`.
 
 ## Result
@@ -1176,9 +1179,9 @@ Read the contents only through the access builtins:
 interpolation, and use as a `switch` subject are compile errors. `Result` is
 non-comparable for every `T` because its `Err` arm carries the opaque `error`
 handle; use `is_ok`/`unwrap` or `match` instead. To render a `Result` for
-debugging, use `debug(x)` (see the [stdlib guide](stdlib.md#debug)); `to_string()`
+debugging, use `debug(x)` (see the [stdlib guide](/guide/stdlib/#debug)); `to_string()`
 is strict and rejects `Result`. Bind a `Result` with `match`, or transform with
-the combinators (`array.map`/`and_then`/`or_else`/`map_err`; see the [stdlib guide](stdlib.md#combinators)).
+the combinators (`array.map`/`and_then`/`or_else`/`map_err`; see the [stdlib guide](/guide/stdlib/#combinators)).
 
 ## Tuples
 
@@ -1213,7 +1216,7 @@ fn pair(a: int, b: string) -> (int, string) {
 
 ### Immutability and opacity
 
-Tuples are immutable: `t[0] = x` is a compile error. Tuples are opaque: `==`/`!=`, `to_string()`, and `switch` on a tuple are compile errors. To render a tuple for debugging, use `debug(t)` (see the [stdlib guide](stdlib.md#debug)).
+Tuples are immutable: `t[0] = x` is a compile error. Tuples are opaque: `==`/`!=`, `to_string()`, and `switch` on a tuple are compile errors. To render a tuple for debugging, use `debug(t)` (see the [stdlib guide](/guide/stdlib/#debug)).
 
 ### Nested tuples
 
@@ -1441,7 +1444,7 @@ Lifecycle functions `setup() -> void` and `teardown() -> void`, when defined at 
 level of a test file, run before and after each test body, respectively. `teardown` runs
 even if the test failed or was skipped.
 
-See the [testing guide](testing.md) for assertions, `skip`, `test_tmpdir`, and
+See the [testing guide](/guide/testing/) for assertions, `skip`, `test_tmpdir`, and
 `wisp test` usage.
 
 ### Paren-keyword principle
@@ -1464,4 +1467,4 @@ compiler. `export`, `import`, and `include` are the module keywords (see
 inert "reserved for future use" keywords. The canonical list of identifiers a
 user may not define is `internal/types/accessors.go` `ReservedNames()`.
 
-See the [standard library](stdlib.md) for the full list of builtins.
+See the [standard library](/guide/stdlib/) for the full list of builtins.

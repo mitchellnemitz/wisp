@@ -70,22 +70,23 @@ wisp test add_test.wisp             # runs under every available shell
 wisp test --coverage add_test.wisp  # same, plus line coverage report
 ```
 
-See [docs/guide/testing.md](docs/guide/testing.md) for the full guide.
+See [the testing guide](https://mitchellnemitz.github.io/wisp/guide/testing/) for the full guide.
 
 ## Documentation
 
-- [Documentation index](docs/README.md)
-- [Getting started](docs/guide/getting-started.md)
-- [Testing and coverage](docs/guide/testing.md)
-- [Language reference](docs/guide/language.md)
-- [Standard library](docs/guide/stdlib.md)
-- [CLI reference](docs/guide/cli.md)
-- [Editor tooling](docs/guide/tooling.md)
-- [Internals](docs/guide/internals.md)
+- [Documentation](https://mitchellnemitz.github.io/wisp/)
+- [Getting started](https://mitchellnemitz.github.io/wisp/guide/getting-started/)
+- [Testing and coverage](https://mitchellnemitz.github.io/wisp/guide/testing/)
+- [Language reference](https://mitchellnemitz.github.io/wisp/guide/language/)
+- [Standard library](https://mitchellnemitz.github.io/wisp/guide/stdlib/)
+- [CLI reference](https://mitchellnemitz.github.io/wisp/guide/cli/)
+- [Editor tooling](https://mitchellnemitz.github.io/wisp/guide/tooling/)
+- [Internals](https://mitchellnemitz.github.io/wisp/guide/internals/)
+- [Versioning](https://mitchellnemitz.github.io/wisp/guide/versioning/)
 - [Contributing](CONTRIBUTING.md), and [AGENTS.md](AGENTS.md) for AI agents
 
 Complete programs are in [examples/](examples/). The rationale behind the
-language's design is recorded in [docs/design-decisions.md](docs/design-decisions.md).
+language's design is recorded in [design decisions](https://mitchellnemitz.github.io/wisp/design-decisions/).
 
 ## Language
 

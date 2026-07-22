@@ -1,4 +1,7 @@
-# CLI reference
+---
+title: CLI reference
+---
+
 
 ```
 usage: wisp <build|run|check|fmt|test|doc|add|install|remove> [args]
@@ -275,7 +278,7 @@ not silently disappear. Lines with no executions are listed as `uncovered: <line
 `--filter` narrows which test results are displayed but does not change what is measured.
 Coverage hits are the union across all shells.
 
-See the [testing guide](testing.md) for the full test framework documentation.
+See the [testing guide](/guide/testing/) for the full test framework documentation.
 
 ## wisp add, install, remove
 
@@ -345,4 +348,4 @@ the [package tool](#wisp-add-install-remove) (`wisp add`/`install`/`remove`),
 which clones repositories into `.wisp/modules/` and writes `wisp.lock`. The
 file you pass on the command line is always the build target, regardless of any
 `wisp.json` `main` field (which names a package's entry file, not the program
-entry). See the [language reference](language.md#modules).
+entry). See the [language reference](/guide/language/#modules).

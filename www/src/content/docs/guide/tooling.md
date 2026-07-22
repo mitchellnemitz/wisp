@@ -1,4 +1,7 @@
-# Editor tooling
+---
+title: Editor tooling
+---
+
 
 wisp ships a language server and editor integrations for VSCode and Vim.
 Syntax highlighting works on its own. The language server is optional and adds
@@ -46,7 +49,7 @@ It implements:
 
 The extension under `editors/vscode/` is one package that provides both
 highlighting and the language server. See its
-[README](../../editors/vscode/README.md) for the full install steps. In short:
+[README](https://github.com/mitchellnemitz/wisp/blob/main/editors/vscode/README.md) for the full install steps. In short:
 
 1. Build `wisp-lsp` and put it on your PATH.
 2. From `editors/vscode/`, run `npm install` and then `npx @vscode/vsce
@@ -65,7 +68,7 @@ If the server is missing or disabled, highlighting still works.
 The files under `editors/vim/` provide highlighting and filetype detection.
 Put `syntax/wisp.vim` and `ftdetect/wisp.vim` on your runtimepath, or point a
 plugin manager at the `editors/vim` directory. See its
-[README](../../editors/vim/README.md) for wiring `wisp-lsp` through the Neovim
+[README](https://github.com/mitchellnemitz/wisp/blob/main/editors/vim/README.md) for wiring `wisp-lsp` through the Neovim
 built-in LSP, nvim-lspconfig, or coc.nvim.
 
 ## Keeping highlighting in sync

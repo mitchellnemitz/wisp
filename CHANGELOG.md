@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Before 1.0.0, wisp makes no stability guarantee: any release, including a minor
 version bump, may contain a breaking language or CLI change. Consult this file
-before upgrading. See [the versioning guide](docs/guide/versioning.md) for the
+before upgrading. See [the versioning guide](https://mitchellnemitz.github.io/wisp/guide/versioning/) for the
 full policy.
 
 ## [Unreleased]

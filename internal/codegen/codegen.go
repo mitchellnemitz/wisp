@@ -261,7 +261,7 @@ func generate(prog *ast.Program, info *types.Info, testMode, coverage bool) (scr
 	// (all four crash in the same ~10k-frame ballpark). 1000000 is well past any
 	// realistic recursion yet leaves the OS stack as the real backstop. This runs
 	// only inside the ZSH_VERSION guard, so bash (where FUNCNEST has the opposite
-	// meaning) never sees it. The ceiling is documented in docs/guide/internals.md.
+	// meaning) never sees it. The ceiling is documented in www/src/content/docs/guide/internals.md.
 	b.WriteString(`if [ -n "${ZSH_VERSION:-}" ]; then emulate sh 2>/dev/null || setopt shwordsplit; FUNCNEST=1000000; fi` + "\n")
 	b.WriteString("\n")
 	// Banner: shebang + 2 comment lines + the zsh shim + 1 blank, all no origin.

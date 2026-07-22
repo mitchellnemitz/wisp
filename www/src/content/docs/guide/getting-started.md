@@ -1,4 +1,7 @@
-# Getting started
+---
+title: Getting started
+---
+
 
 ## Install the compiler
 
@@ -88,8 +91,8 @@ wisp is pre-1.0 and makes no stability guarantee: a new release, including a
 minor version bump, may contain a breaking language change. If a `.wisp` file
 that worked with an older `wisp` now fails with an opaque parse error, the
 syntax it uses may have been changed or removed -- check
-[`CHANGELOG.md`](../../CHANGELOG.md) for what changed. See
-[`docs/guide/versioning.md`](versioning.md) for the full policy.
+[`CHANGELOG.md`](https://github.com/mitchellnemitz/wisp/blob/main/CHANGELOG.md) for what changed. See
+[the versioning guide](/guide/versioning/) for the full policy.
 
 ## Write and run your first test (with coverage)
 
@@ -140,15 +143,15 @@ wisp test .
 wisp test --coverage .
 ```
 
-See the [testing guide](testing.md) for assertions, lifecycle hooks, `test_tmpdir`, TAP
+See the [testing guide](/guide/testing/) for assertions, lifecycle hooks, `test_tmpdir`, TAP
 output, and coverage semantics.
 
 ## Next steps
 
-- The [testing guide](testing.md) covers the full test framework.
-- The [language reference](language.md) covers the full syntax and type system.
-- The [standard library](stdlib.md) lists every builtin.
-- The [CLI reference](cli.md) documents every command and flag, including `wisp doc`,
+- The [testing guide](/guide/testing/) covers the full test framework.
+- The [language reference](/guide/language/) covers the full syntax and type system.
+- The [standard library](/guide/stdlib/) lists every builtin.
+- The [CLI reference](/guide/cli/) documents every command and flag, including `wisp doc`,
   which extracts `///` doc-comments to Markdown.
-- See [examples/](../../examples/) for complete programs that exercise structs,
+- See [examples/](https://github.com/mitchellnemitz/wisp/tree/main/examples/) for complete programs that exercise structs,
   arrays, dicts, errors, and higher-order functions.

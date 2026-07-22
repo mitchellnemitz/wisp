@@ -19,3 +19,8 @@
 # Local AI-session scratch and generated knowledge graph (never committed)
 /.claude/
 /graphify-out/
+
+# Astro site (www/)
+www/node_modules/
+www/dist/
+www/.astro/

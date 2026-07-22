@@ -5,7 +5,8 @@ repository's [CLAUDE.md](CLAUDE.md) and
 [.github/copilot-instructions.md](.github/copilot-instructions.md) both point
 here, so this file is the single source of truth. Add any repo-wide agent
 guidance here, not in those pointer files. Humans should read
-[docs/](docs/README.md).
+the [documentation site](https://mitchellnemitz.github.io/wisp/) (sources under
+www/src/content/docs/).
 
 ## What this is
 
@@ -30,7 +31,9 @@ builds as a static binary.
 - `internal/lsp`: the language server implementation.
 - `internal/editors`: the drift-guard test for the editor grammars.
 - `editors/`: the VSCode extension and Vim files.
-- `docs/`: user guide, design specs, and plans.
+- `www/src/content/docs/`: canonical user guide, design decisions, and stdlib
+  index (the published site). `docs/`: specs and plans (dev artifacts, not
+  published).
 - `testdata/golden/`: end-to-end fixtures, a `.wisp` and a `.json` per case.
   Regex malformed-pattern abort fixtures must use an unbalanced `[`, never `(`:
   busybox awk silently accepts `(` (rc 0, no abort), so a `(` fixture passes on
@@ -106,7 +109,7 @@ Do not hardcode language facts. Derive them:
   `test_tmpdir()`. All are builtins; none require an import.
 - Lifecycle: `fn setup() -> void` and `fn teardown() -> void` at the top level of a
   test file run before and after each test body, respectively.
-- See [docs/guide/testing.md](docs/guide/testing.md) for the full guide.
+- See [www/src/content/docs/guide/testing.md](www/src/content/docs/guide/testing.md) for the full guide.
 
 ## Conventions in generated shell
 
@@ -115,7 +118,7 @@ Names live in the `__` namespace: functions are `__wisp_f_m<modid>_<name>` (e.g.
 single `__ret` register carries return values. Structs,
 arrays, dicts, and errors are reference handles with id-keyed backing
 variables. bool is the string `true` or `false`. Floats go through awk. See
-[docs/guide/internals.md](docs/guide/internals.md) for the full model.
+[www/src/content/docs/guide/internals.md](www/src/content/docs/guide/internals.md) for the full model.
 
 ## Disposition-claim convention
 

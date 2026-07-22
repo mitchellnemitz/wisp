@@ -1,8 +1,11 @@
-# Internals
+---
+title: Internals
+---
+
 
 This describes how the compiler is built and how the generated shell works. It
 is for people changing the compiler and for tools reasoning about its output.
-For how to use the language, read the [language reference](language.md).
+For how to use the language, read the [language reference](/guide/language/).
 
 ## Compile pipeline
 

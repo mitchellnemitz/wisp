@@ -168,7 +168,7 @@ func TestCommentEndOfMatchArm(t *testing.T) {
 // precedes the SECOND of two top-level functions must stay attached to that
 // second function, not get swept into the first function's body as dead code
 // after its `return`. It also pins the documented blank-line behavior for the
-// same source (docs/guide/cli.md: blank lines within a block are removed; one
+// same source (www/src/content/docs/guide/cli.md: blank lines within a block are removed; one
 // blank line separates top-level declarations) so the two concerns aren't
 // conflated.
 func TestDocCommentDoesNotLeakIntoPriorFuncBody(t *testing.T) {
