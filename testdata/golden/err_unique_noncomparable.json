@@ -1,0 +1,4 @@
+{
+  "compileError": true,
+  "diagContains": "int/bool/string/float/enum"
+}

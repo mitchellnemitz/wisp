@@ -492,6 +492,40 @@ func (g *gen) cmpWord(a atom) string {
 	return "\"$" + a.name + "\""
 }
 
+// emitScalarEq tests equality of two already-spilled scalar operands (variable
+// NAMES, not atoms) and returns a fresh temp holding "true"/"false". For float
+// operands it routes through __wisp_fcmp so numerically-equal floats are equal
+// (1.0==1.00, and -0.0==0.0) -- a text `=` compare would split them. For
+// int/bool/string it uses the text `=` test. pos is the located position for the
+// fcmp helper (unused on the text path).
+func (g *gen) emitScalarEq(aName, bName string, isFloat bool, pos token.Position) string {
+	r := g.newTemp()
+	if isFloat {
+		g.use(runtime.FCmp)
+		g.line("__wisp_fcmp %s %s \"$%s\" \"$%s\"", g.posLiteral(pos), shellSingleQuote("eq"), aName, bName)
+		g.line("%s=\"$__ret\"", r)
+	} else {
+		g.line("if [ \"$%s\" = \"$%s\" ]; then %s=true; else %s=false; fi", aName, bName, r, r)
+	}
+	return r
+}
+
+// comparesAsFloat reports whether a value of type t must compare by NUMERIC
+// identity (__wisp_fcmp) rather than shell byte-text: a plain float, OR a
+// float-backed value enum (whose runtime value IS its backing float text).
+// This is the single source of truth reused by the membership builtins (this
+// task), the assert family, Optional equality, and the float switch.
+func (g *gen) comparesAsFloat(t types.Type) bool {
+	rt := g.resolveType(t)
+	if rt == types.Float {
+		return true
+	}
+	if ei, ok := g.info.Enums[string(rt)]; ok && ei.Kind == types.EnumValue && ei.Backing == types.Float {
+		return true
+	}
+	return false
+}
+
 // genEquality emits == / != for int, bool, or string operands. All three lower
 // to a string `=`/`!=` test on the shared text representation; the type system
 // guarantees both operands share a type so this is sound (spec section 6).

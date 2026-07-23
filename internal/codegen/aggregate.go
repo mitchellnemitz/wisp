@@ -361,7 +361,8 @@ func (g *gen) genJoin(args []ast.Expr) atom {
 func (g *gen) genArrayContains(args []ast.Expr) atom {
 	id := g.spillToTemp(g.genExpr(args[0]))
 	target := g.spillToTemp(g.genExpr(args[1]))
-	return g.genArrayContainsAtoms(varAtom(id), varAtom(target))
+	elemIsFloat := g.comparesAsFloat(types.ElemType(g.info.Types[args[0]]))
+	return g.genArrayContainsAtoms(varAtom(id), varAtom(target), elemIsFloat, args[1].Pos())
 }
 
 // genReverse lowers reverse(xs) -> T[]: a fresh array with the elements of xs in

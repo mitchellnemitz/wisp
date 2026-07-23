@@ -3,6 +3,7 @@ package codegen
 import (
 	"github.com/mitchellnemitz/wisp/internal/ast"
 	"github.com/mitchellnemitz/wisp/internal/runtime"
+	"github.com/mitchellnemitz/wisp/internal/token"
 	"github.com/mitchellnemitz/wisp/internal/types"
 )
 
@@ -126,7 +127,8 @@ func (g *gen) genAssertContains(n *ast.CallExpr, args []ast.Expr) atom {
 
 	var found atom
 	if types.IsArray(hayT) {
-		found = g.genArrayContainsAtoms(varAtom(hay), varAtom(needle))
+		elemIsFloat := g.comparesAsFloat(types.ElemType(hayT))
+		found = g.genArrayContainsAtoms(varAtom(hay), varAtom(needle), elemIsFloat, args[1].Pos())
 	} else {
 		g.use(runtime.Contains)
 		g.line(`__wisp_contains "$%s" "$%s"`, hay, needle)
@@ -149,12 +151,15 @@ func (g *gen) genAssertContains(n *ast.CallExpr, args []ast.Expr) atom {
 
 // genArrayContainsAtoms is genArrayContains over PRE-EVALUATED atoms (the array
 // handle and the target element), so the operands are not re-evaluated.
-func (g *gen) genArrayContainsAtoms(arr, target atom) atom {
+// elemIsFloat routes the element compare through __wisp_fcmp (numeric identity)
+// instead of a byte-text `=` test; pos locates the fcmp helper.
+func (g *gen) genArrayContainsAtoms(arr, target atom, elemIsFloat bool, pos token.Position) atom {
 	res := g.newTemp()
 	g.line("%s=false", res)
 	idxTemp, _ := g.beginArrayLoop(arr.name)
 	elemTemp := g.spillToTemp(g.readHandleVar(g.arrayElemNameDyn(arr.name, idxTemp)))
-	g.line("if [ \"$%s\" = \"$%s\" ]; then %s=true; fi", elemTemp, target.name, res)
+	eq := g.emitScalarEq(elemTemp, target.name, elemIsFloat, pos)
+	g.line("if [ \"$%s\" = true ]; then %s=true; fi", eq, res)
 	g.endArrayLoop(idxTemp)
 	return varAtom(res)
 }

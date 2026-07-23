@@ -1,1 +1,0 @@
-{"desc": "index_of on [float] is a compile error (comparable types only)", "compileError": true, "diagContains": "comparable element types int/bool/string"}

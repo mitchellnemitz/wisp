@@ -333,8 +333,8 @@ func (c *checker) checkContainsCall(n *ast.CallExpr, dispName string) Type {
 		}
 	case isArray(a1):
 		et := elemType(a1)
-		if et != Int && et != Bool && et != String && !c.isValueEnum(et) {
-			c.errf(n.Args[0].Pos(), "%s on an array is defined only for comparable element types int/bool/string/enum, got [%s]", dispName, et)
+		if et != Int && et != Bool && et != String && et != Float && !c.isValueEnum(et) {
+			c.errf(n.Args[0].Pos(), "%s on an array is defined only for comparable element types int/bool/string/float/enum, got [%s]", dispName, et)
 			return Bool
 		}
 		a2 := c.info.Types[n.Args[1]]

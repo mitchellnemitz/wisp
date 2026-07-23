@@ -46,12 +46,14 @@ let b: bool = array.contains(cs, Color.Red)`), "array")
 	}
 }
 
-func TestEnumContains_Reject_Float(t *testing.T) {
+// TestEnumContains_Accept_Float: float is an admitted comparable element type
+// (uniform scalar comparability), so array.contains over a float[] type-checks
+// clean.
+func TestEnumContains_Accept_Float(t *testing.T) {
 	info := checkNS(t, wrapMain(`let xs: float[] = [1.0, 2.0]
 let b: bool = array.contains(xs, 1.0)`), "array")
-	d := findErrContains(t, info, "comparable element types int/bool/string/enum")
-	if d.Pos.Line == 0 {
-		t.Errorf("diagnostic missing position: %+v", d)
+	if len(info.Errors) != 0 {
+		t.Fatalf("expected no errors, got:\n%s", diagList(info.Errors))
 	}
 }
 
@@ -69,7 +71,7 @@ func TestEnumIndexOf_Reject_Struct(t *testing.T) {
 	info := checkNS(t, `struct P { x: int }
 `+wrapMain(`let xs: P[] = []
 let i: Optional[int] = array.index_of(xs, P{x: 1})`), "array")
-	d := findErrContains(t, info, "comparable element types int/bool/string/enum")
+	d := findErrContains(t, info, "comparable element types int/bool/string/float/enum")
 	if d.Pos.Line == 0 {
 		t.Errorf("diagnostic missing position: %+v", d)
 	}
@@ -85,12 +87,14 @@ let u: Color[] = array.unique(cs)`), "array")
 	}
 }
 
-func TestEnumUnique_Reject_Float(t *testing.T) {
+// TestEnumUnique_Accept_Float: float is an admitted comparable element type
+// (uniform scalar comparability), so array.unique over a float[] type-checks
+// clean.
+func TestEnumUnique_Accept_Float(t *testing.T) {
 	info := checkNS(t, wrapMain(`let xs: float[] = [1.0, 2.0]
 let u: float[] = array.unique(xs)`), "array")
-	d := findErrContains(t, info, "comparable element types int/bool/string/enum")
-	if d.Pos.Line == 0 {
-		t.Errorf("diagnostic missing position: %+v", d)
+	if len(info.Errors) != 0 {
+		t.Fatalf("expected no errors, got:\n%s", diagList(info.Errors))
 	}
 }
 

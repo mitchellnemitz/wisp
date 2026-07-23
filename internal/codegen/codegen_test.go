@@ -136,3 +136,26 @@ func TestHeaderHasZshWordSplitShim(t *testing.T) {
 		t.Fatalf("shebang must stay #!/bin/sh:\n%s", s)
 	}
 }
+
+// TestFloatContainsUsesFcmp asserts float membership compares by NUMERIC
+// identity via __wisp_fcmp (SC-025), never a byte-text `[ "$a" = "$b" ]` test
+// which would split 1.0/1.00. SC-025(c): the operands must reach __wisp_fcmp as
+// double-quoted "$var" expansions of spilled temps, never interpolated as raw
+// program text.
+func TestFloatContainsUsesFcmp(t *testing.T) {
+	src := `fn main() -> int { let xs: float[] = [1.0, 2.5]; print("${array.contains(xs, 1.00)}"); return 0 }`
+	sh := string(compileNS(t, src, "array"))
+	if !strings.Contains(sh, "__wisp_fcmp") {
+		t.Errorf("float contains must compare via __wisp_fcmp; got:\n%s", sh)
+	}
+	quoted := false
+	for _, ln := range strings.Split(sh, "\n") {
+		if strings.Contains(ln, "__wisp_fcmp") && strings.Contains(ln, "\"$") {
+			quoted = true
+			break
+		}
+	}
+	if !quoted {
+		t.Errorf("SC-025(c): float contains operands must reach __wisp_fcmp as quoted \"$...\" expansions; got:\n%s", sh)
+	}
+}

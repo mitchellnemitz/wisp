@@ -1,0 +1,5 @@
+{
+  "desc": "contains on a float array compares by numeric identity (1.00==1.0, -0.0==0.0)",
+  "stdout": "true\ntrue\nfalse\ntrue\n",
+  "exit": 0
+}

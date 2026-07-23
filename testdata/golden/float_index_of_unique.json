@@ -1,0 +1,5 @@
+{
+  "desc": "index_of and unique on floats use numeric identity; index_of finds 1.00 at 0, unique collapses 1.0/1.00, -0.0 matches 0.0",
+  "stdout": "0\n2\n0\n",
+  "exit": 0
+}
