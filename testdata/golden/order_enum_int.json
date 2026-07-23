@@ -1,0 +1,5 @@
+{
+  "desc": "int-backed value enum orders by backing int (SC-003); all four operators",
+  "stdout": "true\nfalse\ntrue\ntrue\nfalse\n",
+  "exit": 0
+}

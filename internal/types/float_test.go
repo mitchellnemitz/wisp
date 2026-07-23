@@ -71,7 +71,7 @@ let f: bool = 1.0 != 2.0`))
 }
 
 func TestFloat_CompareMixIsError(t *testing.T) {
-	expectErr(t, wrapMain(`let b: bool = 1 < 2.0`), "int+int or float+float operands")
+	expectErr(t, wrapMain(`let b: bool = 1 < 2.0`), "same type")
 }
 
 func TestFloat_EqMixIsError(t *testing.T) {

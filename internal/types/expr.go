@@ -402,13 +402,30 @@ func (c *checker) checkBinary(n *ast.BinaryExpr) Type {
 		}
 		return Int
 	case token.Lt, token.Lte, token.Gt, token.Gte:
-		if lt == Int && rt == Int {
+		// Ordering is defined for the comparable scalar set (int/float/bool/string/
+		// value-enum), same as ==, but with no Optional exception: unlike ==,
+		// ordering rejects ALL Optionals (Optional[int] < Optional[int] included).
+		// Function refs and aggregate handles are opaque and never orderable.
+		if isFuncref(lt) || isFuncref(rt) {
+			c.errf(n.OpPos, "%s is not defined for function references (they are opaque and cannot be compared)", n.Op)
 			return Bool
 		}
-		if lt == Float && rt == Float {
+		if isOptional(lt) || isOptional(rt) {
+			c.errf(n.OpPos, "%s is not defined for Optional values; use is_some/is_none and unwrap", n.Op)
 			return Bool
 		}
-		c.errf(n.OpPos, "%s requires int+int or float+float operands, got %s and %s", n.Op, lt, rt)
+		if c.isHandle(lt) || c.isHandle(rt) {
+			c.errf(n.OpPos, "%s is not defined for %s (aggregate handles are opaque and cannot be compared)", n.Op, handleNoun(lt, rt))
+			return Bool
+		}
+		if lt != rt {
+			c.errf(n.OpPos, "%s requires operands of the same type, got %s and %s", n.Op, lt, rt)
+			return Bool
+		}
+		if !c.isComparableScalar(lt) {
+			c.errf(n.OpPos, "%s requires two operands of the same ordered scalar type (int, float, bool, string, or a value enum), got %s and %s", n.Op, lt, rt)
+			return Bool
+		}
 		return Bool
 	case token.Eq, token.Neq:
 		// == != defined for matching int/float/bool/string (no implicit

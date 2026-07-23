@@ -413,3 +413,38 @@ func TestB2iTreeShakenWhenNoBoolOrdering(t *testing.T) {
 		t.Errorf("SC-009: __wisp_b2i must be tree-shaken when no bool ordering is used; got:\n%s", sh)
 	}
 }
+
+// TestBoolOrderingEmitsB2i asserts a bool `<` lowers through __wisp_b2i (FR-003
+// positive): each operand's true/false text maps to 1/0 so false orders below
+// true. Complements the SC-009 absence test.
+func TestBoolOrderingEmitsB2i(t *testing.T) {
+	src := `fn main() -> int { print("${false < true}"); return 0 }`
+	sh := string(compile(t, src))
+	if !strings.Contains(sh, "__wisp_b2i") {
+		t.Errorf("bool ordering must emit __wisp_b2i; got:\n%s", sh)
+	}
+}
+
+// TestStringOrderingUsesScmp asserts a string `<` lowers through __wisp_scmp
+// (byte-lexicographic), never a numeric `[ -lt ]` test.
+func TestStringOrderingUsesScmp(t *testing.T) {
+	src := `fn main() -> int { let a: string = "a"
+let b: string = "b"
+print("${a < b}"); return 0 }`
+	sh := string(compile(t, src))
+	if !strings.Contains(sh, "__wisp_scmp") {
+		t.Errorf("string ordering must emit __wisp_scmp; got:\n%s", sh)
+	}
+}
+
+// TestFloatBackedEnumOrderingUsesFcmp asserts a float-backed value enum orders by
+// numeric identity via __wisp_fcmp (the resolver's cmpFloat arm), the same path
+// raw floats take.
+func TestFloatBackedEnumOrderingUsesFcmp(t *testing.T) {
+	src := `enum Ratio: float { Half = 0.5, Full = 1.0 }
+fn main() -> int { print("${Ratio.Half < Ratio.Full}"); return 0 }`
+	sh := string(compile(t, src))
+	if !strings.Contains(sh, "__wisp_fcmp") {
+		t.Errorf("float-backed-enum ordering must emit __wisp_fcmp; got:\n%s", sh)
+	}
+}

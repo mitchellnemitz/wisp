@@ -311,7 +311,10 @@ func (g *gen) genBinary(n *ast.BinaryExpr) atom {
 	l := g.genExpr(n.L)
 	r := g.genExpr(n.R)
 
-	if lt == types.Float {
+	// Float arithmetic and float ==/!= route here; float ORDERING falls through
+	// to the resolver-dispatched Lt/Lte/Gt/Gte cases below (which call the same
+	// emitFloatCompare), so there is one float classifier for ordering (SC-007a).
+	if lt == types.Float && n.Op != token.Lt && n.Op != token.Lte && n.Op != token.Gt && n.Op != token.Gte {
 		return g.genFloatBinary(n, l, r)
 	}
 
@@ -342,14 +345,8 @@ func (g *gen) genBinary(n *ast.BinaryExpr) atom {
 		return g.genArith(l, "<<", r)
 	case token.Shr:
 		return g.genArith(l, ">>", r)
-	case token.Lt:
-		return g.genIntCompare(l, "-lt", r)
-	case token.Lte:
-		return g.genIntCompare(l, "-le", r)
-	case token.Gt:
-		return g.genIntCompare(l, "-gt", r)
-	case token.Gte:
-		return g.genIntCompare(l, "-ge", r)
+	case token.Lt, token.Lte, token.Gt, token.Gte:
+		return g.genOrderCompare(n.Op, l, r, lt, n.OpPos)
 	case token.Eq:
 		if types.ComparableOptional(lt) {
 			return g.genOptionalEquality(l, r, lt, false, n.OpPos)
@@ -548,6 +545,94 @@ func (g *gen) genIntCompare(l atom, op string, r atom) atom {
 	t := g.newTemp()
 	g.line("if [ %s %s %s ]; then %s=true; else %s=false; fi", g.cmpWord(l), op, g.cmpWord(r), t, t)
 	return varAtom(t)
+}
+
+// genOrderCompare lowers an ordering operator (< <= > >=) for the comparable
+// scalar set, dispatching on the single comparison-class resolver so enum-backing
+// handling cannot drift from min/max and sort. Float (raw + float-backed enum)
+// reuses emitFloatCompare, so raw-float ordering stays byte-identical (SC-006).
+func (g *gen) genOrderCompare(op token.Kind, l, r atom, t types.Type, pos token.Position) atom {
+	switch g.comparisonClass(t) {
+	case cmpFloat:
+		return g.emitFloatCompare(floatCmpOp(op), l, r, pos)
+	case cmpString:
+		return g.genStringCompare(op, l, r)
+	case cmpBool:
+		return g.genBoolCompare(op, l, r)
+	default: // cmpInt (plain int + int-backed value enum)
+		return g.genIntCompare(l, intCmpOp(op), r)
+	}
+}
+
+// floatCmpOp maps an ordering token to the __wisp_fcmp op token.
+func floatCmpOp(op token.Kind) string {
+	switch op {
+	case token.Lt:
+		return "lt"
+	case token.Lte:
+		return "le"
+	case token.Gt:
+		return "gt"
+	default: // token.Gte
+		return "ge"
+	}
+}
+
+// intCmpOp maps an ordering token to the `[ ]` numeric test operator.
+func intCmpOp(op token.Kind) string {
+	switch op {
+	case token.Lt:
+		return "-lt"
+	case token.Lte:
+		return "-le"
+	case token.Gt:
+		return "-gt"
+	default: // token.Gte
+		return "-ge"
+	}
+}
+
+// genStringCompare lowers a string ordering op via __wisp_scmp (strict byte-
+// lexicographic a<b). a<b = scmp(a,b); a>b = scmp(b,a); a<=b = !scmp(b,a);
+// a>=b = !scmp(a,b). Operands reach scmp as double-quoted words (awk reads them
+// from ENVIRON, never interpolated into program text).
+func (g *gen) genStringCompare(op token.Kind, l, r atom) atom {
+	g.use(runtime.Scmp)
+	var a, b atom
+	negate := false
+	switch op {
+	case token.Lt:
+		a, b = l, r
+	case token.Gt:
+		a, b = r, l
+	case token.Lte:
+		a, b, negate = r, l, true
+	default: // token.Gte
+		a, b, negate = l, r, true
+	}
+	t := g.newTemp()
+	g.line("__wisp_scmp %s %s", g.word(a), g.word(b))
+	if negate {
+		g.line("if [ \"$__ret\" = true ]; then %s=false; else %s=true; fi", t, t)
+	} else {
+		g.line("%s=\"$__ret\"", t)
+	}
+	return varAtom(t)
+}
+
+// genBoolCompare lowers a bool ordering op by mapping each operand's true/false
+// text to 1/0 via __wisp_b2i, then comparing numerically so false (0) orders
+// below true (1). Both b2i calls write the shared __ret, so the first result is
+// spilled to its own temp BEFORE the second call.
+func (g *gen) genBoolCompare(op token.Kind, l, r atom) atom {
+	g.use(runtime.B2i)
+	lt := g.newTemp()
+	g.line("__wisp_b2i %s", g.word(l))
+	g.line("%s=\"$__ret\"", lt)
+	rt := g.newTemp()
+	g.line("__wisp_b2i %s", g.word(r))
+	g.line("%s=\"$__ret\"", rt)
+	return g.genIntCompare(varAtom(lt), intCmpOp(op), varAtom(rt))
 }
 
 // cmpWord renders an int operand for a `[ ]` numeric test: digits for a literal,

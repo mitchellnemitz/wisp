@@ -1,0 +1,5 @@
+{
+  "desc": "bool ordering maps false->0, true->1 so false<true (SC-002); all four operators via __wisp_b2i",
+  "stdout": "true\nfalse\ntrue\ntrue\nfalse\n",
+  "exit": 0
+}
