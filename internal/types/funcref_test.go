@@ -120,7 +120,7 @@ func TestFuncref_CompareLt_Negative(t *testing.T) {
 fn main() -> int {
   let b: bool = (add < add)
   return 0
-}`, "requires int+int or float+float")
+}`, "function references")
 }
 
 func TestFuncref_Arithmetic_Negative(t *testing.T) {

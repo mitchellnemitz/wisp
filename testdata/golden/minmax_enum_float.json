@@ -1,0 +1,1 @@
+{ "desc": "math.min/max on float-backed value enum by numeric identity (SC-003a)", "stdout": "half\nfull\n", "exit": 0 }

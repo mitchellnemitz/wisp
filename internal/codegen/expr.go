@@ -311,7 +311,10 @@ func (g *gen) genBinary(n *ast.BinaryExpr) atom {
 	l := g.genExpr(n.L)
 	r := g.genExpr(n.R)
 
-	if lt == types.Float {
+	// Float arithmetic and float ==/!= route here; float ORDERING falls through
+	// to the resolver-dispatched Lt/Lte/Gt/Gte cases below (which call the same
+	// emitFloatCompare), so there is one float classifier for ordering (SC-007a).
+	if lt == types.Float && n.Op != token.Lt && n.Op != token.Lte && n.Op != token.Gt && n.Op != token.Gte {
 		return g.genFloatBinary(n, l, r)
 	}
 
@@ -342,14 +345,8 @@ func (g *gen) genBinary(n *ast.BinaryExpr) atom {
 		return g.genArith(l, "<<", r)
 	case token.Shr:
 		return g.genArith(l, ">>", r)
-	case token.Lt:
-		return g.genIntCompare(l, "-lt", r)
-	case token.Lte:
-		return g.genIntCompare(l, "-le", r)
-	case token.Gt:
-		return g.genIntCompare(l, "-gt", r)
-	case token.Gte:
-		return g.genIntCompare(l, "-ge", r)
+	case token.Lt, token.Lte, token.Gt, token.Gte:
+		return g.genOrderCompare(n.Op, l, r, lt, n.OpPos)
 	case token.Eq:
 		if types.ComparableOptional(lt) {
 			return g.genOptionalEquality(l, r, lt, false, n.OpPos)
@@ -550,6 +547,94 @@ func (g *gen) genIntCompare(l atom, op string, r atom) atom {
 	return varAtom(t)
 }
 
+// genOrderCompare lowers an ordering operator (< <= > >=) for the comparable
+// scalar set, dispatching on the single comparison-class resolver so enum-backing
+// handling cannot drift from min/max and sort. Float (raw + float-backed enum)
+// reuses emitFloatCompare, so raw-float ordering stays byte-identical (SC-006).
+func (g *gen) genOrderCompare(op token.Kind, l, r atom, t types.Type, pos token.Position) atom {
+	switch g.comparisonClass(t) {
+	case cmpFloat:
+		return g.emitFloatCompare(floatCmpOp(op), l, r, pos)
+	case cmpString:
+		return g.genStringCompare(op, l, r)
+	case cmpBool:
+		return g.genBoolCompare(op, l, r)
+	default: // cmpInt (plain int + int-backed value enum)
+		return g.genIntCompare(l, intCmpOp(op), r)
+	}
+}
+
+// floatCmpOp maps an ordering token to the __wisp_fcmp op token.
+func floatCmpOp(op token.Kind) string {
+	switch op {
+	case token.Lt:
+		return "lt"
+	case token.Lte:
+		return "le"
+	case token.Gt:
+		return "gt"
+	default: // token.Gte
+		return "ge"
+	}
+}
+
+// intCmpOp maps an ordering token to the `[ ]` numeric test operator.
+func intCmpOp(op token.Kind) string {
+	switch op {
+	case token.Lt:
+		return "-lt"
+	case token.Lte:
+		return "-le"
+	case token.Gt:
+		return "-gt"
+	default: // token.Gte
+		return "-ge"
+	}
+}
+
+// genStringCompare lowers a string ordering op via __wisp_scmp (strict byte-
+// lexicographic a<b). a<b = scmp(a,b); a>b = scmp(b,a); a<=b = !scmp(b,a);
+// a>=b = !scmp(a,b). Operands reach scmp as double-quoted words (awk reads them
+// from ENVIRON, never interpolated into program text).
+func (g *gen) genStringCompare(op token.Kind, l, r atom) atom {
+	g.use(runtime.Scmp)
+	var a, b atom
+	negate := false
+	switch op {
+	case token.Lt:
+		a, b = l, r
+	case token.Gt:
+		a, b = r, l
+	case token.Lte:
+		a, b, negate = r, l, true
+	default: // token.Gte
+		a, b, negate = l, r, true
+	}
+	t := g.newTemp()
+	g.line("__wisp_scmp %s %s", g.word(a), g.word(b))
+	if negate {
+		g.line("if [ \"$__ret\" = true ]; then %s=false; else %s=true; fi", t, t)
+	} else {
+		g.line("%s=\"$__ret\"", t)
+	}
+	return varAtom(t)
+}
+
+// genBoolCompare lowers a bool ordering op by mapping each operand's true/false
+// text to 1/0 via __wisp_b2i, then comparing numerically so false (0) orders
+// below true (1). Both b2i calls write the shared __ret, so the first result is
+// spilled to its own temp BEFORE the second call.
+func (g *gen) genBoolCompare(op token.Kind, l, r atom) atom {
+	g.use(runtime.B2i)
+	lt := g.newTemp()
+	g.line("__wisp_b2i %s", g.word(l))
+	g.line("%s=\"$__ret\"", lt)
+	rt := g.newTemp()
+	g.line("__wisp_b2i %s", g.word(r))
+	g.line("%s=\"$__ret\"", rt)
+	return g.genIntCompare(varAtom(lt), intCmpOp(op), varAtom(rt))
+}
+
 // cmpWord renders an int operand for a `[ ]` numeric test: digits for a literal,
 // a quoted expansion for a variable (every int value is [+-]?[0-9]+, invariant 5).
 func (g *gen) cmpWord(a atom) string {
@@ -591,6 +676,47 @@ func (g *gen) comparesAsFloat(t types.Type) bool {
 		return true
 	}
 	return false
+}
+
+// cmpClass is the comparison class an ordered scalar operand lowers to. It is the
+// single classifier the ordering operators, min/max, and sort all dispatch on, so
+// enum-backing handling cannot drift between those surfaces.
+type cmpClass int
+
+const (
+	cmpInt cmpClass = iota
+	cmpFloat
+	cmpString
+	cmpBool
+)
+
+// comparisonClass maps an ordered scalar operand type to its comparison class. The
+// float class (raw float AND float-backed value enums) is decided by comparesAsFloat
+// so there is one float classifier; the remaining value-enum backings dispatch on
+// EnumInfo.Backing; plain int/bool/string map directly.
+func (g *gen) comparisonClass(t types.Type) cmpClass {
+	if g.comparesAsFloat(t) {
+		return cmpFloat
+	}
+	rt := g.resolveType(t)
+	if ei, ok := g.info.Enums[string(rt)]; ok && ei.Kind == types.EnumValue {
+		switch ei.Backing {
+		case types.String:
+			return cmpString
+		case types.Bool:
+			return cmpBool
+		default:
+			return cmpInt // int-backed (float-backed already claimed by comparesAsFloat)
+		}
+	}
+	switch rt {
+	case types.String:
+		return cmpString
+	case types.Bool:
+		return cmpBool
+	default:
+		return cmpInt
+	}
 }
 
 // genEquality emits == / != for int, bool, or string operands. All three lower
@@ -1554,16 +1680,22 @@ func (g *gen) genAbs(n *ast.CallExpr, args []ast.Expr) atom {
 
 // genMinMax lowers min/max(a, b). It chooses an operand and returns it UNCHANGED
 // (the chosen operand's original atom): no arithmetic/awk reformat of the value,
-// so a float result carries no new validity obligation. int comparison uses a
-// numeric `[ ]`; float comparison uses __wisp_fcmp (the M3 exit-status compare)
-// to decide which operand to copy.
+// so a float result carries no new validity obligation. The comparison used to
+// decide which operand to copy is selected by the shared comparison-class
+// resolver (int numeric `[ ]`, float __wisp_fcmp, string __wisp_scmp, bool
+// __wisp_b2i then numeric), so it matches the ordering operators and sort.
 func (g *gen) genMinMax(args []ast.Expr, isMin bool) atom {
 	a := g.spillToTemp(g.genExpr(args[0]))
 	b := g.spillToTemp(g.genExpr(args[1]))
 	t := g.newTemp()
-	if g.info.Types[args[0]] == types.Float {
-		// Pick a when (isMin ? a<=b : a>=b), else b; copy the chosen operand
-		// unchanged. The op token is compiler-fixed.
+	// Dispatch on the single comparison-class resolver so enum-backing handling
+	// matches the ordering operators and sort. Every branch copies the chosen
+	// ORIGINAL operand ($a/$b) unchanged -- result type == operand type -- so no
+	// arithmetic/awk reformat of the value ever leaks into the result.
+	switch g.comparisonClass(g.info.Types[args[0]]) {
+	case cmpFloat:
+		// Pick a when (isMin ? a<=b : a>=b), else b. Byte-identical to the prior
+		// raw-float branch.
 		op := "ge"
 		if isMin {
 			op = "le"
@@ -1571,13 +1703,39 @@ func (g *gen) genMinMax(args []ast.Expr, isMin bool) atom {
 		g.use(runtime.FCmp)
 		g.line("__wisp_fcmp %s %s \"$%s\" \"$%s\"", g.posLiteral(args[0].Pos()), shellSingleQuote(op), a, b)
 		g.line("if [ \"$__ret\" = true ]; then %s=\"$%s\"; else %s=\"$%s\"; fi", t, a, t, b)
-		return varAtom(t)
+	case cmpString:
+		// min: a if a<=b (= !scmp(b,a)); max: a if a>=b (= !scmp(a,b)). Either way
+		// __ret=true selects b, else a.
+		g.use(runtime.Scmp)
+		if isMin {
+			g.line("__wisp_scmp \"$%s\" \"$%s\"", b, a)
+		} else {
+			g.line("__wisp_scmp \"$%s\" \"$%s\"", a, b)
+		}
+		g.line("if [ \"$__ret\" = true ]; then %s=\"$%s\"; else %s=\"$%s\"; fi", t, b, t, a)
+	case cmpBool:
+		// Compare the 0/1 maps numerically but copy the ORIGINAL bool operand:
+		// the result type is bool, so returning "0"/"1" would be wrong-typed.
+		// Both b2i calls write __ret, so spill the first before the second.
+		g.use(runtime.B2i)
+		ai := g.newTemp()
+		g.line("__wisp_b2i \"$%s\"", a)
+		g.line("%s=\"$__ret\"", ai)
+		bi := g.newTemp()
+		g.line("__wisp_b2i \"$%s\"", b)
+		g.line("%s=\"$__ret\"", bi)
+		op := "-ge"
+		if isMin {
+			op = "-le"
+		}
+		g.line("if [ \"$%s\" %s \"$%s\" ]; then %s=\"$%s\"; else %s=\"$%s\"; fi", ai, op, bi, t, a, t, b)
+	default: // cmpInt (plain int + int-backed value enum); byte-identical.
+		op := "-ge"
+		if isMin {
+			op = "-le"
+		}
+		g.line("if [ \"$%s\" %s \"$%s\" ]; then %s=\"$%s\"; else %s=\"$%s\"; fi", a, op, b, t, a, t, b)
 	}
-	op := "-ge"
-	if isMin {
-		op = "-le"
-	}
-	g.line("if [ \"$%s\" %s \"$%s\" ]; then %s=\"$%s\"; else %s=\"$%s\"; fi", a, op, b, t, a, t, b)
 	return varAtom(t)
 }
 

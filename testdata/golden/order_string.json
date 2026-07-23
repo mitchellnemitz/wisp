@@ -1,0 +1,5 @@
+{
+  "desc": "string ordering is byte-lexicographic via __wisp_scmp (SC-001); all four operators",
+  "stdout": "true\nfalse\ntrue\ntrue\nfalse\n",
+  "exit": 0
+}

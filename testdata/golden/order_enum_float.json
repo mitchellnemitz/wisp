@@ -1,0 +1,5 @@
+{
+  "desc": "float-backed value enum orders by numeric identity via __wisp_fcmp (SC-003); all four operators",
+  "stdout": "true\nfalse\ntrue\ntrue\nfalse\n",
+  "exit": 0
+}

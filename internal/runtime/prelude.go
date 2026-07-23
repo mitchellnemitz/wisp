@@ -155,6 +155,12 @@ const (
 	// on the awk process so the comparison is byte order regardless of locale.
 	Scmp = "__wisp_scmp" // <a> <b>: byte-lexicographic a<b -> true/false
 
+	// b2i maps a bool text value (the type system guarantees exactly "true" or
+	// "false") to 1/0 so bool ordering (< <= > >=, min/max, sort) reuses the numeric
+	// integer compare uniformly. The operand is double-quoted; no user-controlled
+	// payload can reach it beyond that two-element domain.
+	B2i = "__wisp_b2i" // <b>: bool true/false -> 1/0
+
 	// parse_args classifies a CLI argument list into values/switches/positionals
 	// (getopts milestone). Codegen pre-allocates the result dict + two array
 	// handles (and inits the dict's _keys list); this helper scans the args array
@@ -849,6 +855,21 @@ var registry = map[string]helper{
 		__ret=true
 	else
 		__ret=false
+	fi
+}`,
+	},
+
+	// __wisp_b2i <b>: map bool text (true/false, type-guaranteed) to 1/0 into __ret,
+	// so bool ordering reuses the numeric integer compare. Pure POSIX test, no
+	// bashisms; byte-identical across dash, busybox ash, bash, and zsh.
+	B2i: {
+		id:    B2i,
+		order: 26,
+		src: `__wisp_b2i() {
+	if [ "$1" = true ]; then
+		__ret=1
+	else
+		__ret=0
 	fi
 }`,
 	},

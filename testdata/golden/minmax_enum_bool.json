@@ -1,0 +1,1 @@
+{ "desc": "math.min/max on bool-backed value enum: Off(false) is min, On(true) is max (SC-003a)", "stdout": "off\non\n", "exit": 0 }

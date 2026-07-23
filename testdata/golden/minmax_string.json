@@ -1,0 +1,1 @@
+{ "desc": "math.min/max on strings pick by byte order (SC-003a)", "stdout": "apple\nbanana\n", "exit": 0 }

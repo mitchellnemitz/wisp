@@ -202,8 +202,10 @@ func TestRule7_MinusStringOnly_Negative(t *testing.T) {
 	expectErr(t, wrapMain(`let s: string = "a" - "b"`), "requires int+int or float+float")
 }
 
-func TestRule7_LessThanString_Negative(t *testing.T) {
-	expectErr(t, wrapMain(`let b: bool = "a" < "b"`), "requires int+int or float+float operands")
+func TestRule7_LessThanString_Positive(t *testing.T) {
+	// String ordering is defined (byte-lexicographic); it is part of the
+	// comparable scalar set ordering now accepts.
+	expectOK(t, wrapMain(`let b: bool = "a" < "b"`))
 }
 
 func TestRule7_EqBool_Positive(t *testing.T) {
@@ -969,4 +971,35 @@ func TestCheckBinaryLogicalNonBoolOperand(t *testing.T) {
 	// Param operand keeps the expr non-constant so it does not const-fold.
 	expectErr(t, `fn f(a: bool) -> int { let x: bool = a && 1; return 0 } fn main() -> int { return 0 }`, "requires bool operands")
 	expectErr(t, `fn f(a: int) -> int { let x: bool = a || true; return 0 } fn main() -> int { return 0 }`, "requires bool operands")
+}
+
+// Ordering (< <= > >=) over the comparable scalar set.
+
+func TestOrder_Bool_Positive(t *testing.T) {
+	expectOK(t, wrapMain(`let b: bool = false < true`))
+}
+
+func TestOrder_ValueEnum_Positive(t *testing.T) {
+	expectOK(t, `enum Color: int { Red, Green, Blue }
+fn main() -> int { let b: bool = Color.Red < Color.Blue
+return 0 }`)
+}
+
+func TestOrder_CrossEnum_Negative(t *testing.T) { // SC-005c
+	expectErr(t, `enum A: int { X, Y }
+enum B: int { P, Q }
+fn main() -> int { let b: bool = A.X < B.P
+return 0 }`, "same type")
+}
+
+func TestOrder_Optional_Negative(t *testing.T) { // SC-010(a): comparable-element Optional
+	expectErr(t, wrapMain(`let a: Optional[int] = Some(1)
+let b: Optional[int] = Some(2)
+let c: bool = a < b`), "not defined for Optional")
+}
+
+func TestOrder_Handle_Negative(t *testing.T) { // SC-010: aggregate handle
+	expectErr(t, wrapMain(`let a: int[] = [1]
+let b: int[] = [2]
+let c: bool = a < b`), "aggregate handles are opaque")
 }

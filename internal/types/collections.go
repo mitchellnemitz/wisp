@@ -7,12 +7,6 @@ import "github.com/mitchellnemitz/wisp/internal/ast"
 // here (like map/keys/contains) and records its own CallInfo. The builtinSigs
 // entries only reserve the names.
 
-// isOrderedElem reports whether t is an element type with a total order usable by
-// `sort` (int, float, string).
-func isOrderedElem(t Type) bool {
-	return t == Int || t == Float || t == String
-}
-
 // arrayBuiltinArg checks that arg is an array and returns its (type, elem, ok).
 func (c *checker) arrayBuiltinArg(arg ast.Expr, name string) (Type, Type, bool) {
 	at := c.checkExpr(arg)
@@ -39,8 +33,8 @@ func (c *checker) checkSortCall(n *ast.CallExpr, dispName string) Type {
 	if c.rejectTypeVar(n.Args[0].Pos(), et, "sort") {
 		return Invalid
 	}
-	if !isOrderedElem(et) {
-		c.errf(n.Args[0].Pos(), "%s requires an array of int, float, or string, got %s", dispName, at)
+	if !c.isComparableScalar(et) {
+		c.errf(n.Args[0].Pos(), "%s requires an array of an ordered scalar type (int, float, bool, string, or a value enum), got %s", dispName, at)
 		return Invalid
 	}
 	c.info.Calls[n] = &CallInfo{Kind: CallBuiltin, Builtin: "sort", Args: []ast.Expr{n.Args[0]}, Result: at}
@@ -361,10 +355,6 @@ func (c *checker) checkClampCall(n *ast.CallExpr, dispName string) Type {
 	return t
 }
 
-// isComparableElem reports whether t is one of int/bool/string - the element types
-// valid for contains (array branch), index_of (array branch), and unique.
-func isComparableElem(t Type) bool { return t == Int || t == Bool || t == String }
-
 // checkIndexOfCall resolves the overloaded index_of builtin (spec I4).
 // The overload is chosen by the first argument's type (n.Args[0]): a string
 // first arg is the substring search (string, string) -> Optional[int]; an array
@@ -393,7 +383,7 @@ func (c *checker) checkIndexOfCall(n *ast.CallExpr, dispName string) Type {
 		}
 	case isArray(a1):
 		et := elemType(a1)
-		if !isComparableElem(et) && et != Float && !c.isValueEnum(et) {
+		if !c.isComparableScalar(et) {
 			c.errf(n.Args[0].Pos(), "%s on an array is defined only for comparable element types int/bool/string/float/enum, got [%s]", dispName, et)
 			return res
 		}
@@ -469,7 +459,7 @@ func (c *checker) checkUniqueCall(n *ast.CallExpr, dispName string) Type {
 		return Invalid
 	}
 	et := elemType(at)
-	if !isComparableElem(et) && et != Float && !c.isValueEnum(et) {
+	if !c.isComparableScalar(et) {
 		c.errf(n.Args[0].Pos(), "%s on an array is defined only for comparable element types int/bool/string/float/enum, got [%s]", dispName, et)
 		return Invalid
 	}

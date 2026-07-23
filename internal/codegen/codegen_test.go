@@ -361,3 +361,182 @@ fn main() -> int { let m: {Flag: int} = {}; m[Flag.On] = 1; return 0 }`
 		t.Errorf("bool-backed-enum dict key must not touch the float awk -v channel; got:\n%s", sh)
 	}
 }
+
+// TestComparisonClassResolver asserts the ordering comparison-class resolver
+// (Task 2) maps each ordered scalar operand to its class: raw float and a
+// float-backed value enum -> cmpFloat (single float classifier via
+// comparesAsFloat); the other value-enum backings dispatch on EnumInfo.Backing
+// (string->cmpString, bool->cmpBool, int->cmpInt); plain scalars map directly.
+func TestComparisonClassResolver(t *testing.T) {
+	g := &gen{info: &types.Info{Enums: map[string]*types.EnumInfo{
+		"Ratio@0": {Kind: types.EnumValue, Backing: types.Float},
+		"Flag@0":  {Kind: types.EnumValue, Backing: types.Bool},
+		"Color@0": {Kind: types.EnumValue, Backing: types.String},
+		"Level@0": {Kind: types.EnumValue, Backing: types.Int},
+	}}}
+	cases := []struct {
+		name string
+		t    types.Type
+		want cmpClass
+	}{
+		{"raw float", types.Float, cmpFloat},
+		{"float-backed enum", types.Type("Ratio@0"), cmpFloat},
+		{"bool-backed enum", types.Type("Flag@0"), cmpBool},
+		{"string-backed enum", types.Type("Color@0"), cmpString},
+		{"int-backed enum", types.Type("Level@0"), cmpInt},
+		{"raw int", types.Int, cmpInt},
+		{"raw bool", types.Bool, cmpBool},
+		{"raw string", types.String, cmpString},
+	}
+	for _, c := range cases {
+		if got := g.comparisonClass(c.t); got != c.want {
+			t.Errorf("comparisonClass(%s): got %d, want %d", c.name, got, c.want)
+		}
+	}
+}
+
+// TestB2iTreeShakenWhenNoBoolOrdering asserts the __wisp_b2i helper (Task 2) is
+// tree-shaken out of programs that never order bools (SC-009). Ordering only
+// int/float here must not drag in the bool->0/1 map.
+func TestB2iTreeShakenWhenNoBoolOrdering(t *testing.T) {
+	src := `fn main() -> int {
+	let a: int = 1
+	let b: int = 2
+	let x: float = 1.5
+	let y: float = 2.5
+	print("${a < b}")
+	print("${x < y}")
+	return 0
+}`
+	sh := string(compile(t, src))
+	if strings.Contains(sh, "__wisp_b2i") {
+		t.Errorf("SC-009: __wisp_b2i must be tree-shaken when no bool ordering is used; got:\n%s", sh)
+	}
+}
+
+// TestBoolOrderingEmitsB2i asserts a bool `<` lowers through __wisp_b2i (FR-003
+// positive): each operand's true/false text maps to 1/0 so false orders below
+// true. Complements the SC-009 absence test.
+func TestBoolOrderingEmitsB2i(t *testing.T) {
+	src := `fn main() -> int { print("${false < true}"); return 0 }`
+	sh := string(compile(t, src))
+	if !strings.Contains(sh, "__wisp_b2i") {
+		t.Errorf("bool ordering must emit __wisp_b2i; got:\n%s", sh)
+	}
+}
+
+// TestStringOrderingUsesScmp asserts a string `<` lowers through __wisp_scmp
+// (byte-lexicographic), never a numeric `[ -lt ]` test.
+func TestStringOrderingUsesScmp(t *testing.T) {
+	src := `fn main() -> int { let a: string = "a"
+let b: string = "b"
+print("${a < b}"); return 0 }`
+	sh := string(compile(t, src))
+	if !strings.Contains(sh, "__wisp_scmp") {
+		t.Errorf("string ordering must emit __wisp_scmp; got:\n%s", sh)
+	}
+}
+
+// TestFloatBackedEnumOrderingUsesFcmp asserts a float-backed value enum orders by
+// numeric identity via __wisp_fcmp (the resolver's cmpFloat arm), the same path
+// raw floats take.
+func TestFloatBackedEnumOrderingUsesFcmp(t *testing.T) {
+	src := `enum Ratio: float { Half = 0.5, Full = 1.0 }
+fn main() -> int { print("${Ratio.Half < Ratio.Full}"); return 0 }`
+	sh := string(compile(t, src))
+	if !strings.Contains(sh, "__wisp_fcmp") {
+		t.Errorf("float-backed-enum ordering must emit __wisp_fcmp; got:\n%s", sh)
+	}
+}
+
+// TestOrderingOperandsAreDoubleQuoted asserts SC-012 for the new ordering paths:
+// every __wisp_scmp / __wisp_b2i operand reaches the helper as a double-quoted
+// "$..." expansion (never a bare word), so shell metacharacters in the value are
+// data, not code. The helpers themselves read from awk ENVIRON / positional args,
+// never interpolating the value into program text.
+func TestOrderingOperandsAreDoubleQuoted(t *testing.T) {
+	src := `fn main() -> int {
+	let a: string = "a"
+	let b: string = "b"
+	let p: bool = false
+	let q: bool = true
+	print("${a < b}")
+	print("${p < q}")
+	return 0
+}`
+	sh := string(compile(t, src))
+	for _, ln := range strings.Split(sh, "\n") {
+		trimmed := strings.TrimSpace(ln)
+		if !strings.HasPrefix(trimmed, "__wisp_scmp ") && !strings.HasPrefix(trimmed, "__wisp_b2i ") {
+			continue
+		}
+		// Every operand token after the helper name must be a "$..."-quoted word.
+		fields := strings.Fields(trimmed)
+		for _, operand := range fields[1:] {
+			if !strings.HasPrefix(operand, "\"$") {
+				t.Errorf("SC-012: ordering helper operand %q is not a double-quoted expansion in line: %s", operand, trimmed)
+			}
+		}
+	}
+}
+
+// TestMinMaxAndSortOperandsAreDoubleQuoted extends the SC-012 double-quote proof
+// to the min/max and sort emitters (not just the ordering operators) across the
+// scmp, b2i, and fcmp helper paths, including value-enum-backed operands. Every
+// operand reaching a comparison helper must be a "$..." expansion so a shell
+// metacharacter in the value is data, not code.
+func TestMinMaxAndSortOperandsAreDoubleQuoted(t *testing.T) {
+	src := `enum Size: string { S = "a", M = "b" }
+fn main() -> int {
+	let a: string = "a"
+	let b: string = "b"
+	let p: bool = false
+	let q: bool = true
+	let f1: float = 1.0
+	let f2: float = 2.0
+	print(math.min(a, b))
+	print(to_string(math.max(p, q)))
+	print(to_string(math.min(f1, f2) < f2))
+	let bs: bool[] = [q, p]
+	let ss: Size[] = [Size.M, Size.S]
+	let sortedB: bool[] = array.sort(bs)
+	let sortedS: Size[] = array.sort(ss)
+	print(to_string(sortedB[0]))
+	print(to_string(sortedS[0] == Size.S))
+	return 0
+}`
+	sh := string(compileNS(t, src, "array", "math"))
+	sawScmp, sawB2i, sawFcmp := false, false, false
+	for _, ln := range strings.Split(sh, "\n") {
+		trimmed := strings.TrimSpace(ln)
+		var operands []string
+		switch {
+		case strings.HasPrefix(trimmed, "__wisp_scmp "):
+			sawScmp = true
+			operands = strings.Fields(trimmed)[1:] // scmp: all trailing fields are operands
+		case strings.HasPrefix(trimmed, "__wisp_b2i "):
+			sawB2i = true
+			operands = strings.Fields(trimmed)[1:] // b2i: single trailing operand
+		case strings.HasPrefix(trimmed, "__wisp_fcmp "):
+			sawFcmp = true
+			f := strings.Fields(trimmed)
+			operands = f[len(f)-2:] // fcmp: leading <pos> 'op', operands are the last two
+		default:
+			continue
+		}
+		for _, op := range operands {
+			if !strings.HasPrefix(op, "\"$") {
+				t.Errorf("SC-012: comparison-helper operand %q is not a double-quoted expansion in line: %s", op, trimmed)
+			}
+		}
+	}
+	if !sawScmp {
+		t.Error("expected __wisp_scmp from string min + string-backed-enum sort")
+	}
+	if !sawB2i {
+		t.Error("expected __wisp_b2i from bool max + bool sort")
+	}
+	if !sawFcmp {
+		t.Error("expected __wisp_fcmp from float min + float ordering")
+	}
+}

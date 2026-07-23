@@ -56,15 +56,26 @@ func TestCoreStringsNeg_ContainsArrayOfArray(t *testing.T) {
 // --- math.min / math.max / math.abs ---
 
 func TestCoreMathNeg_MinMixIntFloat(t *testing.T) {
-	wantNsErr(t, "math", `fn main() -> int { let a: float = math.min(3, 7.0); return 0 }`, "same numeric type")
+	wantNsErr(t, "math", `fn main() -> int { let a: float = math.min(3, 7.0); return 0 }`, "same ordered scalar type")
 }
 
 func TestCoreMathNeg_MaxMixFloatInt(t *testing.T) {
-	wantNsErr(t, "math", `fn main() -> int { let a: float = math.max(3.0, 7); return 0 }`, "same numeric type")
+	wantNsErr(t, "math", `fn main() -> int { let a: float = math.max(3.0, 7); return 0 }`, "same ordered scalar type")
 }
 
-func TestCoreMathNeg_MinNonNumeric(t *testing.T) {
-	wantNsErr(t, "math", `fn main() -> int { let a: string = math.min("a", "b"); return 0 }`, "must be int or float")
+func TestCoreMathNeg_MinNonComparable(t *testing.T) { // SC-010b: non-scalar operand
+	wantNsErr(t, "math", `fn main() -> int { let x: int[] = [1]; let y: int[] = [2]; let a: int[] = math.min(x, y); return 0 }`, "ordered scalar type")
+}
+
+func TestCoreMath_MinString_Positive(t *testing.T) {
+	// String min is defined now (string joined the comparable scalar set).
+	expectOKNS(t, `fn main() -> int { let a: string = math.min("a", "b"); return 0 }`, "math")
+}
+
+func TestCoreMathNeg_MinCrossEnum(t *testing.T) { // SC-005c / SC-010d: two different value enums
+	wantNsErr(t, "math", `enum A: int { X, Y }
+enum B: int { P, Q }
+fn main() -> int { let a: A = math.min(A.X, B.P); return 0 }`, "same ordered scalar type")
 }
 
 func TestCoreMathNeg_AbsString(t *testing.T) {

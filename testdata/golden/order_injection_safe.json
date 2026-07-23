@@ -1,0 +1,5 @@
+{
+  "desc": "SC-012: string ordering/sort operands with shell metacharacters (glob, ;, spaces) are compared as literal bytes -- no glob expansion, no word-splitting, no command execution",
+  "stdout": "true\nfalse\n*|a; rm -rf x\n",
+  "exit": 0
+}

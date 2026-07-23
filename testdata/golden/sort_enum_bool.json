@@ -1,0 +1,1 @@
+{ "desc": "sort bool-backed value enum orders Off(false) before On(true) (SC-004)", "stdout": "off on on\n", "exit": 0 }

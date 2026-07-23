@@ -1,0 +1,5 @@
+{
+  "desc": "string-backed value enum orders by backing string via __wisp_scmp (SC-003); all four operators",
+  "stdout": "true\nfalse\ntrue\ntrue\nfalse\n",
+  "exit": 0
+}

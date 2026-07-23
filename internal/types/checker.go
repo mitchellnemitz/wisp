@@ -650,7 +650,7 @@ func (c *checker) resolveType(t ast.TypeName, pos token.Position) Type {
 		// Key type must be a comparable scalar (int/string/bool/float) or a value
 		// enum (keyed by its backing scalar). Decided on the RESOLVED type so a
 		// value-enum annotation -- not one of the scalar type names -- is admitted.
-		if kt != Int && kt != String && kt != Bool && kt != Float && !c.isValueEnum(kt) {
+		if !c.isComparableScalar(kt) {
 			c.errf(pos, "dict key type must be int, string, bool, float, or a value enum, got %s", kt)
 			return Invalid
 		}

@@ -1,0 +1,5 @@
+{
+  "desc": "bool-backed value enum orders Off(false)<On(true) via __wisp_b2i (SC-003); all four operators",
+  "stdout": "true\nfalse\ntrue\ntrue\nfalse\n",
+  "exit": 0
+}

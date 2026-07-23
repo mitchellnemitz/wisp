@@ -311,11 +311,13 @@ with `to_float(i)` or `to_int(f)` first.
 `+` is overloaded: int plus int adds, float plus float adds, and string plus
 string concatenates. The operands must share a type.
 
-Comparisons produce a bool. The ordering operators `< <= > >=` are defined for
-int and float. The equality operators `== !=` are defined for the primitives int,
-bool, string, and float, and additionally for enum values (see [Enums](#enums))
-and comparable `Optional` values (see [Optional](#optional)). Both operands must
-share a type. Comparing values of different types is a compile error.
+Comparisons produce a bool. The ordering operators `< <= > >=` and the equality
+operators `== !=` are defined for the same set: the primitives int, bool, string,
+and float, and enum values (see [Enums](#enums)). Bool orders `false < true`
+(false maps to 0, true to 1); an enum orders by its backing value. Equality
+additionally accepts comparable `Optional` values (see [Optional](#optional));
+ordering does not (Optionals are never ordered). Both operands must share a type.
+Comparing values of different types is a compile error.
 
 `&&` and `||` take bools and short-circuit. `!` negates a bool.
 

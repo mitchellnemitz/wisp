@@ -80,6 +80,19 @@ at every use would fight the language's own ergonomics for no safety benefit,
 since interpolation already goes through the same double-quoted, `%s`-only
 path as everything else.
 
+Comparison is uniform across the scalar types. One set -- int, float, bool,
+string, and value enums -- is comparable, and both equality (`== !=`) and
+ordering (`< <= > >=`), plus `math.min`/`math.max` and `array.sort`, accept
+exactly that set. There is no scalar that you can test for equality but not
+order: `bool` orders `false < true` (false maps to 0, true to 1, the model every
+language shares), and a value enum orders by its backing value regardless of
+whether that backing is int, string, bool, or float. The one asymmetry is
+deliberate: `Optional` values are equality-comparable (when their element is) but
+never ordered, because there is no obvious total order between `None` and a
+present value. The funcref *value* forms of `min`/`max` stay int/float only,
+matching the `contains`/`index_of` funcref precedent -- the widening is on the
+direct-call surface the operators expose, not the higher-order one.
+
 The `bool` conversion is strict on purpose: from a string, only the exact
 literals `"true"` and `"false"` convert; `"True"`, `" true "`, `"1"`, and `""`
 all abort. There is no case-folding, whitespace-trimming, or catch-all
