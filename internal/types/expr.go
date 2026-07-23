@@ -647,7 +647,7 @@ func (c *checker) checkDictLit(n *ast.DictLit, want Type) Type {
 	valT := c.checkExprExpecting(n.Entries[0].Value, wantVal)
 	// The key type must be a comparable scalar (int/string/bool/float) or a value
 	// enum (keyed by its backing scalar).
-	if keyT != Invalid && keyT != Int && keyT != String && keyT != Bool && keyT != Float && !c.isValueEnum(keyT) {
+	if keyT != Invalid && !c.isComparableScalar(keyT) {
 		c.errf(n.Entries[0].Key.Pos(), "dict key must be int, string, bool, float, or a value enum, got %s", keyT)
 		keyT = Invalid
 	}
@@ -659,7 +659,7 @@ func (c *checker) checkDictLit(n *ast.DictLit, want Type) Type {
 
 	for i := 1; i < len(n.Entries); i++ {
 		kt := c.checkExprExpecting(n.Entries[i].Key, wantKey)
-		if kt != Invalid && kt != Int && kt != String && kt != Bool && kt != Float && !c.isValueEnum(kt) {
+		if kt != Invalid && !c.isComparableScalar(kt) {
 			c.errf(n.Entries[i].Key.Pos(), "dict key must be int, string, bool, float, or a value enum, got %s", kt)
 		} else if kt != Invalid && keyT != Invalid && kt != keyT {
 			c.errf(n.Entries[i].Key.Pos(), "dict key %d has type %s, but earlier keys are %s", i+1, kt, keyT)

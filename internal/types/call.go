@@ -984,7 +984,7 @@ func (c *checker) checkGenericUserCall(n *ast.CallExpr, fn *ast.FuncDecl, modid 
 		// comparable-bounded in the CALLER's scope: when a comparable generic is
 		// called from inside another generic, unification binds the callee's T to
 		// the caller's $U, and the bound propagates when U: comparable.
-		if !isComparableConcrete(ct) && ct != Float && !c.isComparableTypeVar(ct) && !c.isValueEnum(ct) {
+		if !c.isComparableScalar(ct) && !c.isComparableTypeVar(ct) {
 			pos := boundErrPos(n, tp, origin, typeArgPos)
 			shown := disp(ct) // strip struct @modid / typevar $ from the message
 			if isTypeVar(ct) {
@@ -1076,20 +1076,26 @@ func boundErrPos(n *ast.CallExpr, tp string, origin map[string]int, typeArgPos m
 	return n.CalleePos
 }
 
-// isComparableConcrete reports whether t is one of the concrete types the
-// comparable bound admits: int, bool, or string. Float is deliberately excluded.
-func isComparableConcrete(t Type) bool { return t == Int || t == Bool || t == String }
+// isComparableScalar reports whether t is a comparable, totally-ordered scalar:
+// int, bool, string, float, or a value enum. This is the single source of truth
+// for scalar comparability across ==, dict keys, switch, contains/index_of/unique,
+// and the ordering operators / min / max / sort.
+func (c *checker) isComparableScalar(t Type) bool {
+	return t == Int || t == Bool || t == String || t == Float || c.isValueEnum(t)
+}
 
-// comparableOptional reports whether t is an Optional whose element type
-// supports structural ==: a comparable concrete (int/bool/string), float
-// (compared by numeric identity, codegen/optional.go), or a nested comparable
-// Optional. Optional[error] and Optional[<aggregate>] are not comparable.
+// comparableOptional reports whether t is an Optional whose element type supports
+// structural ==: int/bool/string, float (numeric identity, codegen/optional.go), or
+// a nested comparable Optional. Optional[error], Optional[value-enum], and
+// Optional[<aggregate>] are NOT comparable. This deliberately does NOT route through
+// isComparableScalar: the codegen-side gate (types.ComparableOptional) is enum-blind,
+// so widening the element rule to value enums here would split checker from codegen.
 func comparableOptional(t Type) bool {
 	if !isOptional(t) {
 		return false
 	}
 	elem := optionalElemType(t)
-	return isComparableConcrete(elem) || elem == Float || comparableOptional(elem)
+	return elem == Int || elem == Bool || elem == String || elem == Float || comparableOptional(elem)
 }
 
 // noSpecial signals that a special-cased builtin handler did not apply and the
