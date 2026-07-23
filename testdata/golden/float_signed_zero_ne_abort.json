@@ -1,0 +1,6 @@
+{
+  "desc": "assert_ne(-0.0, 0.0) fails because they are numerically equal (SC-032): aborts with exit 122, body after does not run, identical on all four shells",
+  "stdout": "",
+  "exit": 122,
+  "stderr": { "contains": "assertion failed", "nonEmpty": true }
+}

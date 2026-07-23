@@ -161,6 +161,18 @@ func TestFloatContainsUsesFcmp(t *testing.T) {
 	}
 }
 
+// TestFloatBackedEnumMembershipUsesFcmp asserts a float-backed value enum's
+// membership compare routes through comparesAsFloat's enum arm (Task 2) and
+// __wisp_fcmp, not a byte-text `=` test (SC-024).
+func TestFloatBackedEnumMembershipUsesFcmp(t *testing.T) {
+	src := `enum Ratio: float { Half = 0.5, Full = 1.0 }
+fn main() -> int { let xs: Ratio[] = [Ratio.Half]; print("${array.contains(xs, Ratio.Half)}"); return 0 }`
+	sh := string(compileNS(t, src, "array"))
+	if !strings.Contains(sh, "__wisp_fcmp") {
+		t.Errorf("float-backed-enum membership must compare via __wisp_fcmp (comparesAsFloat enum arm); got:\n%s", sh)
+	}
+}
+
 // classifyBody isolates the compiled "classify" function's body: from its
 // definition header to the next top-level function header (or end). Function
 // defs are `__wisp_f_...() {` at column 0. Scoping to the function body avoids

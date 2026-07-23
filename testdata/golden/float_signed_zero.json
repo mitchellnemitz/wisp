@@ -1,0 +1,5 @@
+{
+  "desc": "-0.0 and 0.0 are numerically equal at contains/index_of/unique/assert_eq (SC-032), byte-identical across shells",
+  "stdout": "true\ntrue\n0\n2\nok\n",
+  "exit": 0
+}

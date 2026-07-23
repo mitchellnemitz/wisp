@@ -71,11 +71,13 @@ func (c *checker) collectValueEnum(ctx *moduleCtx, ed *ast.EnumDecl, ei *EnumInf
 		ei.Backing = String
 	case ast.TypeBool:
 		ei.Backing = Bool
+	case ast.TypeFloat:
+		ei.Backing = Float
 	default:
-		// SC-039: float and any other backing rejected; the enum stays a
-		// (malformed) value enum with an Invalid backing for error recovery.
+		// SC-039: any other backing rejected; the enum stays a (malformed)
+		// value enum with an Invalid backing for error recovery.
 		ei.Backing = Invalid
-		c.errf(ed.BackingPos, "enum backing type must be int, string, or bool, got %s", ed.Backing)
+		c.errf(ed.BackingPos, "enum backing type must be int, string, float, or bool, got %s", ed.Backing)
 	}
 	seenName := map[string]bool{}
 	nextInt := int64(0)
@@ -138,6 +140,27 @@ func (c *checker) collectValueEnum(ctx *moduleCtx, ed *ast.EnumDecl, ei *EnumInf
 				continue
 			}
 			cv = bv
+		case Float:
+			// Float has no auto-increment or name default (like bool); every
+			// variant MUST declare an explicit float value. Store the
+			// FoldedFloat so variant-access codegen (foldedLitAtom) re-emits
+			// the raw float text.
+			if v.Value == nil {
+				c.errf(v.NamePos, "variant %q of float enum %q must declare an explicit float value", v.Name, ed.Name)
+				ei.Variants = append(ei.Variants, v.Name)
+				ei.Consts = append(ei.Consts, nil)
+				ei.Payloads = append(ei.Payloads, Invalid)
+				continue
+			}
+			vt, fv := c.foldConst(v.Value)
+			if vt != Float {
+				c.errf(v.Value.Pos(), "variant %q of float enum %q must be a float constant, got %s", v.Name, ed.Name, vt)
+				ei.Variants = append(ei.Variants, v.Name)
+				ei.Consts = append(ei.Consts, nil)
+				ei.Payloads = append(ei.Payloads, Invalid)
+				continue
+			}
+			cv = fv // types.FoldedFloat
 		default:
 			cv = nil // Invalid backing already reported
 		}
@@ -145,18 +168,22 @@ func (c *checker) collectValueEnum(ctx *moduleCtx, ed *ast.EnumDecl, ei *EnumInf
 		ei.Consts = append(ei.Consts, cv)
 		ei.Payloads = append(ei.Payloads, Invalid)
 	}
-	// FR-002a: uniqueness across all resolved constants, located at the second use.
+	// FR-002a/FR-005: uniqueness across all resolved constants, located at the
+	// second use. dupKeyForCase (stmt.go) folds a FoldedFloat to its parsed
+	// float64 with -0 folded to +0, so 0.5/0.50 and -0.0/0.0 collide as one
+	// key, matching the switch-case dedup this plan's Task 6 already applies.
 	seenVal := map[interface{}]string{}
 	for i, name := range ei.Variants {
 		cv := ei.Consts[i]
 		if cv == nil {
 			continue
 		}
-		if first, ok := seenVal[cv]; ok {
+		key := dupKeyForCase(cv)
+		if first, ok := seenVal[key]; ok {
 			c.errf(variantPos(ed, name), "variant %q has duplicate value (already used by %q); enum values must be distinct", name, first)
 			continue
 		}
-		seenVal[cv] = name
+		seenVal[key] = name
 	}
 }
 
@@ -416,6 +443,30 @@ func (c *checker) checkBoolEnumCall(n *ast.CallExpr) (Type, bool) {
 	return Bool, true
 }
 
+// checkFloatEnumCall handles to_float(e) for an enum operand: a float-backed
+// value enum returns its backing; any other value enum is directed to its own
+// backing; a tagged-union enum is rejected.
+func (c *checker) checkFloatEnumCall(n *ast.CallExpr) (Type, bool) {
+	if len(n.Args) != 1 {
+		return Invalid, false
+	}
+	at := c.checkExpr(n.Args[0])
+	if !c.isEnumType(at) {
+		return Invalid, false
+	}
+	ei := c.info.Enums[string(at)]
+	if ei.Kind == EnumTagged {
+		c.errf(n.Args[0].Pos(), "to_float() is not defined for enum %s (a tagged-union enum has no scalar value)", disp(at))
+		return Invalid, true
+	}
+	if ei.Backing != Float {
+		c.errf(n.Args[0].Pos(), "to_float() is not defined for enum %s; use to_%s() for its backing value", disp(at), backingName(ei.Backing))
+		return Invalid, true
+	}
+	c.info.Calls[n] = &CallInfo{Kind: CallBuiltin, Builtin: "to_float", Args: n.Args, Result: Float}
+	return Float, true
+}
+
 func backingName(t Type) string {
 	switch t {
 	case Int:
@@ -424,6 +475,8 @@ func backingName(t Type) string {
 		return "string"
 	case Bool:
 		return "bool"
+	case Float:
+		return "float"
 	}
 	return "?"
 }

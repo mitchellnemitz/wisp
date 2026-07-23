@@ -1,0 +1,5 @@
+{
+  "desc": "float-backed value enum: declares, projects via to_float, and switches by backing (exhaustive, no default)",
+  "stdout": "0.5\nhalf\n",
+  "exit": 0
+}

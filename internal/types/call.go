@@ -584,6 +584,10 @@ func (c *checker) checkBuiltinNamed(n *ast.CallExpr, name, dispName string) Type
 		if t, ok := c.checkBoolEnumCall(n); ok {
 			return t
 		}
+	case "to_float":
+		if t, ok := c.checkFloatEnumCall(n); ok {
+			return t
+		}
 	case "debug":
 		return c.checkDebugCall(n)
 	case "is_some":
