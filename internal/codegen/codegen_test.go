@@ -448,3 +448,34 @@ fn main() -> int { print("${Ratio.Half < Ratio.Full}"); return 0 }`
 		t.Errorf("float-backed-enum ordering must emit __wisp_fcmp; got:\n%s", sh)
 	}
 }
+
+// TestOrderingOperandsAreDoubleQuoted asserts SC-012 for the new ordering paths:
+// every __wisp_scmp / __wisp_b2i operand reaches the helper as a double-quoted
+// "$..." expansion (never a bare word), so shell metacharacters in the value are
+// data, not code. The helpers themselves read from awk ENVIRON / positional args,
+// never interpolating the value into program text.
+func TestOrderingOperandsAreDoubleQuoted(t *testing.T) {
+	src := `fn main() -> int {
+	let a: string = "a"
+	let b: string = "b"
+	let p: bool = false
+	let q: bool = true
+	print("${a < b}")
+	print("${p < q}")
+	return 0
+}`
+	sh := string(compile(t, src))
+	for _, ln := range strings.Split(sh, "\n") {
+		trimmed := strings.TrimSpace(ln)
+		if !strings.HasPrefix(trimmed, "__wisp_scmp ") && !strings.HasPrefix(trimmed, "__wisp_b2i ") {
+			continue
+		}
+		// Every operand token after the helper name must be a "$..."-quoted word.
+		fields := strings.Fields(trimmed)
+		for _, operand := range fields[1:] {
+			if !strings.HasPrefix(operand, "\"$") {
+				t.Errorf("SC-012: ordering helper operand %q is not a double-quoted expansion in line: %s", operand, trimmed)
+			}
+		}
+	}
+}
