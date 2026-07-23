@@ -1,0 +1,5 @@
+{
+  "desc": "switch on a float subject matches by numeric identity: 1.00 matches case 1.0; -0.0 falls to default (no case 0.0); requires a default",
+  "stdout": "one\ntwo-and-half\nother\nother\n",
+  "exit": 0
+}

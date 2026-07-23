@@ -642,15 +642,16 @@ func (c *checker) resolveType(t ast.TypeName, pos token.Position) Type {
 		i := strings.IndexByte(inner, ':')
 		kAnn := ast.TypeName(inner[:i])
 		vAnn := ast.TypeName(inner[i+1:])
-		// Key type must be int or string (the only hashable keys, spec 4.4).
-		if kAnn != ast.TypeInt && kAnn != ast.TypeString {
-			c.errf(pos, "dict key type must be int or string, got %s", kAnn)
-			c.resolveType(vAnn, pos) // surface value-type errors too
-			return Invalid
-		}
 		kt := c.resolveType(kAnn, pos)
 		vt := c.resolveType(vAnn, pos)
 		if kt == Invalid || vt == Invalid {
+			return Invalid
+		}
+		// Key type must be a comparable scalar (int/string/bool/float) or a value
+		// enum (keyed by its backing scalar). Decided on the RESOLVED type so a
+		// value-enum annotation -- not one of the scalar type names -- is admitted.
+		if kt != Int && kt != String && kt != Bool && kt != Float && !c.isValueEnum(kt) {
+			c.errf(pos, "dict key type must be int, string, bool, float, or a value enum, got %s", kt)
 			return Invalid
 		}
 		if vt == Void {

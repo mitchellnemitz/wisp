@@ -333,8 +333,8 @@ func (c *checker) checkContainsCall(n *ast.CallExpr, dispName string) Type {
 		}
 	case isArray(a1):
 		et := elemType(a1)
-		if et != Int && et != Bool && et != String && !c.isValueEnum(et) {
-			c.errf(n.Args[0].Pos(), "%s on an array is defined only for comparable element types int/bool/string/enum, got [%s]", dispName, et)
+		if et != Int && et != Bool && et != String && et != Float && !c.isValueEnum(et) {
+			c.errf(n.Args[0].Pos(), "%s on an array is defined only for comparable element types int/bool/string/float/enum, got [%s]", dispName, et)
 			return Bool
 		}
 		a2 := c.info.Types[n.Args[1]]
@@ -376,8 +376,8 @@ func (c *checker) checkAssertEqNeCall(n *ast.CallExpr, name string) Type {
 		c.errf(n.Args[1].Pos(), "argument 2 of %s has type %s, want %s (both operands must share one comparable type)", name, a2, a1)
 		return Void
 	}
-	if !isComparableConcrete(a1) && !comparableOptional(a1) && !c.isValueEnum(a1) {
-		c.errf(n.Args[0].Pos(), "%s requires a comparable value (int, bool, string, an enum type, or a nested comparable Optional), got %s", name, a1)
+	if !isComparableConcrete(a1) && a1 != Float && !comparableOptional(a1) && !c.isValueEnum(a1) {
+		c.errf(n.Args[0].Pos(), "%s requires a comparable value (int, bool, string, float, an enum type, or a nested comparable Optional), got %s", name, a1)
 		return Void
 	}
 	c.info.Calls[n] = &CallInfo{Kind: CallBuiltin, Builtin: name, Args: []ast.Expr{n.Args[0], n.Args[1]}, Result: Void}
@@ -437,8 +437,8 @@ func (c *checker) checkAssertContainsCall(n *ast.CallExpr) Type {
 		}
 	case isArray(a1):
 		et := elemType(a1)
-		if et != Int && et != Bool && et != String && !c.isValueEnum(et) {
-			c.errf(n.Args[0].Pos(), "assert_contains on an array is defined only for comparable element types int/bool/string/enum, got [%s]", et)
+		if et != Int && et != Bool && et != String && et != Float && !c.isValueEnum(et) {
+			c.errf(n.Args[0].Pos(), "assert_contains on an array is defined only for comparable element types int/bool/string/float/enum, got [%s]", et)
 			return Void
 		}
 		a2 := c.info.Types[n.Args[1]]

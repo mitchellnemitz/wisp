@@ -1,0 +1,5 @@
+{
+  "desc": "a comparable-bound generic instantiated at float compares by numeric identity (1.00 found in [1.0]); string and bool instantiations share the erased body",
+  "stdout": "true\ntrue\nfalse\n",
+  "exit": 0
+}

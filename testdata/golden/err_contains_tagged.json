@@ -1,1 +1,5 @@
-{"desc": "contains rejects a tagged-union enum element (SC-017)", "compileError": true, "diagContains": "comparable element types int/bool/string/enum"}
+{
+  "desc": "contains rejects a tagged-union enum element (SC-017)",
+  "compileError": true,
+  "diagContains": "comparable element types int/bool/string/float/enum"
+}

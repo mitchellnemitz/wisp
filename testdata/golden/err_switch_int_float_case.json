@@ -1,0 +1,1 @@
+{ "compileError": true, "diagContains": "case value has type float, but switch subject is int" }

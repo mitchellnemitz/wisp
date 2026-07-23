@@ -1,1 +1,5 @@
-{"desc": "index_of rejects a tagged-union enum element", "compileError": true, "diagContains": "comparable element types int/bool/string/enum"}
+{
+  "desc": "index_of rejects a tagged-union enum element",
+  "compileError": true,
+  "diagContains": "comparable element types int/bool/string/float/enum"
+}

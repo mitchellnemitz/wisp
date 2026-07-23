@@ -1,0 +1,5 @@
+{
+  "desc": "a nested comparable generic instantiated only at string emits erased bodies for both outer and inner; the delegated inner call resolves to the bare erased base (no dangling call), text compare",
+  "stdout": "true\nfalse\n",
+  "exit": 0
+}

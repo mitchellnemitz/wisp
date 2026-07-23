@@ -40,17 +40,20 @@ let b: Optional[int] = Some(1)
 assert_eq(a, b)`))
 }
 
-func TestAssertEq_NonComparable_Error(t *testing.T) {
-	// float is deliberately not comparable.
-	expectErr(t, wrapMain(`assert_eq(1.0, 1.0)`), "comparable")
+func TestAssertEq_Float_OK(t *testing.T) {
+	expectOK(t, wrapMain(`assert_eq(1.0, 1.0)`))
 }
 
 func TestAssertEq_MismatchedTypes_Error(t *testing.T) {
 	expectErr(t, wrapMain(`assert_eq(1, "a")`), "assert_eq")
 }
 
-func TestAssertNe_NonComparable_Error(t *testing.T) {
-	expectErr(t, wrapMain(`assert_ne(1.0, 2.0)`), "comparable")
+func TestAssertEq_FloatIntMixed_Error(t *testing.T) {
+	expectErr(t, wrapMain(`assert_eq(1.0, 1)`), "assert_eq")
+}
+
+func TestAssertNe_Float_OK(t *testing.T) {
+	expectOK(t, wrapMain(`assert_ne(1.0, 2.0)`))
 }
 
 // --- assert_some / assert_none over Optional[T] ---
@@ -100,9 +103,9 @@ func TestAssertContains_StringNonStringNeedle_Error(t *testing.T) {
 	expectErr(t, wrapMain(`assert_contains("hello", 1)`), "assert_contains")
 }
 
-func TestAssertContains_ArrayFloat_Error(t *testing.T) {
-	expectErr(t, wrapMain(`let xs: float[] = [1.0, 2.0]
-assert_contains(xs, 1.0)`), "comparable element types int/bool/string")
+func TestAssertContains_ArrayFloat_OK(t *testing.T) {
+	expectOK(t, wrapMain(`let xs: float[] = [1.0, 2.0]
+assert_contains(xs, 1.0)`))
 }
 
 func TestAssertContains_ArrayNeedleMismatch_Error(t *testing.T) {

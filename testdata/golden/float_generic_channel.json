@@ -1,0 +1,5 @@
+{
+  "desc": "a comparable generic at T=string round-trips the full SC-015 hostile-byte matrix safely via the erased quoted text compare, never an awk -v channel (SC-028 ii)",
+  "stdout": "true\n",
+  "exit": 0
+}

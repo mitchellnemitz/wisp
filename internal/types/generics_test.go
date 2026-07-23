@@ -369,7 +369,8 @@ func TestComparableBoundSatisfaction(t *testing.T) {
 
 func TestComparableSatisfactionRejectsNonComparable(t *testing.T) {
 	eqf := "fn eq[T: comparable](a: T, b: T) -> bool { return a == b }\n"
-	expectErr(t, eqf+wrapMain("let r: bool = eq(1.0, 2.0)\nreturn 0"), "does not satisfy comparable")
+	// float now satisfies comparable (uniform scalar comparability); the still-non-
+	// comparable handle types below stay rejected.
 	expectErr(t, "struct P { x: int }\n"+eqf+wrapMain("let p: P = P { x: 1 }\nlet r: bool = eq(p, p)\nreturn 0"), "does not satisfy comparable")
 	expectErr(t, eqf+wrapMain("let xs: int[] = [1]\nlet r: bool = eq(xs, xs)\nreturn 0"), "does not satisfy comparable")
 	expectErr(t, eqf+wrapMain("let d: {string: int} = {\"a\": 1}\nlet r: bool = eq(d, d)\nreturn 0"), "does not satisfy comparable")
@@ -397,13 +398,15 @@ func TestComparableBoundPropagation(t *testing.T) {
 }
 
 func TestComparableSatisfactionBlamesBinder(t *testing.T) {
-	d := expectErr(t, "fn eq[T: comparable](a: T, b: T) -> bool { return a == b }\n"+
-		wrapMain("let r: bool = eq(1.0, 2.0)\nreturn 0"), "does not satisfy comparable")
-	// The diagnostic is positioned at the first argument (1.0), not the callee.
-	// `let r: bool = eq(1.0, 2.0)` is the wrapMain body's first line (line 3); the
-	// callee `eq` starts at col 15, so the first argument `1.0` starts at col 18.
-	if d.Pos.Line != 3 || d.Pos.Col != 18 {
-		t.Fatalf("want blame at first arg (line 3 col 18), got %s", d.Pos)
+	// float now satisfies comparable, so blame a non-comparable struct binder.
+	d := expectErr(t, "struct P { x: int }\nfn eq[T: comparable](a: T, b: T) -> bool { return a == b }\n"+
+		wrapMain("let p: P = P { x: 1 }\nlet r: bool = eq(p, p)\nreturn 0"), "does not satisfy comparable")
+	// The diagnostic is positioned at the first argument (p), not the callee.
+	// With the struct decl (line 1) and eq (line 2), main opens at line 3, `let p`
+	// is line 4, and `let r: bool = eq(p, p)` is line 5; the callee `eq` starts at
+	// col 15, so the first argument `p` starts at col 18.
+	if d.Pos.Line != 5 || d.Pos.Col != 18 {
+		t.Fatalf("want blame at first arg (line 5 col 18), got %s", d.Pos)
 	}
 }
 

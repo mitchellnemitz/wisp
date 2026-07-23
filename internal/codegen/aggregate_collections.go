@@ -300,11 +300,13 @@ func (g *gen) genFirstLast(n *ast.CallExpr, args []ast.Expr, first bool) atom {
 func (g *gen) genIndexOfElem(args []ast.Expr) atom {
 	id := g.genExpr(args[0])
 	target := g.spillToTemp(g.genExpr(args[1]))
+	elemIsFloat := g.comparesAsFloat(types.ElemType(g.info.Types[args[0]]))
 	out := g.allocHandle()
 	g.setHandleVar(tagFieldName(out), litAtom("none"))
 	idxTemp, _ := g.beginArrayLoop(id.name)
 	elemTemp := g.spillToTemp(g.readHandleVar(g.arrayElemNameDyn(id.name, idxTemp)))
-	g.line("if [ \"$%s\" = \"$%s\" ]; then", elemTemp, target)
+	eq := g.emitScalarEq(elemTemp, target, elemIsFloat, args[1].Pos())
+	g.line("if [ \"$%s\" = true ]; then", eq)
 	g.indent++
 	g.setHandleVar(tagFieldName(out), litAtom("some"))
 	g.setHandleVar(tagValueName(out), varAtom(idxTemp))
@@ -367,6 +369,7 @@ func (g *gen) genFlatten(args []ast.Expr) atom {
 // O(n^2): acceptable for the shell target. Element equality is text ("=").
 func (g *gen) genUnique(args []ast.Expr) atom {
 	id := g.genExpr(args[0])
+	elemIsFloat := g.comparesAsFloat(types.ElemType(g.info.Types[args[0]]))
 	out := g.allocHandle()
 	outLen := g.newTemp()
 	g.line("%s=0", outLen)
@@ -381,7 +384,8 @@ func (g *gen) genUnique(args []ast.Expr) atom {
 	g.indent++
 	g.shellDepth++
 	existing := g.spillToTemp(g.readHandleVar(g.arrayElemNameDyn(out, scanIdx)))
-	g.line("if [ \"$%s\" = \"$%s\" ]; then %s=true; break; fi", existing, elem, found)
+	eq := g.emitScalarEq(existing, elem, elemIsFloat, args[0].Pos())
+	g.line("if [ \"$%s\" = true ]; then %s=true; break; fi", eq, found)
 	g.line("%s=$(( $%s + 1 ))", scanIdx, scanIdx)
 	g.shellDepth--
 	g.indent--

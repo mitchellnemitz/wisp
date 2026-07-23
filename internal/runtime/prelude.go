@@ -72,6 +72,7 @@ const (
 	FCmp        = "__wisp_fcmp"
 	FBool       = "__wisp_fbool"
 	FStr        = "__wisp_fstr"         // string(float): canonical %.17g
+	FKey        = "__wisp_fkey"         // canonical float dict-key: %.17g with sign-of-zero folded to "0"
 	FFloatI     = "__wisp_ffloat_i"     // float(int): validate-and-canonicalize
 	FFloatS     = "__wisp_ffloat_s"     // float(string): case-glob validate then canonicalize
 	FIntT       = "__wisp_fint"         // int(float): awk truncate toward zero, then __wisp_int magnitude check
@@ -1833,6 +1834,25 @@ var registry = map[string]helper{
 		src: `__wisp_fint() {
 	__f_t="$(awk -v a="$2" 'BEGIN{ printf "%d", int(a+0) }')"
 	__wisp_int "$1" "$__f_t"
+}`,
+	},
+
+	// __wisp_fkey <value>: the canonical float DICT-KEY string. Like __wisp_fstr
+	// it renders %.17g (always a plain decimal for an in-domain float), but it
+	// folds the sign of zero NUMERICALLY -- a value testing equal to zero maps to
+	// the single token "0" that %.17g emits for +0.0 -- so -0.0 and 0.0 produce a
+	// byte-identical key on every shell regardless of how that awk renders -0.0.
+	// The LC_ALL=C pin is mandatory: the %.17g emission is locale-sensitive (a
+	// comma-decimal locale would emit "2,5"), and the key token must match every
+	// other %.17g site byte-for-byte. Distinct from __wisp_fstr, which omits the
+	// zero-fold and would split -0.0/0.0. order 31 is an unused stable-sort slot
+	// (see the placement note above); a tie at 28 would sort nondeterministically
+	// in the test-only IDs() helper.
+	FKey: {
+		id:    FKey,
+		order: 31,
+		src: `__wisp_fkey() {
+	__ret="$(LC_ALL=C awk -v a="$1" 'BEGIN{ x=a+0; if (x==0) printf "0"; else printf "%.17g", x }')"
 }`,
 	},
 

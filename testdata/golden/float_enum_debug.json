@@ -1,0 +1,5 @@
+{
+  "desc": "debug() of a tagged-union value carrying a float-backed value-enum payload renders the backing float 0.5 (SC-018/FR-019)",
+  "stdout": "V(0.5)\n",
+  "exit": 0
+}

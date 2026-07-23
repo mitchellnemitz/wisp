@@ -1,0 +1,5 @@
+{
+  "desc": "float as && operand is rejected (no truthiness, SC-020)",
+  "compileError": true,
+  "diagContains": "requires bool operands, got"
+}

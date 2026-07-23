@@ -1,0 +1,1 @@
+{ "compileError": true, "diagContains": "dict key must be int, string, bool, float, or a value enum" }

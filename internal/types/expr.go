@@ -9,8 +9,6 @@ import (
 	"github.com/mitchellnemitz/wisp/internal/token"
 )
 
-const minusKind = token.Minus
-
 // checkExpr resolves the type of e, records it in Info.Types, and returns it.
 // On a type error it records the diagnostic and returns Invalid (or the most
 // useful type for continued checking).
@@ -647,21 +645,22 @@ func (c *checker) checkDictLit(n *ast.DictLit, want Type) Type {
 
 	keyT := c.checkExprExpecting(n.Entries[0].Key, wantKey)
 	valT := c.checkExprExpecting(n.Entries[0].Value, wantVal)
-	// The key type must be hashable (int or string).
-	if keyT != Invalid && keyT != Int && keyT != String {
-		c.errf(n.Entries[0].Key.Pos(), "dict key must be int or string, got %s", keyT)
+	// The key type must be a comparable scalar (int/string/bool/float) or a value
+	// enum (keyed by its backing scalar).
+	if keyT != Invalid && keyT != Int && keyT != String && keyT != Bool && keyT != Float && !c.isValueEnum(keyT) {
+		c.errf(n.Entries[0].Key.Pos(), "dict key must be int, string, bool, float, or a value enum, got %s", keyT)
 		keyT = Invalid
 	}
 
-	seen := map[string]bool{} // static-literal keys, for duplicate detection
-	if lit, ok := staticKey(n.Entries[0].Key); ok {
+	seen := map[string]bool{} // static const keys, for duplicate detection
+	if lit, ok := c.dictKeyDedupToken(n.Entries[0].Key); ok {
 		seen[lit] = true
 	}
 
 	for i := 1; i < len(n.Entries); i++ {
 		kt := c.checkExprExpecting(n.Entries[i].Key, wantKey)
-		if kt != Invalid && kt != Int && kt != String {
-			c.errf(n.Entries[i].Key.Pos(), "dict key must be int or string, got %s", kt)
+		if kt != Invalid && kt != Int && kt != String && kt != Bool && kt != Float && !c.isValueEnum(kt) {
+			c.errf(n.Entries[i].Key.Pos(), "dict key must be int, string, bool, float, or a value enum, got %s", kt)
 		} else if kt != Invalid && keyT != Invalid && kt != keyT {
 			c.errf(n.Entries[i].Key.Pos(), "dict key %d has type %s, but earlier keys are %s", i+1, kt, keyT)
 		}
@@ -669,7 +668,7 @@ func (c *checker) checkDictLit(n *ast.DictLit, want Type) Type {
 		if vt != Invalid && valT != Invalid && vt != valT {
 			c.errf(n.Entries[i].Value.Pos(), "dict value %d has type %s, but earlier values are %s", i+1, vt, valT)
 		}
-		if lit, ok := staticKey(n.Entries[i].Key); ok {
+		if lit, ok := c.dictKeyDedupToken(n.Entries[i].Key); ok {
 			if seen[lit] {
 				c.errf(n.Entries[i].Key.Pos(), "duplicate key %s in dict literal", lit)
 			}
@@ -686,21 +685,39 @@ func (c *checker) checkDictLit(n *ast.DictLit, want Type) Type {
 	return dictType(keyT, valT)
 }
 
-// staticKey returns a canonical string for a statically-determinable dict key
-// literal (an int literal, an optionally negated int literal, or a pure string
-// literal) and true. For any non-constant key it returns ("", false), so
-// duplicate detection only fires on keys it can prove equal at compile time.
-func staticKey(e ast.Expr) (string, bool) {
-	switch n := e.(type) {
+// dictKeyDedupToken returns a canonical compile-time dedup token for a
+// statically-constant dict key, and true; ("", false) for a non-constant key
+// (so duplicate detection only fires when equality is provable at compile time).
+// It reads the checker's folded value, so it covers int/string/bool/float
+// literals and value-enum variant keys (which fold to their backing const).
+// A dict literal is homogeneous -- every key shares one type, enforced by the
+// key-type gate -- so no cross-kind token clash is possible and the raw value
+// string is a sufficient token. Deliberately UNPREFIXED: the token is used
+// verbatim in the "duplicate key %s in dict literal" diagnostic, and a type tag
+// like "f:" would leak into that user-facing text as junk (e.g. "f:1").
+// Float keys are keyed by the parsed float64 with -0.0 folded to +0.0, so
+// 1.0/1.00 and 0.0/-0.0 collide. This token is Go shortest-form and does NOT
+// byte-equal the runtime %.17g key text; what coincides -- and all FR-022
+// requires -- is the equivalence RELATION (equal float64 <=> equal runtime
+// %.17g key), so a compile-time duplicate is exactly a runtime collision.
+func (c *checker) dictKeyDedupToken(key ast.Expr) (string, bool) {
+	// Value-enum variant keys and const references fold during checkExpr and land
+	// in FoldedValues, so consult it first.
+	if fv, ok := c.info.FoldedValues[key]; ok {
+		return dedupTokenFromFolded(fv)
+	}
+	// Plain literals are NOT folded into FoldedValues by ordinary checkExpr, so
+	// read them straight off the AST (mirroring the old staticKey, extended to
+	// bool/float). A negated int/float literal is a UnaryExpr over the magnitude.
+	switch n := key.(type) {
 	case *ast.IntLit:
-		return "i:" + normalizeIntText(n.Raw, false), true
-	case *ast.UnaryExpr:
-		if n.Op == minusKind {
-			if il, ok := n.X.(*ast.IntLit); ok {
-				return "i:" + normalizeIntText(il.Raw, true), true
-			}
+		if v, err := parseWispInt(n.Raw, false); err == nil {
+			return strconv.FormatInt(v, 10), true
 		}
-		return "", false
+	case *ast.FloatLit:
+		return floatDedupToken(n.Raw)
+	case *ast.BoolLit:
+		return dedupTokenFromFolded(n.Value)
 	case *ast.StringLit:
 		s := ""
 		for _, p := range n.Parts {
@@ -709,25 +726,53 @@ func staticKey(e ast.Expr) (string, bool) {
 			}
 			s += p.Text
 		}
-		return "s:" + s, true
-	default:
-		return "", false
+		return s, true
+	case *ast.UnaryExpr:
+		if n.Op == token.Minus {
+			switch x := n.X.(type) {
+			case *ast.IntLit:
+				if v, err := parseWispInt(x.Raw, true); err == nil {
+					return strconv.FormatInt(v, 10), true
+				}
+			case *ast.FloatLit:
+				return floatDedupToken("-" + x.Raw)
+			}
+		}
 	}
+	return "", false
 }
 
-// normalizeIntText canonicalizes an int literal's digits (strip leading zeros)
-// and sign so two numerically-equal int-key literals (5 vs 05, 0 vs -0) compare
-// equal in the static duplicate check, matching the runtime __wisp_int
-// normalization the codegen applies to int keys.
-func normalizeIntText(digits string, neg bool) string {
-	d := digits
-	for len(d) > 1 && d[0] == '0' {
-		d = d[1:]
+// dedupTokenFromFolded maps a folded constant value to its canonical dedup
+// token, matching dictKeyDedupToken's per-kind rules.
+func dedupTokenFromFolded(fv interface{}) (string, bool) {
+	switch v := fv.(type) {
+	case int64:
+		return strconv.FormatInt(v, 10), true
+	case string:
+		return v, true
+	case bool:
+		if v {
+			return "true", true
+		}
+		return "false", true
+	case FoldedFloat:
+		return floatDedupToken(v.Raw)
 	}
-	if d == "0" || !neg {
-		return d
+	return "", false
+}
+
+// floatDedupToken canonicalizes a float literal's raw text to the parsed float64
+// shortest form with -0.0 folded to +0.0, so 1.0/1.00 and 0.0/-0.0 collide --
+// the same equivalence relation as the runtime %.17g key (FR-013/FR-022).
+func floatDedupToken(raw string) (string, bool) {
+	f, err := strconv.ParseFloat(raw, 64)
+	if err != nil {
+		return "", false
 	}
-	return "-" + d
+	if f == 0 {
+		f = 0 // fold -0.0 to +0.0
+	}
+	return strconv.FormatFloat(f, 'g', -1, 64), true
 }
 
 // resolveQualifiedConst applies the R6 decision rule to a `ns.NAME` FieldAccess

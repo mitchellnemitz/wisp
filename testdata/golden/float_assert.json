@@ -1,0 +1,5 @@
+{
+  "desc": "assert_eq/assert_ne/assert_contains on floats compare by numeric identity",
+  "stdout": "ok\n",
+  "exit": 0
+}

@@ -458,7 +458,7 @@ deferred as future work:
   runtime polymorphism over user types. Structs are concrete, opaque
   handles with a fixed field set. A bare `enum Name { ... }` with at least
   one payload variant is a general user-declared tagged-union sum type; a
-  backed `enum Name: int|string|bool { ... }` is a separate, comparable
+  backed `enum Name: int|string|bool|float { ... }` is a separate, comparable
   value-enum mode. `Optional`/`Result` are the same idea, built in and made
   generic over their payload type: `Some`/`None` and `Ok`/`Err` are
   constructors dispatched by `match`, the same as any user tagged-union

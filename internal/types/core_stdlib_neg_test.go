@@ -11,8 +11,11 @@ import "testing"
 
 // --- string.index_of overload dispatch ---
 
-func TestCoreStringsNeg_IndexOfArrayFloat(t *testing.T) {
-	wantNsErr(t, "string", `fn main() -> int { let xs: float[] = [1.0, 2.0]; let i: Optional[int] = string.index_of(xs, 1.0); return 0 }`, "comparable element types int/bool/string")
+// TestCoreStringsPos_IndexOfArrayFloat: float is an admitted comparable
+// element type (uniform scalar comparability), so array index_of over a
+// float[] type-checks clean.
+func TestCoreStringsPos_IndexOfArrayFloat(t *testing.T) {
+	wantNsOK(t, "string", `fn main() -> int { let xs: float[] = [1.0, 2.0]; let i: Optional[int] = string.index_of(xs, 1.0); return 0 }`)
 }
 
 func TestCoreStringsNeg_IndexOfArrayArgTypeMismatch(t *testing.T) {
@@ -34,8 +37,11 @@ func TestCoreStringsNeg_ContainsStringBadArg2(t *testing.T) {
 	wantNsErr(t, "string", `fn main() -> int { let b: bool = string.contains("hello", 1); return 0 }`, "contains")
 }
 
-func TestCoreStringsNeg_ContainsArrayFloat(t *testing.T) {
-	wantNsErr(t, "string", `fn main() -> int { let xs: float[] = [1.0, 2.0]; let b: bool = string.contains(xs, 1.0); return 0 }`, "comparable element types int/bool/string")
+// TestCoreStringsPos_ContainsArrayFloat: float is an admitted comparable
+// element type (uniform scalar comparability), so array contains over a
+// float[] type-checks clean.
+func TestCoreStringsPos_ContainsArrayFloat(t *testing.T) {
+	wantNsOK(t, "string", `fn main() -> int { let xs: float[] = [1.0, 2.0]; let b: bool = string.contains(xs, 1.0); return 0 }`)
 }
 
 func TestCoreStringsNeg_ContainsArrayStruct(t *testing.T) {

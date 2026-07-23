@@ -191,8 +191,9 @@ func generate(prog *ast.Program, info *types.Info, testMode, coverage bool) (scr
 		reach = reachableFuncs(info)
 	}
 
-	// Collect monomorphization instances for numeric-bounded functions.
-	monoInstances := collectMonoInstances(info)
+	// Collect monomorphization instances for numeric-bounded functions and the
+	// set of comparable generics needing their type-erased body.
+	monoInstances, needsErasedBody := collectMonoInstances(info, reach)
 
 	// Emit the function bodies first, recording one line-map entry per emitted
 	// output line (g.line appends to g.bodyMap). The blank line written between
@@ -208,6 +209,16 @@ func generate(prog *ast.Program, info *types.Info, testMode, coverage bool) (scr
 				g.typeSubst = inst.typeSubst
 				g.genFuncWithName(fn, inst.name)
 				g.typeSubst = nil
+				body.WriteString("\n")
+				g.bodyMap = append(g.bodyMap, nil)
+			}
+			// A comparable-bound generic keeps its single type-erased body (for
+			// the non-float string/bool/enum bindings that share it) in addition
+			// to any float-specialized instance(s) above -- but only when a
+			// fully-erased call site actually exists, else the erased body would
+			// ship dead (tree-shake violation). A purely numeric generic has none.
+			if hasComparableBound(fn) && needsErasedBody[fn] {
+				g.genFunc(fn)
 				body.WriteString("\n")
 				g.bodyMap = append(g.bodyMap, nil)
 			}
@@ -601,14 +612,25 @@ func (g *gen) instantiatedCallName(ci *types.CallInfo) string {
 	var sb strings.Builder
 	sb.WriteString(ci.Mangled)
 	for _, tp := range ci.Func.TypeParams {
-		if ci.Func.TypeParamBounds[tp] != "numeric" {
-			continue
-		}
 		v, ok := ci.TypeSubst[tp]
 		if !ok {
 			continue
 		}
 		concrete := g.resolveType(v)
+		if ci.Func.TypeParamBounds[tp] == "comparable" {
+			// A comparable dim contributes a suffix ONLY when it resolves to
+			// float. Inside a float instance body ($U->float), a nested call's
+			// $U resolves to float -> `__<tp>_float`. Inside an erased body
+			// ($U stays a type var) -> no suffix -> the bare callee base.
+			if concrete != types.Float {
+				continue
+			}
+			sb.WriteString("__")
+			sb.WriteString(tp)
+			sb.WriteString("_float")
+			continue
+		}
+		// Numeric dim: positional concrete suffix (int/float), as before.
 		sb.WriteString("__")
 		sb.WriteString(string(concrete))
 	}

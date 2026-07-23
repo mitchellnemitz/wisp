@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -134,5 +135,229 @@ func TestHeaderHasZshWordSplitShim(t *testing.T) {
 	}
 	if !strings.HasPrefix(s, "#!/bin/sh\n") {
 		t.Fatalf("shebang must stay #!/bin/sh:\n%s", s)
+	}
+}
+
+// TestFloatContainsUsesFcmp asserts float membership compares by NUMERIC
+// identity via __wisp_fcmp (SC-025), never a byte-text `[ "$a" = "$b" ]` test
+// which would split 1.0/1.00. SC-025(c): the operands must reach __wisp_fcmp as
+// double-quoted "$var" expansions of spilled temps, never interpolated as raw
+// program text.
+func TestFloatContainsUsesFcmp(t *testing.T) {
+	src := `fn main() -> int { let xs: float[] = [1.0, 2.5]; print("${array.contains(xs, 1.00)}"); return 0 }`
+	sh := string(compileNS(t, src, "array"))
+	if !strings.Contains(sh, "__wisp_fcmp") {
+		t.Errorf("float contains must compare via __wisp_fcmp; got:\n%s", sh)
+	}
+	quoted := false
+	for _, ln := range strings.Split(sh, "\n") {
+		if strings.Contains(ln, "__wisp_fcmp") && strings.Contains(ln, "\"$") {
+			quoted = true
+			break
+		}
+	}
+	if !quoted {
+		t.Errorf("SC-025(c): float contains operands must reach __wisp_fcmp as quoted \"$...\" expansions; got:\n%s", sh)
+	}
+}
+
+// TestFloatBackedEnumMembershipUsesFcmp asserts a float-backed value enum's
+// membership compare routes through comparesAsFloat's enum arm (Task 2) and
+// __wisp_fcmp, not a byte-text `=` test (SC-024).
+func TestFloatBackedEnumMembershipUsesFcmp(t *testing.T) {
+	src := `enum Ratio: float { Half = 0.5, Full = 1.0 }
+fn main() -> int { let xs: Ratio[] = [Ratio.Half]; print("${array.contains(xs, Ratio.Half)}"); return 0 }`
+	sh := string(compileNS(t, src, "array"))
+	if !strings.Contains(sh, "__wisp_fcmp") {
+		t.Errorf("float-backed-enum membership must compare via __wisp_fcmp (comparesAsFloat enum arm); got:\n%s", sh)
+	}
+}
+
+// classifyBody isolates the compiled "classify" function's body: from its
+// definition header to the next top-level function header (or end). Function
+// defs are `__wisp_f_...() {` at column 0. Scoping to the function body avoids
+// a false-fail from an unrelated prelude helper's own `esac`/`case`.
+func classifyBody(t *testing.T, sh string) string {
+	t.Helper()
+	re := regexp.MustCompile(`(?m)^__wisp_f_[A-Za-z0-9_]*classify[A-Za-z0-9_]*\(\) \{`)
+	loc := re.FindStringIndex(sh)
+	if loc == nil {
+		t.Fatalf("could not locate the classify function in:\n%s", sh)
+	}
+	rest := sh[loc[1]:]
+	if next := regexp.MustCompile(`(?m)^__wisp_f_`).FindStringIndex(rest); next != nil {
+		rest = rest[:next[0]]
+	}
+	return rest
+}
+
+// TestFloatSwitchUsesFcmpNotCaseGlob asserts a float switch lowers to __wisp_fcmp
+// comparisons, never a `case ... esac` shell glob over the subject (SC-025(a)):
+// a case-glob would put the float subject/literals through shell glob matching,
+// which is wrong for numeric identity.
+func TestFloatSwitchUsesFcmpNotCaseGlob(t *testing.T) {
+	src := `fn classify(x: float) -> string {
+  switch (x) { case 1.0 { return "one" } case 2.5 { return "two" } default { return "o" } }
+}
+fn main() -> int { print(classify(1.0)); return 0 }`
+	sh := string(compile(t, src))
+	if !strings.Contains(sh, "__wisp_fcmp") {
+		t.Errorf("float switch must compare via __wisp_fcmp; got:\n%s", sh)
+	}
+	rest := classifyBody(t, sh)
+	if strings.Contains(rest, "esac") {
+		t.Errorf("float switch must lower to if/elif, not a case...esac glob; classify body:\n%s", rest)
+	}
+	// SC-025(a) binds to the fixture's OWN case literals: the known literals 1.0
+	// and 2.5 must be present in the classify body (they are the numerically
+	// compared case values) and, given the no-`esac` assertion above, they
+	// therefore cannot appear as a %.17g glob inside a `case "$subject" in ...
+	// esac`.
+	for _, lit := range []string{"1.0", "2.5"} {
+		if !strings.Contains(rest, lit) {
+			t.Errorf("SC-025(a): case literal %s must appear in the classify body (the compared value); body:\n%s", lit, rest)
+		}
+	}
+}
+
+// TestFloatSwitchSpillsSubjectOnce asserts SC-026 structurally: the compiled
+// output spills the float switch subject to a SINGLE temp reused by every
+// __wisp_fcmp comparison, never re-evaluated per case.
+func TestFloatSwitchSpillsSubjectOnce(t *testing.T) {
+	src := `fn classify(x: float) -> string {
+  switch (x) { case 1.0 { return "one" } case 2.5 { return "two" } default { return "o" } }
+}
+fn main() -> int { print(classify(1.0)); return 0 }`
+	sh := string(compile(t, src))
+	body := classifyBody(t, sh)
+	// Each case emits one __wisp_fcmp comparison line. The single spilled subject
+	// temp is the wisp temp variable common to EVERY such line (the per-case value
+	// temps differ line to line). Assert exactly one temp is shared across all
+	// comparisons -> the subject was spilled once and reused, not re-evaluated.
+	varRe := regexp.MustCompile(`\$\{?(__wisp_[A-Za-z0-9_]+)`)
+	var fcmpLines []string
+	for _, ln := range strings.Split(body, "\n") {
+		if strings.Contains(ln, "__wisp_fcmp") {
+			fcmpLines = append(fcmpLines, ln)
+		}
+	}
+	if len(fcmpLines) < 2 {
+		t.Fatalf("expected >=2 __wisp_fcmp case comparisons (one per non-default case), got %d in:\n%s", len(fcmpLines), body)
+	}
+	shared := map[string]int{}
+	for _, ln := range fcmpLines {
+		seen := map[string]bool{}
+		for _, m := range varRe.FindAllStringSubmatch(ln, -1) {
+			if !seen[m[1]] {
+				seen[m[1]] = true
+				shared[m[1]]++
+			}
+		}
+	}
+	var subjectTemps []string
+	for v, n := range shared {
+		if n == len(fcmpLines) {
+			subjectTemps = append(subjectTemps, v)
+		}
+	}
+	if len(subjectTemps) != 1 {
+		t.Fatalf("SC-026: expected exactly one subject temp reused across all %d fcmp comparisons, got %v in:\n%s", len(fcmpLines), subjectTemps, body)
+	}
+	// SC-025(c): the spilled subject operand reaches __wisp_fcmp as a quoted
+	// "$..." expansion (runtime data). The case-value operand is a raw
+	// compiler-emitted float literal (the one permitted unquoted case) so it is
+	// not asserted quoted here.
+	for _, ln := range fcmpLines {
+		if !strings.Contains(ln, "\"$") {
+			t.Errorf("SC-025(c): the spilled float switch subject must reach __wisp_fcmp as a quoted \"$...\" expansion; line: %s", ln)
+		}
+	}
+}
+
+func TestFloatDictKeyUsesFkey(t *testing.T) { // SC-025(b)
+	src := `fn main() -> int { let m: {float: int} = {}; m[1.0] = 1; return 0 }`
+	sh := string(compile(t, src))
+	// The float key must canonicalize via __wisp_fkey (NOT the non-key float
+	// stringifier __wisp_fstr, which does not fold the sign of zero and so would
+	// split -0.0/0.0 as dict keys).
+	if !strings.Contains(sh, "__wisp_fkey") {
+		t.Errorf("float dict key must canonicalize via __wisp_fkey; got:\n%s", sh)
+	}
+	if strings.Contains(sh, "__wisp_fstr") {
+		t.Errorf("float dict key must use the key canonicalizer __wisp_fkey, not __wisp_fstr; got:\n%s", sh)
+	}
+	// The __wisp_fkey helper body itself must carry the two invariants FR-013
+	// names: the LC_ALL=C pin (cross-shell %.17g determinism) and the numeric
+	// zero-fold (x==0 -> "0", folding -0.0/0.0). Assert these WITHIN the sliced
+	// __wisp_fkey definition, NOT against the whole script: __wisp_dkey_enc is
+	// co-emitted with any float dict key and itself contains `LC_ALL=C`
+	// (prelude.go, `local LC_ALL; LC_ALL=C`), so a whole-script Contains("LC_ALL=C")
+	// passes even if __wisp_fkey dropped its own pin -- a vacuous guard. Slice the
+	// helper body the same way the classify-switch greps scope to their function.
+	start := strings.Index(sh, "__wisp_fkey() {")
+	if start < 0 {
+		t.Fatalf("expected a __wisp_fkey() definition in output; got:\n%s", sh)
+	}
+	// The body runs to the first line-start `}` after the header (helpers are
+	// emitted with the closing brace at column 0, `\n}`).
+	rest := sh[start:]
+	end := strings.Index(rest, "\n}")
+	if end < 0 {
+		t.Fatalf("could not find the end of the __wisp_fkey body; got:\n%s", rest)
+	}
+	fkeyBody := rest[:end]
+	if !strings.Contains(fkeyBody, "LC_ALL=C") {
+		t.Errorf("__wisp_fkey body must pin LC_ALL=C for cross-shell %%.17g determinism; got:\n%s", fkeyBody)
+	}
+	if !strings.Contains(fkeyBody, "==0") && !strings.Contains(fkeyBody, "== 0") {
+		t.Errorf("__wisp_fkey body must numerically fold the sign of zero (x==0); got:\n%s", fkeyBody)
+	}
+}
+
+func TestStringDictKeyOffAwkVChannel(t *testing.T) { // SC-025(c)
+	src := `fn main() -> int { let m: {string: int} = {}; m["k"] = 1; return 0 }`
+	sh := string(compile(t, src))
+	if !strings.Contains(sh, "__wisp_dkey_enc") {
+		t.Errorf("string dict key must route through __wisp_dkey_enc; got:\n%s", sh)
+	}
+	// A string key must never reach __wisp_fkey (the only helper that feeds a key
+	// value to an awk -v channel); only float keys legitimately do.
+	if strings.Contains(sh, "__wisp_fkey") {
+		t.Errorf("string dict key must not touch the float awk -v channel; got:\n%s", sh)
+	}
+}
+
+func TestFloatEnumDictKeyUsesFkey(t *testing.T) { // SC-033 / FR-012 backing dispatch
+	src := `enum Ratio: float { Half = 0.5, Full = 1.0 }
+fn main() -> int { let m: {Ratio: int} = {}; m[Ratio.Half] = 1; return 0 }`
+	sh := string(compile(t, src))
+	if !strings.Contains(sh, "__wisp_fkey") {
+		t.Errorf("float-backed-enum dict key must resolve to backing float and use __wisp_fkey; got:\n%s", sh)
+	}
+	if strings.Contains(sh, "__wisp_int") {
+		t.Errorf("float-backed-enum key must NOT take the int canonicalizer path; got:\n%s", sh)
+	}
+}
+
+func TestBoolDictKeyOffAwkVChannel(t *testing.T) { // SC-025(c)
+	src := `fn main() -> int { let m: {bool: int} = {}; m[true] = 1; return 0 }`
+	sh := string(compile(t, src))
+	if !strings.Contains(sh, "__wisp_dkey_enc") {
+		t.Errorf("bool dict key must route through __wisp_dkey_enc; got:\n%s", sh)
+	}
+	if strings.Contains(sh, "__wisp_fkey") {
+		t.Errorf("bool dict key must not touch the float awk -v channel; got:\n%s", sh)
+	}
+}
+
+func TestBoolEnumDictKeyOffAwkVChannel(t *testing.T) { // SC-025(c) / FR-012 bool backing
+	src := `enum Flag: bool { On = true, Off = false }
+fn main() -> int { let m: {Flag: int} = {}; m[Flag.On] = 1; return 0 }`
+	sh := string(compile(t, src))
+	if !strings.Contains(sh, "__wisp_dkey_enc") {
+		t.Errorf("bool-backed-enum dict key must route through __wisp_dkey_enc; got:\n%s", sh)
+	}
+	if strings.Contains(sh, "__wisp_fkey") {
+		t.Errorf("bool-backed-enum dict key must not touch the float awk -v channel; got:\n%s", sh)
 	}
 }

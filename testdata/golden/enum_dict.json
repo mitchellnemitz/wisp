@@ -1,0 +1,1 @@
+{ "desc": "value-enum dict keys across int/string/bool backings; keys collide/distinguish by folded backing scalar not variant name (SC-012, SC-031)", "stdout": "one\n1\n2\n100\n2\n", "exit": 0 }

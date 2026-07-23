@@ -21,14 +21,25 @@ func TestEnumComparableBound_Accept(t *testing.T) {
 `+wrapMain(`let b: bool = eq2(Color.Red, Color.Blue)`))
 }
 
-func TestEnumComparableBound_Reject_Float(t *testing.T) {
-	d := expectErr(t, `fn eq2[T: comparable](a: T, b: T) -> bool { return a == b }
-`+wrapMain(`let b: bool = eq2(1.0, 2.0)`), "does not satisfy comparable")
+// TestEnumComparableBound_Accept_Float: float is an admitted comparable type
+// (uniform scalar comparability), so a comparable-bound generic instantiated at
+// float type-checks. A genuinely-non-comparable type (a struct handle) is still
+// rejected, and the diagnostic now names float.
+func TestEnumComparableBound_Accept_Float(t *testing.T) {
+	expectOK(t, `fn eq2[T: comparable](a: T, b: T) -> bool { return a == b }
+`+wrapMain(`let b: bool = eq2(1.0, 2.0)`))
+}
+
+func TestEnumComparableBound_Reject_Struct(t *testing.T) {
+	d := expectErr(t, `struct Point { x: int, y: int }
+fn eq2[T: comparable](a: T, b: T) -> bool { return a == b }
+`+wrapMain(`let p: Point = Point { x: 1, y: 2 }
+let b: bool = eq2(p, p)`), "does not satisfy comparable")
 	if d.Pos.Line == 0 {
 		t.Errorf("diagnostic missing position: %+v", d)
 	}
-	if got := d.Msg; !strings.Contains(got, "an enum type") {
-		t.Errorf("diagnostic %q missing reworded type list", got)
+	if got := d.Msg; !strings.Contains(got, "float") {
+		t.Errorf("diagnostic %q missing reworded type list (float)", got)
 	}
 }
 
@@ -46,12 +57,14 @@ let b: bool = array.contains(cs, Color.Red)`), "array")
 	}
 }
 
-func TestEnumContains_Reject_Float(t *testing.T) {
+// TestEnumContains_Accept_Float: float is an admitted comparable element type
+// (uniform scalar comparability), so array.contains over a float[] type-checks
+// clean.
+func TestEnumContains_Accept_Float(t *testing.T) {
 	info := checkNS(t, wrapMain(`let xs: float[] = [1.0, 2.0]
 let b: bool = array.contains(xs, 1.0)`), "array")
-	d := findErrContains(t, info, "comparable element types int/bool/string/enum")
-	if d.Pos.Line == 0 {
-		t.Errorf("diagnostic missing position: %+v", d)
+	if len(info.Errors) != 0 {
+		t.Fatalf("expected no errors, got:\n%s", diagList(info.Errors))
 	}
 }
 
@@ -69,7 +82,7 @@ func TestEnumIndexOf_Reject_Struct(t *testing.T) {
 	info := checkNS(t, `struct P { x: int }
 `+wrapMain(`let xs: P[] = []
 let i: Optional[int] = array.index_of(xs, P{x: 1})`), "array")
-	d := findErrContains(t, info, "comparable element types int/bool/string/enum")
+	d := findErrContains(t, info, "comparable element types int/bool/string/float/enum")
 	if d.Pos.Line == 0 {
 		t.Errorf("diagnostic missing position: %+v", d)
 	}
@@ -85,12 +98,14 @@ let u: Color[] = array.unique(cs)`), "array")
 	}
 }
 
-func TestEnumUnique_Reject_Float(t *testing.T) {
+// TestEnumUnique_Accept_Float: float is an admitted comparable element type
+// (uniform scalar comparability), so array.unique over a float[] type-checks
+// clean.
+func TestEnumUnique_Accept_Float(t *testing.T) {
 	info := checkNS(t, wrapMain(`let xs: float[] = [1.0, 2.0]
 let u: float[] = array.unique(xs)`), "array")
-	d := findErrContains(t, info, "comparable element types int/bool/string/enum")
-	if d.Pos.Line == 0 {
-		t.Errorf("diagnostic missing position: %+v", d)
+	if len(info.Errors) != 0 {
+		t.Fatalf("expected no errors, got:\n%s", diagList(info.Errors))
 	}
 }
 
@@ -120,7 +135,7 @@ func TestEnumAssertNe_Accept(t *testing.T) {
 
 func TestEnumAssertEq_Reject_Struct(t *testing.T) {
 	d := expectErr(t, `struct P { x: int }
-`+wrapMain(`assert_eq(P{x: 1}, P{x: 1})`), "int, bool, string, an enum type, or a nested comparable Optional")
+`+wrapMain(`assert_eq(P{x: 1}, P{x: 1})`), "int, bool, string, float, an enum type, or a nested comparable Optional")
 	if d.Pos.Line == 0 {
 		t.Errorf("diagnostic missing position: %+v", d)
 	}
@@ -133,10 +148,7 @@ func TestEnumAssertContains_Accept(t *testing.T) {
 assert_contains(cs, Color.Red)`))
 }
 
-func TestEnumAssertContains_Reject_Float(t *testing.T) {
-	d := expectErr(t, wrapMain(`let xs: float[] = [1.0, 2.0]
-assert_contains(xs, 1.0)`), "comparable element types int/bool/string/enum")
-	if d.Pos.Line == 0 {
-		t.Errorf("diagnostic missing position: %+v", d)
-	}
+func TestEnumAssertContains_Accept_Float(t *testing.T) {
+	expectOK(t, wrapMain(`let xs: float[] = [1.0, 2.0]
+assert_contains(xs, 1.0)`))
 }

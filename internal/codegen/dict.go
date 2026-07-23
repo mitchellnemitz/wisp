@@ -40,13 +40,34 @@ func (g *gen) dictEntryName(idTemp, tokTemp string) string {
 // raw bytes are encoded directly. keyType is the dict's key type K.
 func (g *gen) encodeKey(keyType types.Type, key atom, pos token.Position) string {
 	src := key
-	if keyType == types.Int {
+	// A value-enum key encodes by its BACKING scalar's rule (FR-012): resolve the
+	// enum type to its backing kind and canonicalize as that scalar.
+	kind := keyType
+	if ei, ok := g.info.Enums[string(keyType)]; ok && ei.Kind == types.EnumValue {
+		kind = ei.Backing
+	}
+	switch kind {
+	case types.Int:
+		// __wisp_int validate-and-abort canonicalizes (5, 05, +5 collapse).
 		g.use(runtime.Int)
 		g.line("__wisp_int %s %s", g.posLiteral(pos), g.word(key))
 		nt := g.newTemp()
 		g.line("%s=\"$__ret\"", nt)
 		src = varAtom(nt)
+	case types.Float:
+		// __wisp_fkey folds the sign of zero and renders the canonical %.17g key
+		// (LC_ALL=C pinned), so 1.0/1.00 and -0.0/0.0 encode to one token. It is the
+		// ONLY key kind that legitimately feeds an awk -v channel (an invariant-valid
+		// float); no other datum reaches -v.
+		g.use(runtime.FKey)
+		g.line("__wisp_fkey %s", g.word(key))
+		nt := g.newTemp()
+		g.line("%s=\"$__ret\"", nt)
+		src = varAtom(nt)
 	}
+	// bool (true/false) and string (exact bytes) are already canonical: no
+	// pre-canonicalization, straight to the byte encoder. All key data reaches the
+	// shell only through __wisp_dkey_enc (quoted), never the awk -v channel.
 	g.use(runtime.DictEnc)
 	g.line("__wisp_dkey_enc %s", g.word(src))
 	tok := g.newTemp()

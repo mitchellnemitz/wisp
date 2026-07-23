@@ -53,10 +53,12 @@ func TestCallTypeArgs_InferenceConflict(t *testing.T) {
 }
 
 func TestCallTypeArgs_ComparableBoundViolation(t *testing.T) {
-	// float does not satisfy comparable; error anchored at the `float` TYPE ARG.
-	src := genPreamble + wrapMain("let b: bool = eq[float](1.0, 2.0)")
+	// A struct does not satisfy comparable (float now does); error anchored at the
+	// `P` TYPE ARG.
+	src := "struct P { x: int }\n" + genPreamble + wrapMain("let p: P = P { x: 1 }\nlet b: bool = eq[P](p, p)")
 	d := expectErr(t, src, "does not satisfy comparable")
-	line, col := posOf(src, "float")
+	line, col := posOf(src, "eq[P]")
+	col += len("eq[") // point at the `P` type arg
 	if d.Pos.Line != line || d.Pos.Col != col {
 		t.Errorf("bound-error pos = %d:%d, want type-arg %d:%d (proves typeArgPos, not origin/callee)", d.Pos.Line, d.Pos.Col, line, col)
 	}
@@ -64,11 +66,11 @@ func TestCallTypeArgs_ComparableBoundViolation(t *testing.T) {
 
 func TestCallTypeArgs_ReturnOnlyBoundViolation(t *testing.T) {
 	// return-only comparable param: no value arg binds T, so origin is empty; the
-	// bound error must still anchor at the `float` type arg.
-	src := genPreamble + wrapMain("let v: float = pick[float]()")
+	// bound error must still anchor at the `P` type arg.
+	src := "struct P { x: int }\n" + genPreamble + wrapMain("let v: P = pick[P]()")
 	d := expectErr(t, src, "does not satisfy comparable")
-	line, col := posOf(src, "pick[float]")
-	col += len("pick[") // point at the `float` type arg, not the `let v: float` annotation
+	line, col := posOf(src, "pick[P]")
+	col += len("pick[") // point at the `P` type arg, not the `let v: P` annotation
 	if d.Pos.Line != line || d.Pos.Col != col {
 		t.Errorf("return-only bound pos = %d:%d, want type-arg %d:%d", d.Pos.Line, d.Pos.Col, line, col)
 	}

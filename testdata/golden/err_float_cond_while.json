@@ -1,0 +1,5 @@
+{
+  "desc": "float condition in while is rejected (no truthiness, SC-020)",
+  "compileError": true,
+  "diagContains": "condition must be bool, got"
+}

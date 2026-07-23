@@ -1,0 +1,5 @@
+{
+  "desc": "a float-backed value enum used in contains/index_of/unique and assert_eq/assert_ne/assert_contains compares by numeric backing identity (SC-024)",
+  "stdout": "true\n1\n2\nok\n",
+  "exit": 0
+}
