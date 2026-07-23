@@ -385,6 +385,10 @@ func (g *gen) genContinue() {
 }
 
 func (g *gen) genSwitch(n *ast.SwitchStmt) {
+	if g.switchSubjectIsFloat(n) {
+		g.genFloatSwitch(n)
+		return
+	}
 	subj := g.genExpr(n.Subject)
 	g.line("case %s in", g.word(subj))
 	g.indent++
@@ -415,6 +419,75 @@ func (g *gen) genSwitch(n *ast.SwitchStmt) {
 	g.indent--
 	g.indent--
 	g.line("esac")
+}
+
+// switchSubjectIsFloat reports whether the switch subject compares as a float:
+// a plain float, or a float-backed value enum (whose runtime value IS its
+// backing float text). Both share the numeric if/elif lowering (FR-010). It
+// delegates to comparesAsFloat so float-or-float-backed-enum has one
+// definition across membership, assert, Optional, and switch.
+func (g *gen) switchSubjectIsFloat(n *ast.SwitchStmt) bool {
+	return g.comparesAsFloat(g.info.Types[n.Subject])
+}
+
+// genFloatSwitch lowers a float (or float-backed-enum) switch to an if/elif
+// chain over __wisp_fcmp: a `case ... esac` glob cannot express numeric identity
+// or -0.0 == 0.0. The subject is spilled once (single evaluation of a
+// side-effecting subject, SC-026); each case's fcmp guards are emitted lazily
+// inside the preceding `else` (mirroring genIf), so a later case is only tested
+// when no earlier case matched. Cases[0] is the leading `if`; Cases[1..] are
+// `else { if ... }`; the default is the trailing `else`.
+func (g *gen) genFloatSwitch(n *ast.SwitchStmt) {
+	subj := varAtom(g.spillToTemp(g.genExpr(n.Subject)))
+
+	emitCase := func(cs ast.SwitchCase) {
+		matched := g.newTemp()
+		g.line("%s=false", matched)
+		for _, v := range cs.Values {
+			cv := g.genExpr(v)
+			eq := g.emitFloatCompare("eq", subj, cv, v.Pos())
+			g.line("if [ \"$%s\" = true ]; then %s=true; fi", eq.name, matched)
+		}
+		g.line("if [ \"$%s\" = true ]; then", matched)
+		g.indent++
+		g.pushScope()
+		before := g.out.Len()
+		g.genBlock(cs.Body)
+		if g.out.Len() == before {
+			g.line(":")
+		}
+		g.popScope()
+		g.indent--
+	}
+
+	// Cases[0] == leading `if`.
+	emitCase(n.Cases[0])
+	// Cases[1..] == `else { <fcmp guards> if ... }`.
+	for i := 1; i < len(n.Cases); i++ {
+		g.line("else")
+		g.indent++
+		emitCase(n.Cases[i])
+	}
+	// Default == trailing `else`.
+	g.line("else")
+	g.indent++
+	g.pushScope()
+	before := g.out.Len()
+	if n.Default != nil {
+		g.genBlock(n.Default)
+	}
+	if g.out.Len() == before {
+		g.line(":")
+	}
+	g.popScope()
+	g.indent--
+	// Close: one `fi` per case's `if [matched]`, and dedent each `else` opened
+	// for Cases[1..] (mirrors genIf's close loop).
+	for i := len(n.Cases) - 1; i >= 1; i-- {
+		g.line("fi")
+		g.indent--
+	}
+	g.line("fi")
 }
 
 func joinPats(pats []string) string {

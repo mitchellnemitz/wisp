@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -157,5 +158,106 @@ func TestFloatContainsUsesFcmp(t *testing.T) {
 	}
 	if !quoted {
 		t.Errorf("SC-025(c): float contains operands must reach __wisp_fcmp as quoted \"$...\" expansions; got:\n%s", sh)
+	}
+}
+
+// classifyBody isolates the compiled "classify" function's body: from its
+// definition header to the next top-level function header (or end). Function
+// defs are `__wisp_f_...() {` at column 0. Scoping to the function body avoids
+// a false-fail from an unrelated prelude helper's own `esac`/`case`.
+func classifyBody(t *testing.T, sh string) string {
+	t.Helper()
+	re := regexp.MustCompile(`(?m)^__wisp_f_[A-Za-z0-9_]*classify[A-Za-z0-9_]*\(\) \{`)
+	loc := re.FindStringIndex(sh)
+	if loc == nil {
+		t.Fatalf("could not locate the classify function in:\n%s", sh)
+	}
+	rest := sh[loc[1]:]
+	if next := regexp.MustCompile(`(?m)^__wisp_f_`).FindStringIndex(rest); next != nil {
+		rest = rest[:next[0]]
+	}
+	return rest
+}
+
+// TestFloatSwitchUsesFcmpNotCaseGlob asserts a float switch lowers to __wisp_fcmp
+// comparisons, never a `case ... esac` shell glob over the subject (SC-025(a)):
+// a case-glob would put the float subject/literals through shell glob matching,
+// which is wrong for numeric identity.
+func TestFloatSwitchUsesFcmpNotCaseGlob(t *testing.T) {
+	src := `fn classify(x: float) -> string {
+  switch (x) { case 1.0 { return "one" } case 2.5 { return "two" } default { return "o" } }
+}
+fn main() -> int { print(classify(1.0)); return 0 }`
+	sh := string(compile(t, src))
+	if !strings.Contains(sh, "__wisp_fcmp") {
+		t.Errorf("float switch must compare via __wisp_fcmp; got:\n%s", sh)
+	}
+	rest := classifyBody(t, sh)
+	if strings.Contains(rest, "esac") {
+		t.Errorf("float switch must lower to if/elif, not a case...esac glob; classify body:\n%s", rest)
+	}
+	// SC-025(a) binds to the fixture's OWN case literals: the known literals 1.0
+	// and 2.5 must be present in the classify body (they are the numerically
+	// compared case values) and, given the no-`esac` assertion above, they
+	// therefore cannot appear as a %.17g glob inside a `case "$subject" in ...
+	// esac`.
+	for _, lit := range []string{"1.0", "2.5"} {
+		if !strings.Contains(rest, lit) {
+			t.Errorf("SC-025(a): case literal %s must appear in the classify body (the compared value); body:\n%s", lit, rest)
+		}
+	}
+}
+
+// TestFloatSwitchSpillsSubjectOnce asserts SC-026 structurally: the compiled
+// output spills the float switch subject to a SINGLE temp reused by every
+// __wisp_fcmp comparison, never re-evaluated per case.
+func TestFloatSwitchSpillsSubjectOnce(t *testing.T) {
+	src := `fn classify(x: float) -> string {
+  switch (x) { case 1.0 { return "one" } case 2.5 { return "two" } default { return "o" } }
+}
+fn main() -> int { print(classify(1.0)); return 0 }`
+	sh := string(compile(t, src))
+	body := classifyBody(t, sh)
+	// Each case emits one __wisp_fcmp comparison line. The single spilled subject
+	// temp is the wisp temp variable common to EVERY such line (the per-case value
+	// temps differ line to line). Assert exactly one temp is shared across all
+	// comparisons -> the subject was spilled once and reused, not re-evaluated.
+	varRe := regexp.MustCompile(`\$\{?(__wisp_[A-Za-z0-9_]+)`)
+	var fcmpLines []string
+	for _, ln := range strings.Split(body, "\n") {
+		if strings.Contains(ln, "__wisp_fcmp") {
+			fcmpLines = append(fcmpLines, ln)
+		}
+	}
+	if len(fcmpLines) < 2 {
+		t.Fatalf("expected >=2 __wisp_fcmp case comparisons (one per non-default case), got %d in:\n%s", len(fcmpLines), body)
+	}
+	shared := map[string]int{}
+	for _, ln := range fcmpLines {
+		seen := map[string]bool{}
+		for _, m := range varRe.FindAllStringSubmatch(ln, -1) {
+			if !seen[m[1]] {
+				seen[m[1]] = true
+				shared[m[1]]++
+			}
+		}
+	}
+	var subjectTemps []string
+	for v, n := range shared {
+		if n == len(fcmpLines) {
+			subjectTemps = append(subjectTemps, v)
+		}
+	}
+	if len(subjectTemps) != 1 {
+		t.Fatalf("SC-026: expected exactly one subject temp reused across all %d fcmp comparisons, got %v in:\n%s", len(fcmpLines), subjectTemps, body)
+	}
+	// SC-025(c): the spilled subject operand reaches __wisp_fcmp as a quoted
+	// "$..." expansion (runtime data). The case-value operand is a raw
+	// compiler-emitted float literal (the one permitted unquoted case) so it is
+	// not asserted quoted here.
+	for _, ln := range fcmpLines {
+		if !strings.Contains(ln, "\"$") {
+			t.Errorf("SC-025(c): the spilled float switch subject must reach __wisp_fcmp as a quoted \"$...\" expansion; line: %s", ln)
+		}
 	}
 }

@@ -772,6 +772,26 @@ func (c *checker) checkFor(n *ast.ForStmt) {
 	c.popScopeWarnUnused()
 }
 
+// dupKeyForCase returns the duplicate-detection key for a folded switch-case
+// value. A float case (FoldedFloat) keys by its parsed float64 with -0 folded to
+// +0, so numerically-equal-but-textually-distinct float cases (1.0/1.00,
+// 0.0/-0.0) collide (SC-023). Every other folded value keys on itself
+// (int64 / string / bool value-enum const), preserving existing behavior.
+func dupKeyForCase(fv interface{}) interface{} {
+	if ff, ok := fv.(FoldedFloat); ok {
+		if f, err := strconv.ParseFloat(ff.Raw, 64); err == nil {
+			if f == 0 {
+				f = 0 // fold -0.0 to +0.0 (belt-and-suspenders: Go's == already
+				// treats float64(-0.0)/float64(0.0) as one map key, so this is
+				// harmless here; the explicit fold is load-bearing only in Task 8's
+				// dictKeyDedupToken, where the key becomes a FormatFloat *string*)
+			}
+			return f
+		}
+	}
+	return fv
+}
+
 func (c *checker) checkSwitch(n *ast.SwitchStmt) {
 	subj := c.checkExpr(n.Subject)
 	// rule 8: subject must be int, string, or bool. A bare type variable gets
@@ -780,8 +800,8 @@ func (c *checker) checkSwitch(n *ast.SwitchStmt) {
 	// A value enum (: int/string/bool) is a valid switch subject; a tagged-union
 	// enum is rejected as a handle. bool joins int/string as a discrete subject.
 	isEnumSubj := !tvSubj && subj != Invalid && c.isValueEnum(subj)
-	if !tvSubj && !isEnumSubj && subj != Invalid && subj != Int && subj != String && subj != Bool {
-		c.errf(n.Subject.Pos(), "switch subject must be int, string, or bool, got %s", subj)
+	if !tvSubj && !isEnumSubj && subj != Invalid && subj != Int && subj != String && subj != Bool && subj != Float {
+		c.errf(n.Subject.Pos(), "switch subject must be int, string, bool, or float, got %s", subj)
 	}
 	// For an enum subject, track which variant values remain uncovered so a
 	// defaultless switch can be checked for exhaustiveness (mirrors the match
@@ -836,8 +856,8 @@ func (c *checker) checkSwitch(n *ast.SwitchStmt) {
 					typeOK = true
 				}
 			} else {
-				typeOK = (subj == Int || subj == String || subj == Bool) && vt != Invalid && vt == subj
-				if subj != Invalid && subj != Int && subj != String && subj != Bool {
+				typeOK = (subj == Int || subj == String || subj == Bool || subj == Float) && vt != Invalid && vt == subj
+				if subj != Invalid && subj != Int && subj != String && subj != Bool && subj != Float {
 					// subject already errored; skip value type comparison
 				} else if vt != Invalid && subj != Invalid && vt != subj {
 					c.errf(v.Pos(), "case value has type %s, but switch subject is %s", vt, subj)
@@ -849,10 +869,11 @@ func (c *checker) checkSwitch(n *ast.SwitchStmt) {
 			// top of the primary type error.
 			if typeOK {
 				if fv, ok := c.info.FoldedValues[v]; ok && fv != nil {
-					if seenCaseValues[fv] {
+					dk := dupKeyForCase(fv)
+					if seenCaseValues[dk] {
 						c.errf(v.Pos(), "duplicate switch case: %v", fv)
 					} else {
-						seenCaseValues[fv] = true
+						seenCaseValues[dk] = true
 						if remaining != nil {
 							delete(remaining, fv) // interface{} key: int64 | string | bool value-enum const
 						}
@@ -868,6 +889,14 @@ func (c *checker) checkSwitch(n *ast.SwitchStmt) {
 		c.popScopeWarnUnused()
 	}
 	if n.Default != nil {
+		// FR-009/SC-027: an already-exhaustive enum (any backing) or bool switch
+		// forbids a redundant default clause, mirroring the exhaustive-enum rule
+		// that a default is otherwise mandatory only when coverage is incomplete.
+		if isEnumSubj && len(remaining) == 0 {
+			c.errf(n.KwPos, "switch on enum %s is already exhaustive; default clause is redundant", subjEnum.Name)
+		} else if remainingBool != nil && len(remainingBool) == 0 {
+			c.errf(n.KwPos, "switch on bool is already exhaustive; default clause is redundant")
+		}
 		c.pushScope()
 		c.checkBlock(n.Default)
 		c.popScopeWarnUnused()

@@ -1,7 +1,8 @@
 fn main() -> int {
-  let f: float = 1.0
-  switch (f) {
+  let x: float = 1.0
+  switch (x) {
     case 1.0 { }
+    case 1.00 { }
     default { }
   }
   return 0

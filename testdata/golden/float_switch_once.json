@@ -1,0 +1,5 @@
+{
+  "desc": "a side-effecting float switch subject is evaluated exactly once across all case comparisons",
+  "stdout": "eval\nb\n",
+  "exit": 0
+}
