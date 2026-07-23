@@ -593,6 +593,47 @@ func (g *gen) comparesAsFloat(t types.Type) bool {
 	return false
 }
 
+// cmpClass is the comparison class an ordered scalar operand lowers to. It is the
+// single classifier the ordering operators, min/max, and sort all dispatch on, so
+// enum-backing handling cannot drift between those surfaces.
+type cmpClass int
+
+const (
+	cmpInt cmpClass = iota
+	cmpFloat
+	cmpString
+	cmpBool
+)
+
+// comparisonClass maps an ordered scalar operand type to its comparison class. The
+// float class (raw float AND float-backed value enums) is decided by comparesAsFloat
+// so there is one float classifier; the remaining value-enum backings dispatch on
+// EnumInfo.Backing; plain int/bool/string map directly.
+func (g *gen) comparisonClass(t types.Type) cmpClass {
+	if g.comparesAsFloat(t) {
+		return cmpFloat
+	}
+	rt := g.resolveType(t)
+	if ei, ok := g.info.Enums[string(rt)]; ok && ei.Kind == types.EnumValue {
+		switch ei.Backing {
+		case types.String:
+			return cmpString
+		case types.Bool:
+			return cmpBool
+		default:
+			return cmpInt // int-backed (float-backed already claimed by comparesAsFloat)
+		}
+	}
+	switch rt {
+	case types.String:
+		return cmpString
+	case types.Bool:
+		return cmpBool
+	default:
+		return cmpInt
+	}
+}
+
 // genEquality emits == / != for int, bool, or string operands. All three lower
 // to a string `=`/`!=` test on the shared text representation; the type system
 // guarantees both operands share a type so this is sound (spec section 6).

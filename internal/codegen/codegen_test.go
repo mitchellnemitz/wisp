@@ -361,3 +361,55 @@ fn main() -> int { let m: {Flag: int} = {}; m[Flag.On] = 1; return 0 }`
 		t.Errorf("bool-backed-enum dict key must not touch the float awk -v channel; got:\n%s", sh)
 	}
 }
+
+// TestComparisonClassResolver asserts the ordering comparison-class resolver
+// (Task 2) maps each ordered scalar operand to its class: raw float and a
+// float-backed value enum -> cmpFloat (single float classifier via
+// comparesAsFloat); the other value-enum backings dispatch on EnumInfo.Backing
+// (string->cmpString, bool->cmpBool, int->cmpInt); plain scalars map directly.
+func TestComparisonClassResolver(t *testing.T) {
+	g := &gen{info: &types.Info{Enums: map[string]*types.EnumInfo{
+		"Ratio@0": {Kind: types.EnumValue, Backing: types.Float},
+		"Flag@0":  {Kind: types.EnumValue, Backing: types.Bool},
+		"Color@0": {Kind: types.EnumValue, Backing: types.String},
+		"Level@0": {Kind: types.EnumValue, Backing: types.Int},
+	}}}
+	cases := []struct {
+		name string
+		t    types.Type
+		want cmpClass
+	}{
+		{"raw float", types.Float, cmpFloat},
+		{"float-backed enum", types.Type("Ratio@0"), cmpFloat},
+		{"bool-backed enum", types.Type("Flag@0"), cmpBool},
+		{"string-backed enum", types.Type("Color@0"), cmpString},
+		{"int-backed enum", types.Type("Level@0"), cmpInt},
+		{"raw int", types.Int, cmpInt},
+		{"raw bool", types.Bool, cmpBool},
+		{"raw string", types.String, cmpString},
+	}
+	for _, c := range cases {
+		if got := g.comparisonClass(c.t); got != c.want {
+			t.Errorf("comparisonClass(%s): got %d, want %d", c.name, got, c.want)
+		}
+	}
+}
+
+// TestB2iTreeShakenWhenNoBoolOrdering asserts the __wisp_b2i helper (Task 2) is
+// tree-shaken out of programs that never order bools (SC-009). Ordering only
+// int/float here must not drag in the bool->0/1 map.
+func TestB2iTreeShakenWhenNoBoolOrdering(t *testing.T) {
+	src := `fn main() -> int {
+	let a: int = 1
+	let b: int = 2
+	let x: float = 1.5
+	let y: float = 2.5
+	print("${a < b}")
+	print("${x < y}")
+	return 0
+}`
+	sh := string(compile(t, src))
+	if strings.Contains(sh, "__wisp_b2i") {
+		t.Errorf("SC-009: __wisp_b2i must be tree-shaken when no bool ordering is used; got:\n%s", sh)
+	}
+}
