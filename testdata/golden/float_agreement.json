@@ -1,0 +1,5 @@
+{
+  "desc": "dict-key collision, switch matching, and == ALL agree over the FR-014 edge set for EACH pair: -0.0/0.0 and 1.0/1.00 collide in all three contexts (== true, switch matches, dict collapses to 1 key); 1.0 vs 0.5+0.5 collide; 0.1+0.2 vs 0.3 do not (2 keys)",
+  "stdout": "true\nzero\ntrue\ntrue\none\nfalse\n2\n1\n1\n",
+  "exit": 0
+}
