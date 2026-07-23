@@ -124,7 +124,7 @@ func TestEnumAssertNe_Accept(t *testing.T) {
 
 func TestEnumAssertEq_Reject_Struct(t *testing.T) {
 	d := expectErr(t, `struct P { x: int }
-`+wrapMain(`assert_eq(P{x: 1}, P{x: 1})`), "int, bool, string, an enum type, or a nested comparable Optional")
+`+wrapMain(`assert_eq(P{x: 1}, P{x: 1})`), "int, bool, string, float, an enum type, or a nested comparable Optional")
 	if d.Pos.Line == 0 {
 		t.Errorf("diagnostic missing position: %+v", d)
 	}
@@ -137,10 +137,7 @@ func TestEnumAssertContains_Accept(t *testing.T) {
 assert_contains(cs, Color.Red)`))
 }
 
-func TestEnumAssertContains_Reject_Float(t *testing.T) {
-	d := expectErr(t, wrapMain(`let xs: float[] = [1.0, 2.0]
-assert_contains(xs, 1.0)`), "comparable element types int/bool/string/enum")
-	if d.Pos.Line == 0 {
-		t.Errorf("diagnostic missing position: %+v", d)
-	}
+func TestEnumAssertContains_Accept_Float(t *testing.T) {
+	expectOK(t, wrapMain(`let xs: float[] = [1.0, 2.0]
+assert_contains(xs, 1.0)`))
 }

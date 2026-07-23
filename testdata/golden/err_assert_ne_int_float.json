@@ -1,0 +1,4 @@
+{
+  "compileError": true,
+  "diagContains": "both operands must share one comparable type"
+}
