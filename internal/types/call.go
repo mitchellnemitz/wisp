@@ -1069,15 +1069,15 @@ func boundErrPos(n *ast.CallExpr, tp string, origin map[string]int, typeArgPos m
 func isComparableConcrete(t Type) bool { return t == Int || t == Bool || t == String }
 
 // comparableOptional reports whether t is an Optional whose element type
-// supports structural ==: a comparable concrete (int/bool/string) or a
-// nested comparable Optional. Optional[float], Optional[error], and
-// Optional[<aggregate>] are not comparable.
+// supports structural ==: a comparable concrete (int/bool/string), float
+// (compared by numeric identity, codegen/optional.go), or a nested comparable
+// Optional. Optional[error] and Optional[<aggregate>] are not comparable.
 func comparableOptional(t Type) bool {
 	if !isOptional(t) {
 		return false
 	}
 	elem := optionalElemType(t)
-	return isComparableConcrete(elem) || comparableOptional(elem)
+	return isComparableConcrete(elem) || elem == Float || comparableOptional(elem)
 }
 
 // noSpecial signals that a special-cased builtin handler did not apply and the

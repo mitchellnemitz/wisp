@@ -1,0 +1,5 @@
+{
+  "desc": "Optional[float] and nested Optional[Optional[float]] == compare inner values by numeric identity; assert_eq/assert_ne on Optional[float] and assert_eq on the nested Optional exercise the same lowering (SC-005)",
+  "stdout": "true\ntrue\ntrue\nok\n",
+  "exit": 0
+}

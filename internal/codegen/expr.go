@@ -341,12 +341,12 @@ func (g *gen) genBinary(n *ast.BinaryExpr) atom {
 		return g.genIntCompare(l, "-ge", r)
 	case token.Eq:
 		if types.ComparableOptional(lt) {
-			return g.genOptionalEquality(l, r, lt, false)
+			return g.genOptionalEquality(l, r, lt, false, n.OpPos)
 		}
 		return g.genEquality(l, "=", r)
 	case token.Neq:
 		if types.ComparableOptional(lt) {
-			return g.genOptionalEquality(l, r, lt, true)
+			return g.genOptionalEquality(l, r, lt, true, n.OpPos)
 		}
 		return g.genEquality(l, "!=", r)
 	default:

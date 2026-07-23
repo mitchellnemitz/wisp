@@ -1,1 +1,0 @@
-{ "desc": "Optional[float] == is a compile error (float is not comparable)", "compileError": true, "diagContains": "is not defined for Optional values" }

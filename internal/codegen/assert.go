@@ -52,7 +52,7 @@ func (g *gen) genAssertEqNe(n *ast.CallExpr, args []ast.Expr, negated bool) atom
 
 	var eq atom
 	if types.ComparableOptional(t) {
-		eq = g.genOptionalEquality(gotV, wantV, t, false)
+		eq = g.genOptionalEquality(gotV, wantV, t, false, n.CalleePos)
 	} else if g.comparesAsFloat(t) {
 		eq = g.emitFloatCompare("eq", gotV, wantV, n.CalleePos)
 	} else {

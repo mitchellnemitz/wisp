@@ -3,6 +3,7 @@ package codegen
 import (
 	"github.com/mitchellnemitz/wisp/internal/ast"
 	"github.com/mitchellnemitz/wisp/internal/runtime"
+	"github.com/mitchellnemitz/wisp/internal/token"
 	"github.com/mitchellnemitz/wisp/internal/types"
 )
 
@@ -160,7 +161,7 @@ func (g *gen) genLocatedTokenToOptional(id, fn string, n *ast.CallExpr, args []a
 // negated=true emits != (negate the == result). The element compare recurses
 // for a nested Optional element type; for a concrete element it uses the scalar
 // string compare. Every expansion is double-quoted (injection-safety invariant).
-func (g *gen) genOptionalEquality(a, b atom, t types.Type, negated bool) atom {
+func (g *gen) genOptionalEquality(a, b atom, t types.Type, negated bool, pos token.Position) atom {
 	elem := types.OptionalElemType(t)
 	// Read both tag fields into temps.
 	ta := g.readHandleVar(tagFieldName(a.name))
@@ -176,8 +177,17 @@ func (g *gen) genOptionalEquality(a, b atom, t types.Type, negated bool) atom {
 	vb := g.readHandleVar(tagValueName(b.name))
 	if types.ComparableOptional(elem) {
 		// Nested Optional: recurse structurally (never compare inner handle ids).
-		inner := g.genOptionalEquality(va, vb, elem, false)
+		inner := g.genOptionalEquality(va, vb, elem, false, pos)
 		g.line("%s=%s", res, g.word(inner))
+	} else if g.comparesAsFloat(elem) {
+		// Float (or float-backed-enum) inner value: numeric identity, not byte-text
+		// (else Some(1.0) != Some(1.00)). Same __wisp_fcmp path as the == operator.
+		// Routing through comparesAsFloat (Task 2) -- not a bare `elem == types.Float`
+		// -- makes Optional[FloatBackedEnum] use the numeric path too, and keeps
+		// Task 2's comparesAsFloat doc-comment ("reused by ... Optional equality
+		// (Task 4)") factually true.
+		eq := g.emitFloatCompare("eq", va, vb, pos)
+		g.line("%s=%s", res, g.word(eq))
 	} else {
 		// Concrete (int/bool/string): scalar string compare.
 		g.line("if [ \"$%s\" = \"$%s\" ]; then %s=true; else %s=false; fi",

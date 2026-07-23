@@ -152,12 +152,10 @@ func assertNoSentinel(t *testing.T, d Diagnostic) {
 	}
 }
 
-func TestOptionalFloatEqNeqRejected(t *testing.T) {
-	// float inner is non-comparable: == / != must still be rejected.
-	d := expectErr(t, wrapMain(`let o: Optional[float] = Some(1.0)`+"\n"+`let b: bool = o == o`), "use is_some/is_none and unwrap")
-	assertNoSentinel(t, d)
-	d = expectErr(t, wrapMain(`let o: Optional[float] = Some(1.0)`+"\n"+`let p: Optional[float] = Some(2.0)`+"\n"+`let b: bool = o != p`), "use is_some/is_none and unwrap")
-	assertNoSentinel(t, d)
+func TestOptionalFloatEqNeqAccepted(t *testing.T) {
+	// float inner compares by numeric identity: == / != type-check.
+	expectOK(t, wrapMain(`let o: Optional[float] = Some(1.0)`+"\n"+`let b: bool = o == o`))
+	expectOK(t, wrapMain(`let o: Optional[float] = Some(1.0)`+"\n"+`let p: Optional[float] = Some(2.0)`+"\n"+`let b: bool = o != p`))
 }
 
 func TestOptionalStringRejected(t *testing.T) {
@@ -228,8 +226,6 @@ func TestOptionalComparableEqAccepted(t *testing.T) {
 }
 
 func TestOptionalNonComparableEqRejected(t *testing.T) {
-	// float inner -> Optional message
-	expectErr(t, wrapMain(`let a: Optional[float] = Some(1.0)`+"\n"+`let b: Optional[float] = Some(2.0)`+"\n"+`let r: bool = a == b`), "is not defined for Optional values")
 	// error inner -> Optional message
 	expectErr(t, wrapMain(`let a: Optional[error] = Some(error("x", 1))`+"\n"+`let b: Optional[error] = Some(error("y", 2))`+"\n"+`let r: bool = a == b`), "is not defined for Optional values")
 	// array inner -> Optional message
