@@ -1,0 +1,5 @@
+{
+  "desc": "float specialization reaches through a nested comparable generic: outer(1.0,1.00) delegates to inner, which is float-specialized and compares by numeric identity (1.0 == 1.00 is true), not byte text",
+  "stdout": "true\n",
+  "exit": 0
+}

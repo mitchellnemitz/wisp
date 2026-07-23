@@ -17,7 +17,8 @@ type monoInst struct {
 // instantiated with concrete types and returns the required instances per
 // FuncDecl. It performs transitive closure so that a numeric generic calling
 // another numeric generic propagates concrete bindings transitively.
-func collectMonoInstances(info *types.Info) map[*ast.FuncDecl][]monoInst {
+func collectMonoInstances(info *types.Info, reach map[*ast.FuncDecl]bool,
+) (map[*ast.FuncDecl][]monoInst, map[*ast.FuncDecl]bool) {
 	result := map[*ast.FuncDecl][]monoInst{}
 	seen := map[*ast.FuncDecl]map[string]bool{}
 
@@ -32,10 +33,10 @@ func collectMonoInstances(info *types.Info) map[*ast.FuncDecl][]monoInst {
 	instKeyFor := func(fn *ast.FuncDecl, tsubst map[types.Type]types.Type) string {
 		var parts []string
 		for _, tp := range fn.TypeParams {
-			if fn.TypeParamBounds[tp] != "numeric" {
+			v, ok := tsubst[types.Type("$"+tp)]
+			if !ok {
 				continue
 			}
-			v := tsubst[types.Type("$"+tp)]
 			parts = append(parts, tp+"="+string(v))
 		}
 		return strings.Join(parts, ",")
@@ -46,11 +47,24 @@ func collectMonoInstances(info *types.Info) map[*ast.FuncDecl][]monoInst {
 		var sb strings.Builder
 		sb.WriteString(fi.Mangled)
 		for _, tp := range fn.TypeParams {
-			if fn.TypeParamBounds[tp] != "numeric" {
-				continue
+			v, ok := tsubst[types.Type("$"+tp)]
+			if !ok {
+				continue // a comparable param bound to a non-float type is NOT recorded
 			}
-			v := tsubst[types.Type("$"+tp)]
 			sb.WriteString("__")
+			// A numeric param is always recorded and positional, so a bare
+			// `__<type>` suffix is unambiguous (unchanged from the pre-feature
+			// scheme, keeping every existing numeric-mono fixture name identical).
+			// A comparable param is recorded ONLY as float and omitted otherwise,
+			// so a bare positional `__float` would collapse foo[A,B](A=float,B=string)
+			// and foo[A,B](A=string,B=float) onto the same name. Qualify a
+			// comparable-float binding by its param NAME (`__A_float` vs `__B_float`).
+			// The `v == types.Float` guard is defensive: an instance tsubst can only
+			// carry a comparable param as Float after the call.go recording fix.
+			if fn.TypeParamBounds[tp] == "comparable" && v == types.Float {
+				sb.WriteString(tp)
+				sb.WriteString("_")
+			}
 			sb.WriteString(string(v))
 		}
 		return sb.String()
@@ -123,13 +137,123 @@ func collectMonoInstances(info *types.Info) map[*ast.FuncDecl][]monoInst {
 		}
 	}
 
-	return result
+	needsErased := computeNeedsErased(info, reach, result)
+	return result, needsErased
+}
+
+// hasComparableBound reports whether fn declares any comparable-bounded type
+// parameter (so its type-erased body must be emitted for non-float bindings
+// even when a float-specialized instance also exists).
+func hasComparableBound(fn *ast.FuncDecl) bool {
+	for _, b := range fn.TypeParamBounds {
+		if b == "comparable" {
+			return true
+		}
+	}
+	return false
+}
+
+// computeNeedsErased derives, by a reachability fixpoint over the exact set of
+// bodies the driver emits, which comparable-bound generics have a fully-erased
+// (all-non-float) call site and therefore must emit their type-erased base body.
+func computeNeedsErased(info *types.Info, reach map[*ast.FuncDecl]bool,
+	result map[*ast.FuncDecl][]monoInst) map[*ast.FuncDecl]bool {
+
+	isTVar := func(t types.Type) bool { return len(t) > 0 && t[0] == '$' }
+	needs := map[*ast.FuncDecl]bool{}
+
+	envKey := func(fn *ast.FuncDecl, env map[types.Type]types.Type) string {
+		if env == nil {
+			return "" // the erased/base emission
+		}
+		var parts []string
+		for _, tp := range fn.TypeParams {
+			if v, ok := env[types.Type("$"+tp)]; ok {
+				parts = append(parts, tp+"="+string(v))
+			}
+		}
+		return strings.Join(parts, ",")
+	}
+
+	type emission struct {
+		fn  *ast.FuncDecl
+		env map[types.Type]types.Type
+	}
+	visited := map[*ast.FuncDecl]map[string]bool{}
+	var queue []emission
+	push := func(fn *ast.FuncDecl, env map[types.Type]types.Type) {
+		if fn == nil {
+			return
+		}
+		m := visited[fn]
+		if m == nil {
+			m = map[string]bool{}
+			visited[fn] = m
+		}
+		k := envKey(fn, env)
+		if m[k] {
+			return
+		}
+		m[k] = true
+		queue = append(queue, emission{fn, env})
+	}
+
+	// Seed: exactly the set the driver emits (reach-filtered): each instance of a
+	// fn that has instances, else the fn's base body.
+	for fn := range reach {
+		if insts, ok := result[fn]; ok {
+			for _, in := range insts {
+				push(fn, in.typeSubst)
+			}
+		} else {
+			push(fn, nil)
+		}
+	}
+
+	w := &ciWalker{info: info, all: true}
+	for len(queue) > 0 {
+		e := queue[0]
+		queue = queue[1:]
+		w.out = nil
+		w.walkBlock(e.fn.Body)
+		for _, ci := range w.out {
+			resolved := map[types.Type]types.Type{}
+			for _, tp := range ci.Func.TypeParams {
+				v, ok := ci.TypeSubst[tp]
+				if !ok {
+					continue // comparable-non-float dim: erased (no suffix)
+				}
+				c := v
+				if isTVar(v) {
+					if cc, ok2 := e.env[v]; ok2 {
+						c = cc
+					}
+				}
+				if isTVar(c) {
+					continue // unresolved (inside an erased body): erased dim
+				}
+				resolved[types.Type("$"+tp)] = c
+			}
+			if len(resolved) == 0 {
+				// Resolves to the bare callee name == the erased base.
+				if hasComparableBound(ci.Func) {
+					needs[ci.Func] = true
+				}
+				push(ci.Func, nil)
+			} else {
+				push(ci.Func, resolved) // a specialized instance body
+			}
+		}
+	}
+	return needs
 }
 
 // ciWalker collects CallInfo entries for user calls with non-nil TypeSubst
-// (numeric-bounded calls) within a function body.
+// (numeric-bounded calls) within a function body. When all is set it collects
+// EVERY user call, used by the erased-body reachability fixpoint.
 type ciWalker struct {
 	info *types.Info
+	all  bool
 	out  []*types.CallInfo
 }
 
@@ -212,7 +336,8 @@ func (w *ciWalker) walkExpr(e ast.Expr) {
 	}
 	switch n := e.(type) {
 	case *ast.CallExpr:
-		if ci, ok := w.info.Calls[n]; ok && ci.Kind == types.CallUser && len(ci.TypeSubst) > 0 {
+		if ci, ok := w.info.Calls[n]; ok && ci.Kind == types.CallUser &&
+			(w.all || len(ci.TypeSubst) > 0) {
 			w.out = append(w.out, ci)
 		}
 		w.walkExpr(n.Callee)

@@ -980,13 +980,13 @@ func (c *checker) checkGenericUserCall(n *ast.CallExpr, fn *ast.FuncDecl, modid 
 		// comparable-bounded in the CALLER's scope: when a comparable generic is
 		// called from inside another generic, unification binds the callee's T to
 		// the caller's $U, and the bound propagates when U: comparable.
-		if !isComparableConcrete(ct) && !c.isComparableTypeVar(ct) && !c.isValueEnum(ct) {
+		if !isComparableConcrete(ct) && ct != Float && !c.isComparableTypeVar(ct) && !c.isValueEnum(ct) {
 			pos := boundErrPos(n, tp, origin, typeArgPos)
 			shown := disp(ct) // strip struct @modid / typevar $ from the message
 			if isTypeVar(ct) {
 				shown = "type parameter " + typeVarName(ct) // never show the "$U" encoding
 			}
-			c.errf(pos, "cannot use %s as type parameter %s: it does not satisfy comparable (which requires int, bool, string, an enum type, or another comparable-bounded type parameter)", shown, tp)
+			c.errf(pos, "cannot use %s as type parameter %s: it does not satisfy comparable (which requires int, bool, string, float, an enum type, or another comparable-bounded type parameter)", shown, tp)
 			ret = Invalid
 		}
 	}
@@ -1016,18 +1016,26 @@ func (c *checker) checkGenericUserCall(n *ast.CallExpr, fn *ast.FuncDecl, modid 
 			ret = Invalid
 		}
 	}
-	// Build TypeSubst for numeric-bounded params.
+	// Build TypeSubst for numeric-bounded params, plus a comparable param when
+	// bound to float or to a type variable (the type-variable case lets float
+	// specialization reach THROUGH a nested comparable generic; a comparable
+	// param bound to a concrete non-float stays unrecorded / type-erased).
 	var typeSubst map[string]Type
 	for _, tp := range fn.TypeParams {
-		if fn.TypeParamBounds[tp] != "numeric" {
+		ct, ok := subst[tp]
+		if !ok || ct == Invalid {
 			continue
 		}
-		if ct, ok := subst[tp]; ok && ct != Invalid {
-			if typeSubst == nil {
-				typeSubst = map[string]Type{}
-			}
-			typeSubst[tp] = ct
+		bound := fn.TypeParamBounds[tp]
+		record := bound == "numeric" ||
+			(bound == "comparable" && (ct == Float || isTypeVar(ct)))
+		if !record {
+			continue
 		}
+		if typeSubst == nil {
+			typeSubst = map[string]Type{}
+		}
+		typeSubst[tp] = ct
 	}
 	result := ret
 	if result != Invalid {

@@ -21,14 +21,25 @@ func TestEnumComparableBound_Accept(t *testing.T) {
 `+wrapMain(`let b: bool = eq2(Color.Red, Color.Blue)`))
 }
 
-func TestEnumComparableBound_Reject_Float(t *testing.T) {
-	d := expectErr(t, `fn eq2[T: comparable](a: T, b: T) -> bool { return a == b }
-`+wrapMain(`let b: bool = eq2(1.0, 2.0)`), "does not satisfy comparable")
+// TestEnumComparableBound_Accept_Float: float is an admitted comparable type
+// (uniform scalar comparability), so a comparable-bound generic instantiated at
+// float type-checks. A genuinely-non-comparable type (a struct handle) is still
+// rejected, and the diagnostic now names float.
+func TestEnumComparableBound_Accept_Float(t *testing.T) {
+	expectOK(t, `fn eq2[T: comparable](a: T, b: T) -> bool { return a == b }
+`+wrapMain(`let b: bool = eq2(1.0, 2.0)`))
+}
+
+func TestEnumComparableBound_Reject_Struct(t *testing.T) {
+	d := expectErr(t, `struct Point { x: int, y: int }
+fn eq2[T: comparable](a: T, b: T) -> bool { return a == b }
+`+wrapMain(`let p: Point = Point { x: 1, y: 2 }
+let b: bool = eq2(p, p)`), "does not satisfy comparable")
 	if d.Pos.Line == 0 {
 		t.Errorf("diagnostic missing position: %+v", d)
 	}
-	if got := d.Msg; !strings.Contains(got, "an enum type") {
-		t.Errorf("diagnostic %q missing reworded type list", got)
+	if got := d.Msg; !strings.Contains(got, "float") {
+		t.Errorf("diagnostic %q missing reworded type list (float)", got)
 	}
 }
 

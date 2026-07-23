@@ -1,0 +1,5 @@
+{
+  "desc": "a two-comparable-param generic instantiated at (float,string), (string,float) and (string,string) emits distinct non-colliding bodies; each partial-float binding applies numeric identity to the correct param, identical across all four shells",
+  "stdout": "true\ntrue\ntrue\n",
+  "exit": 0
+}
