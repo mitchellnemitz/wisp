@@ -35,8 +35,9 @@ func (g *gen) word(a atom) string {
 }
 
 // arith renders a as an operand inside $(( )). Int literals are digit strings;
-// variables are referenced as $name (arithmetic context, no quoting). Both are
-// injection-safe because every int-typed value is [+-]?[0-9]+ (invariant 5).
+// variables are referenced BARE as name, not $name (see the variable branch for
+// why: $name re-lexes an INT_MIN value and is dash-wrong). Both are injection-safe
+// because every int-typed value is [+-]?[0-9]+ (invariant 5).
 //
 // INT_MIN exception: the token -9223372036854775808 has magnitude 2^63, one past
 // INT_MAX; emitting it bare inside $(( )) is mis-tokenized by dash (off-by-one)
@@ -58,7 +59,17 @@ func (g *gen) arith(a atom) string {
 		}
 		return a.name
 	}
-	return "$" + a.name
+	// Variables are referenced BARE (no leading $) for the same reason the INT_MIN
+	// literal spill above is: inside $(( )) a bare name reads the variable's stored
+	// value directly, which dash/busybox/bash/sh evaluate correctly even for
+	// INT_MIN, whereas "$"+name string-expands the value into the expression text
+	// and the shell re-lexes it -- so a stored -9223372036854775808 (magnitude
+	// 2^63, one past INT_MAX) makes dash off-by-one. Every int value wisp stores
+	// is canonical [+-]?[0-9]+ (no octal ambiguity, no indirection), so a bare
+	// operand reads exactly that integer; it is also injection-safe (the value
+	// never enters the expression text) and ShellCheck SC2004-preferred. zsh
+	// cannot represent 2^63 in $(( )) at all, even bare -- documented residual.
+	return a.name
 }
 
 // genExpr lowers e, emitting any needed statements, and returns an atom naming
@@ -427,11 +438,25 @@ func (g *gen) genArith(l atom, op string, r atom) atom {
 func (g *gen) genIntDivMod(l atom, op string, r atom, pos token.Position) atom {
 	g.guardDivZero(r, pos)
 	// `/` can also overflow at INT_MIN / -1 (unrepresentable quotient, fatal $(( ))
-	// on some shells); guard it before the arithmetic. `%` never overflows.
+	// on some shells); guard it before the arithmetic.
 	if op == "/" {
 		g.guardDivOverflow(l, r, pos)
 	}
 	t := g.newTemp()
+	// `%` at INT_MIN % -1 has the representable result 0, but x86 idiv still traps
+	// (SIGFPE) computing the overflowing quotient alongside the remainder. When the
+	// divisor may be -1 and the dividend may be INT_MIN, substitute 0 instead of
+	// evaluating the arithmetic (see modMayOverflow / modGuardExpr).
+	if op == "%" && g.modMayOverflow(l, r) {
+		expr := g.modGuardExpr(t, l, r)
+		if g.errMode {
+			g.line("[ -n \"$__wisp_err_pending\" ] || %s", expr)
+			g.guardAfterSpill()
+			return varAtom(t)
+		}
+		g.line("%s", expr)
+		return varAtom(t)
+	}
 	if g.errMode {
 		g.line("[ -n \"$__wisp_err_pending\" ] || %s=$(( %s %s %s ))", t, g.arith(l), op, g.arith(r))
 		g.guardAfterSpill()
@@ -439,6 +464,48 @@ func (g *gen) genIntDivMod(l atom, op string, r atom, pos token.Position) atom {
 	}
 	g.line("%s=$(( %s %s %s ))", t, g.arith(l), op, g.arith(r))
 	return varAtom(t)
+}
+
+// modMayOverflow reports whether `l % r` could be the trapping INT_MIN % -1 case.
+// It is false when the divisor is a literal other than -1 (can never be -1) or the
+// dividend is a literal other than INT_MIN (can never be INT_MIN); those keep the
+// plain single-line arithmetic and leave existing snapshots unchanged. Otherwise
+// the guard is emitted.
+func (g *gen) modMayOverflow(l, r atom) bool {
+	if r.lit && r.name != "-1" {
+		return false
+	}
+	if l.lit && l.name != "-9223372036854775808" {
+		return false
+	}
+	return true
+}
+
+// modGuardExpr emits any operand spills and returns a one-line shell `if` that
+// assigns t the representable result 0 for INT_MIN % -1 (detected via IMin, which
+// avoids the 19-digit literal for zsh) and otherwise evaluates t=$(( l % r )) with
+// bare operands. Both operands are materialized into variables first so each can be
+// referenced bare inside $(( )) and as "$name" in the [ ] tests. zsh cannot do
+// 2^63 arithmetic at all, even here -- the same documented INT_MIN residual.
+func (g *gen) modGuardExpr(t string, l, r atom) string {
+	lv := g.toVar(l)
+	rv := g.toVar(r)
+	g.use(runtime.IMin)
+	return fmt.Sprintf("if [ \"$%s\" -eq -1 ] && { __wisp_imin; [ \"$%s\" -eq \"$__ret\" ]; }; then %s=0; else %s=$(( %s %% %s )); fi",
+		rv, lv, t, t, lv, rv)
+}
+
+// toVar returns the name of a shell variable holding a's value, spilling a literal
+// to a temp via a plain (non-arith) word assignment. Unlike arith(), which returns
+// bare digits for a non-INT_MIN literal, toVar guarantees a variable so the value
+// can be used both bare inside $(( )) and as "$name" in a [ ] test.
+func (g *gen) toVar(a atom) string {
+	if !a.lit {
+		return a.name
+	}
+	t := g.newTemp()
+	g.line("%s=%s", t, a.name)
+	return t
 }
 
 // guardDivOverflow emits the INT_MIN / -1 overflow guard via __wisp_idiv_ovf,

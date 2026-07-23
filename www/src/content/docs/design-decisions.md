@@ -232,14 +232,18 @@ that overflows this range is *unspecified* rather than defined: it wraps
 two's-complement where the underlying shell supports it, and behavior at the
 exact 64-bit boundary is shell-dependent. This is an accepted limitation, not
 an oversight - wisp targets four shells (dash, busybox ash, bash, zsh) whose
-native `$(( ))` arithmetic disagree at the extreme boundary (`INT_MIN`
-specifically: zsh cannot represent `2^63` at all, and dash is off-by-one for
-an `INT_MIN` value stored in a variable and then used in arithmetic). Rather
+native `$(( ))` arithmetic disagrees at the extreme boundary. wisp emits every
+`$(( ))` variable operand bare (`$(( m ))`, never `$(( $m ))`) so the shell
+reads the stored value rather than re-lexing the string; this makes an `INT_MIN`
+value stored in a variable and used in arithmetic correct on dash, bash, and
+busybox ash, and it was a genuine dash off-by-one before the bare-operand fix.
+The residual is zsh alone: its `$(( ))` cannot represent `2^63` at all, so an
+`INT_MIN` operand is a loud zsh error rather than a silent wrong value. Rather
 than emulate 64-bit wraparound in shell arithmetic by hand for the sake of one
-boundary value - which would add real complexity and its own bug surface for
-a case realistic programs rarely hit at the exact edge - wisp documents the
-divergence and treats it as a shell-portability limit, the same way it treats
-a shift amount at or beyond the integer width as platform-defined.
+boundary value on one shell - which would add real complexity and its own bug
+surface for a case realistic programs rarely hit at the exact edge - wisp
+documents the divergence and treats it as a shell-portability limit, the same
+way it treats a shift amount at or beyond the integer width as platform-defined.
 
 Where overflow is *not* left unspecified is where it is unambiguous and
 dangerous to get silently wrong: negating or taking the absolute value of the

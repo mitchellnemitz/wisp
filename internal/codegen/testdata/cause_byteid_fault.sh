@@ -67,7 +67,7 @@ __wisp_f_m0_main() {
 		if [ -z "$__wisp_err_pending" ]; then
 			if [ "$__wisp_v_2" -eq 0 ]; then __wisp_fail 'test.wisp:5:20' "division by zero"; fi
 			__wisp_idiv_ovf 'test.wisp:5:20' "$__wisp_v_1" "$__wisp_v_2"
-			[ -n "$__wisp_err_pending" ] || __wisp_t1=$(( $__wisp_v_1 / $__wisp_v_2 ))
+			[ -n "$__wisp_err_pending" ] || __wisp_t1=$(( __wisp_v_1 / __wisp_v_2 ))
 			if [ -z "$__wisp_err_pending" ]; then
 				__wisp_string "$__wisp_t1"
 				__wisp_t2="$__ret"

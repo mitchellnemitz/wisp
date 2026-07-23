@@ -109,17 +109,18 @@ The value types are:
   Accepted limitation: the exact INT_MIN value `-9223372036854775808` is correct
   in word and print contexts -- `to_string()`, printing, storing in a variable,
   passing as an argument, returning from a function -- on all four supported
-  shells (dash, busybox ash, bash, zsh). However, two shell-level behaviors
-  diverge at this boundary. First, as an operand of shell arithmetic `$(( ))`:
-  zsh cannot represent `2^63` at all; an INT_MIN literal or compile-time constant
-  folds to a spilled form that is correct on dash, bash, and busybox ash, but an
-  INT_MIN value that has been stored in a variable and is then used in a `$(( ))`
-  expression is off-by-one on dash. Second, any INT_MIN-valued operand in a `[ ]`
-  numeric comparison -- whether the value arrives inline or via a variable -- is
-  divergent on dash and zsh. Programs that need exact cross-shell behavior should
-  avoid arithmetic and `[ ]` comparison at the exact INT_MIN boundary; using
-  `-int_max() - 1` as a workaround does not help because once that result is
-  stored in a variable and reused in arithmetic it exhibits the same divergence.
+  shells (dash, busybox ash, bash, zsh). Arithmetic and comparison at this exact
+  boundary have narrower residuals. As an operand of shell arithmetic `$(( ))`,
+  wisp emits every variable operand bare (`$(( m + 0 ))`, not `$(( $m + 0 ))`) so
+  the shell reads the stored value instead of re-lexing the `2^63` token; an
+  INT_MIN value stored in a variable and used in arithmetic is therefore correct
+  on dash, bash, and busybox ash (a literal or compile-time constant is spilled to
+  the same bare form). The one arithmetic case that still diverges is zsh, whose
+  `$(( ))` cannot represent `2^63` at all: an INT_MIN operand there is a loud zsh
+  error ("number truncated after 18 digits"), not a silent wrong value. Separately,
+  an INT_MIN-valued operand in a `[ ]` numeric comparison can diverge on dash and
+  zsh. Programs that need exact cross-shell behavior should avoid `[ ]` comparison
+  at the exact INT_MIN boundary and avoid INT_MIN arithmetic on zsh.
 
 - `float`: a finite decimal in the runtime domain: a value whose `%.17g`
   representation is a plain decimal with no exponent character. In practice this

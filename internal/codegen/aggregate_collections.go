@@ -232,7 +232,13 @@ func (g *gen) genSum(n *ast.CallExpr, ci *types.CallInfo, args []ast.Expr) atom 
 			g.line("if [ -n \"$__wisp_err_pending\" ]; then break; fi")
 		}
 	} else {
-		g.line("%s=$(( $%s + $%s ))", acc, acc, e)
+		// Bare operands (no leading $): both the running total and a summed element
+		// can be INT_MIN, and $name inside $(( )) re-lexes the string-expanded 2^63
+		// (dash off-by-one). A bare name reads the stored value directly and is
+		// correct on dash/busybox/bash/sh -- same reason as arith(). The loop
+		// counter below stays $-form: it is bounded to the array length, never
+		// INT_MIN.
+		g.line("%s=$(( %s + %s ))", acc, acc, e)
 	}
 	g.line("%s=$(( $%s + 1 ))", i, i)
 	g.indent--
