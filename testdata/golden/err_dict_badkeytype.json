@@ -1,5 +1,1 @@
-{
-  "desc": "a non-hashable dict key type (bool) is a compile error",
-  "compileError": true,
-  "diagContains": "dict key type must be int or string"
-}
+{ "desc": "bool dict key type is now admitted at the annotation gate (was err_dict_badkeytype rejection; flipped for uniform scalar comparability)", "stdout": "1\n", "exit": 0 }

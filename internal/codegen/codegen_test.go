@@ -273,3 +273,91 @@ fn main() -> int { print(classify(1.0)); return 0 }`
 		}
 	}
 }
+
+func TestFloatDictKeyUsesFkey(t *testing.T) { // SC-025(b)
+	src := `fn main() -> int { let m: {float: int} = {}; m[1.0] = 1; return 0 }`
+	sh := string(compile(t, src))
+	// The float key must canonicalize via __wisp_fkey (NOT the non-key float
+	// stringifier __wisp_fstr, which does not fold the sign of zero and so would
+	// split -0.0/0.0 as dict keys).
+	if !strings.Contains(sh, "__wisp_fkey") {
+		t.Errorf("float dict key must canonicalize via __wisp_fkey; got:\n%s", sh)
+	}
+	if strings.Contains(sh, "__wisp_fstr") {
+		t.Errorf("float dict key must use the key canonicalizer __wisp_fkey, not __wisp_fstr; got:\n%s", sh)
+	}
+	// The __wisp_fkey helper body itself must carry the two invariants FR-013
+	// names: the LC_ALL=C pin (cross-shell %.17g determinism) and the numeric
+	// zero-fold (x==0 -> "0", folding -0.0/0.0). Assert these WITHIN the sliced
+	// __wisp_fkey definition, NOT against the whole script: __wisp_dkey_enc is
+	// co-emitted with any float dict key and itself contains `LC_ALL=C`
+	// (prelude.go, `local LC_ALL; LC_ALL=C`), so a whole-script Contains("LC_ALL=C")
+	// passes even if __wisp_fkey dropped its own pin -- a vacuous guard. Slice the
+	// helper body the same way the classify-switch greps scope to their function.
+	start := strings.Index(sh, "__wisp_fkey() {")
+	if start < 0 {
+		t.Fatalf("expected a __wisp_fkey() definition in output; got:\n%s", sh)
+	}
+	// The body runs to the first line-start `}` after the header (helpers are
+	// emitted with the closing brace at column 0, `\n}`).
+	rest := sh[start:]
+	end := strings.Index(rest, "\n}")
+	if end < 0 {
+		t.Fatalf("could not find the end of the __wisp_fkey body; got:\n%s", rest)
+	}
+	fkeyBody := rest[:end]
+	if !strings.Contains(fkeyBody, "LC_ALL=C") {
+		t.Errorf("__wisp_fkey body must pin LC_ALL=C for cross-shell %%.17g determinism; got:\n%s", fkeyBody)
+	}
+	if !strings.Contains(fkeyBody, "==0") && !strings.Contains(fkeyBody, "== 0") {
+		t.Errorf("__wisp_fkey body must numerically fold the sign of zero (x==0); got:\n%s", fkeyBody)
+	}
+}
+
+func TestStringDictKeyOffAwkVChannel(t *testing.T) { // SC-025(c)
+	src := `fn main() -> int { let m: {string: int} = {}; m["k"] = 1; return 0 }`
+	sh := string(compile(t, src))
+	if !strings.Contains(sh, "__wisp_dkey_enc") {
+		t.Errorf("string dict key must route through __wisp_dkey_enc; got:\n%s", sh)
+	}
+	// A string key must never reach __wisp_fkey (the only helper that feeds a key
+	// value to an awk -v channel); only float keys legitimately do.
+	if strings.Contains(sh, "__wisp_fkey") {
+		t.Errorf("string dict key must not touch the float awk -v channel; got:\n%s", sh)
+	}
+}
+
+func TestFloatEnumDictKeyUsesFkey(t *testing.T) { // SC-033 / FR-012 backing dispatch
+	src := `enum Ratio: float { Half = 0.5, Full = 1.0 }
+fn main() -> int { let m: {Ratio: int} = {}; m[Ratio.Half] = 1; return 0 }`
+	sh := string(compile(t, src))
+	if !strings.Contains(sh, "__wisp_fkey") {
+		t.Errorf("float-backed-enum dict key must resolve to backing float and use __wisp_fkey; got:\n%s", sh)
+	}
+	if strings.Contains(sh, "__wisp_int") {
+		t.Errorf("float-backed-enum key must NOT take the int canonicalizer path; got:\n%s", sh)
+	}
+}
+
+func TestBoolDictKeyOffAwkVChannel(t *testing.T) { // SC-025(c)
+	src := `fn main() -> int { let m: {bool: int} = {}; m[true] = 1; return 0 }`
+	sh := string(compile(t, src))
+	if !strings.Contains(sh, "__wisp_dkey_enc") {
+		t.Errorf("bool dict key must route through __wisp_dkey_enc; got:\n%s", sh)
+	}
+	if strings.Contains(sh, "__wisp_fkey") {
+		t.Errorf("bool dict key must not touch the float awk -v channel; got:\n%s", sh)
+	}
+}
+
+func TestBoolEnumDictKeyOffAwkVChannel(t *testing.T) { // SC-025(c) / FR-012 bool backing
+	src := `enum Flag: bool { On = true, Off = false }
+fn main() -> int { let m: {Flag: int} = {}; m[Flag.On] = 1; return 0 }`
+	sh := string(compile(t, src))
+	if !strings.Contains(sh, "__wisp_dkey_enc") {
+		t.Errorf("bool-backed-enum dict key must route through __wisp_dkey_enc; got:\n%s", sh)
+	}
+	if strings.Contains(sh, "__wisp_fkey") {
+		t.Errorf("bool-backed-enum dict key must not touch the float awk -v channel; got:\n%s", sh)
+	}
+}

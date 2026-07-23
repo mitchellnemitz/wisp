@@ -1,0 +1,1 @@
+{ "desc": "populated dict literals with bool/float/value-enum keys compile and read back, exercising the dict-LITERAL key gate (SC-030 positive half)", "stdout": "1\nb\n20\n", "exit": 0 }

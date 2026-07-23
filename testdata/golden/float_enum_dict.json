@@ -1,0 +1,1 @@
+{ "desc": "float-backed-enum dict keys encode via the float canonicalizer (__wisp_fkey); distinct variants -> distinct keys (SC-033)", "stdout": "1\n2\n", "exit": 0 }

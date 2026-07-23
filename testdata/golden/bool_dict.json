@@ -1,0 +1,1 @@
+{ "desc": "bool dict keys true/false are distinct (SC-011)", "stdout": "10\n20\n2\n", "exit": 0 }

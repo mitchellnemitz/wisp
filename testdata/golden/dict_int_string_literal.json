@@ -1,0 +1,1 @@
+{ "desc": "int- and string-keyed populated dict literals still compile and read back after the key gate widens (SC-022)", "stdout": "a\n20\n", "exit": 0 }

@@ -1,0 +1,5 @@
+{
+  "desc": "string and string-backed-enum dict keys carrying the full SC-015 hostile-byte matrix round-trip byte-exactly through insert/lookup/enumerate (the enumerated key compares equal to the original), identical across dash/busybox/bash/zsh",
+  "stdout": "42\n1\ntrue\n7\ntrue\n",
+  "exit": 0
+}

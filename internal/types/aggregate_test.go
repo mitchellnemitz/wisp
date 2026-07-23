@@ -222,8 +222,10 @@ func TestDict_DuplicateLiteralKey_Int_Negative(t *testing.T) {
 	expectErr(t, wrapMain(`let m: {int: int} = { 5: 1, 05: 2 }`), "duplicate key")
 }
 
-func TestDict_NonHashableKeyType_Negative(t *testing.T) {
-	expectErr(t, wrapMain(`let m: {bool: int} = {}`), "dict key type must be int or string")
+func TestDict_BoolKeyType_OK(t *testing.T) {
+	// Bool is now an admitted dict key type at the annotation gate (uniform scalar
+	// comparability); the former rejection is gone.
+	expectOK(t, wrapMain(`let m: {bool: int} = {}`))
 }
 
 func TestDict_IndexAssignTypeMismatch_Negative(t *testing.T) {
