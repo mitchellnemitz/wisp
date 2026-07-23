@@ -479,3 +479,64 @@ func TestOrderingOperandsAreDoubleQuoted(t *testing.T) {
 		}
 	}
 }
+
+// TestMinMaxAndSortOperandsAreDoubleQuoted extends the SC-012 double-quote proof
+// to the min/max and sort emitters (not just the ordering operators) across the
+// scmp, b2i, and fcmp helper paths, including value-enum-backed operands. Every
+// operand reaching a comparison helper must be a "$..." expansion so a shell
+// metacharacter in the value is data, not code.
+func TestMinMaxAndSortOperandsAreDoubleQuoted(t *testing.T) {
+	src := `enum Size: string { S = "a", M = "b" }
+fn main() -> int {
+	let a: string = "a"
+	let b: string = "b"
+	let p: bool = false
+	let q: bool = true
+	let f1: float = 1.0
+	let f2: float = 2.0
+	print(math.min(a, b))
+	print(to_string(math.max(p, q)))
+	print(to_string(math.min(f1, f2) < f2))
+	let bs: bool[] = [q, p]
+	let ss: Size[] = [Size.M, Size.S]
+	let sortedB: bool[] = array.sort(bs)
+	let sortedS: Size[] = array.sort(ss)
+	print(to_string(sortedB[0]))
+	print(to_string(sortedS[0] == Size.S))
+	return 0
+}`
+	sh := string(compileNS(t, src, "array", "math"))
+	sawScmp, sawB2i, sawFcmp := false, false, false
+	for _, ln := range strings.Split(sh, "\n") {
+		trimmed := strings.TrimSpace(ln)
+		var operands []string
+		switch {
+		case strings.HasPrefix(trimmed, "__wisp_scmp "):
+			sawScmp = true
+			operands = strings.Fields(trimmed)[1:] // scmp: all trailing fields are operands
+		case strings.HasPrefix(trimmed, "__wisp_b2i "):
+			sawB2i = true
+			operands = strings.Fields(trimmed)[1:] // b2i: single trailing operand
+		case strings.HasPrefix(trimmed, "__wisp_fcmp "):
+			sawFcmp = true
+			f := strings.Fields(trimmed)
+			operands = f[len(f)-2:] // fcmp: leading <pos> 'op', operands are the last two
+		default:
+			continue
+		}
+		for _, op := range operands {
+			if !strings.HasPrefix(op, "\"$") {
+				t.Errorf("SC-012: comparison-helper operand %q is not a double-quoted expansion in line: %s", op, trimmed)
+			}
+		}
+	}
+	if !sawScmp {
+		t.Error("expected __wisp_scmp from string min + string-backed-enum sort")
+	}
+	if !sawB2i {
+		t.Error("expected __wisp_b2i from bool max + bool sort")
+	}
+	if !sawFcmp {
+		t.Error("expected __wisp_fcmp from float min + float ordering")
+	}
+}

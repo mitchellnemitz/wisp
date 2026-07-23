@@ -974,9 +974,9 @@ array.sort_by(xs: T[], less: fn(T, T) -> bool) -> T[]
 `sort` returns a new array in ascending order: numeric for int and float, byte
 order for string, `false` before `true` for bool, and backing order for a value
 enum. The element type must be an ordered scalar (int, float, bool, string, or a
-value enum); anything else is a compile error. `sort_by` returns a new array ordered by `less` (true means
-the first argument sorts first) and works for any element type. Both are stable
-and leave the source unchanged.
+value enum); anything else is a compile error. `sort_by` returns a new array
+ordered by `less` (true means the first argument sorts first) and works for any
+element type. Both are stable and leave the source unchanged.
 
 ```wisp
 array.sort([3, 1, 2])   // [1, 2, 3]
