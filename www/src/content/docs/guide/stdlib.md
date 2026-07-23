@@ -597,12 +597,16 @@ math.abs(-2.5)   // 2.5
 ### math.min, math.max
 
 ```
-math.min(a, b)   // both int, or both float
+math.min(a, b)   // both the same ordered scalar type
 math.max(a, b)
 ```
 
-The smaller or larger of two values. Both arguments must be the same numeric
-type; mixing int and float is a compile error.
+The smaller or larger of two values. Both arguments must share one ordered scalar
+type: int, float, bool, string, or a value enum (bool orders `false < true`, an
+enum by its backing value). Mixing distinct types (int and float, or two different
+enums) is a compile error. The result has the operand type -- for min/max there is
+no coercion. Note the funcref *value* forms of `min`/`max` (passing `min` itself as
+a function) stay int/float only, like `contains`/`index_of`.
 
 ```wisp
 math.min(3, 7)        // 3
@@ -963,13 +967,14 @@ array.reverse([1, 2, 3])   // [3, 2, 1]
 ### array.sort, array.sort_by
 
 ```
-array.sort(xs: T[]) -> T[]              // T is int, float, or string
+array.sort(xs: T[]) -> T[]              // T is any ordered scalar type
 array.sort_by(xs: T[], less: fn(T, T) -> bool) -> T[]
 ```
 
 `sort` returns a new array in ascending order: numeric for int and float, byte
-order for string. The element type must be int, float, or string; anything else
-is a compile error. `sort_by` returns a new array ordered by `less` (true means
+order for string, `false` before `true` for bool, and backing order for a value
+enum. The element type must be an ordered scalar (int, float, bool, string, or a
+value enum); anything else is a compile error. `sort_by` returns a new array ordered by `less` (true means
 the first argument sorts first) and works for any element type. Both are stable
 and leave the source unchanged.
 

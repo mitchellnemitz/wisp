@@ -67,7 +67,7 @@ warrant separate `byte_*` vs `char_*` names.
 ## Numbers
 
 - `[x] math.abs(x: int) -> int` / `math.abs(x: float) -> float`
-- `[x] math.min(a, b)` / `[x] math.max(a, b)` -- same numeric type
+- `[x] math.min(a, b)` / `[x] math.max(a, b)` -- same ordered scalar type (int/float/bool/string/value-enum; funcref value form int/float only)
 - `[x] math.clamp(x, lo, hi)` -- same numeric type
 - `[x] math.sign(x: int) -> int` / `math.sign(x: float) -> int` -- -1, 0, 1
 - `[x] math.pow(base: float, exp: float) -> float`
@@ -99,7 +99,7 @@ All other math ops above are pure-arithmetic (basic +,-,*,/ only).
 - `[x] array.filter(xs: T[], f: fn(T) -> bool) -> T[]`
 - `[x] array.each(xs: T[], f: fn(T) -> void) -> void`
 - `[x] array.reduce(xs: T[], init: U, f: fn(U, T) -> U) -> U`
-- `[x] array.sort(xs: T[]) -> T[]` -- ascending, comparable element types
+- `[x] array.sort(xs: T[]) -> T[]` -- ascending, any ordered scalar element type (int/float/bool/string/value-enum)
 - `[x] array.sort_by(xs: T[], less: fn(T, T) -> bool) -> T[]`
 - `[x] array.find(xs: T[], f: fn(T) -> bool) -> Optional[int]` -- Some(first matching index) or None
 - `[x] array.any(xs: T[], f: fn(T) -> bool) -> bool` / `[x] array.all(xs: T[], f: fn(T) -> bool) -> bool`
