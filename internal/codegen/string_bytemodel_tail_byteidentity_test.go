@@ -10,11 +10,14 @@ import (
 // string interpolation, and print -- but NONE of the four helpers rewritten in
 // the string-byte-model-tail branch (contains, replace, replace_first,
 // ends_with) and none of substring/char_at/index_of/last_index_of either --
-// must emit byte-identical shell to the merge-base compiler. Snapshot minted
-// by the merge-base compiler (git merge-base HEAD main = 79a8e10) -- non-
-// circular: the on-branch test passing proves the four-helper rewrite did NOT
-// change emitted shell for a program that never uses those ops (they tree-shake
-// out). Regenerate (ONLY from a merge-base worktree):
+// must emit byte-identical shell to before the string-byte-model-tail branch.
+//
+// Snapshot re-minted ON-BRANCH for the INT_MIN arith-form fix (bare variable refs
+// inside $(( )): $(( $x )) -> $(( x ))): this program's `x + 1 - 1` arithmetic
+// emits arith() operands, so that fix intentionally flips them dollar->bare and
+// the merge-base anchor no longer holds. The only permitted delta from the merge-
+// base snapshot is that dollar->bare flip on arith operands; nothing else changed.
+// Regenerate ON-BRANCH:
 // UPDATE_STRTAIL_SNAPSHOT=1 go test ./internal/codegen -run TestStringByteModelTail_NoUse_ByteIdentical
 func TestStringByteModelTail_NoUse_ByteIdentical(t *testing.T) {
 	const src = `fn main() -> int {

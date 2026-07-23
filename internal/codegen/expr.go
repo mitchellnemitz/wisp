@@ -35,8 +35,9 @@ func (g *gen) word(a atom) string {
 }
 
 // arith renders a as an operand inside $(( )). Int literals are digit strings;
-// variables are referenced as $name (arithmetic context, no quoting). Both are
-// injection-safe because every int-typed value is [+-]?[0-9]+ (invariant 5).
+// variables are referenced BARE as name, not $name (see the variable branch for
+// why: $name re-lexes an INT_MIN value and is dash-wrong). Both are injection-safe
+// because every int-typed value is [+-]?[0-9]+ (invariant 5).
 //
 // INT_MIN exception: the token -9223372036854775808 has magnitude 2^63, one past
 // INT_MAX; emitting it bare inside $(( )) is mis-tokenized by dash (off-by-one)
@@ -58,7 +59,17 @@ func (g *gen) arith(a atom) string {
 		}
 		return a.name
 	}
-	return "$" + a.name
+	// Variables are referenced BARE (no leading $) for the same reason the INT_MIN
+	// literal spill above is: inside $(( )) a bare name reads the variable's stored
+	// value directly, which dash/busybox/bash/sh evaluate correctly even for
+	// INT_MIN, whereas "$"+name string-expands the value into the expression text
+	// and the shell re-lexes it -- so a stored -9223372036854775808 (magnitude
+	// 2^63, one past INT_MAX) makes dash off-by-one. Every int value wisp stores
+	// is canonical [+-]?[0-9]+ (no octal ambiguity, no indirection), so a bare
+	// operand reads exactly that integer; it is also injection-safe (the value
+	// never enters the expression text) and ShellCheck SC2004-preferred. zsh
+	// cannot represent 2^63 in $(( )) at all, even bare -- documented residual.
+	return a.name
 }
 
 // genExpr lowers e, emitting any needed statements, and returns an atom naming

@@ -30,7 +30,7 @@ __wisp_idiv_ovf() {
 __wisp_f_m0_main() {
 	local __wisp_v_1 __wisp_v_2 __wisp_v_3 __wisp_t1 __wisp_t2 __wisp_t3 __wisp_t4 __wisp_t5 __wisp_t6 __wisp_t7 __wisp_t8 __wisp_t9 __wisp_t10 __wisp_t11 __wisp_t12
 	__wisp_t1=$(( 2 * 3 ))
-	__wisp_t2=$(( 1 + $__wisp_t1 ))
+	__wisp_t2=$(( 1 + __wisp_t1 ))
 	__wisp_v_1="$__wisp_t2"
 	if [ "$__wisp_v_1" = 7 ]; then __wisp_t4=true; else __wisp_t4=false; fi
 	if [ "$__wisp_t4" = true ]; then
@@ -40,13 +40,13 @@ __wisp_f_m0_main() {
 		__wisp_t3=false
 	fi
 	__wisp_v_2="$__wisp_t3"
-	__wisp_t6=$(( $__wisp_v_1 - 1 ))
+	__wisp_t6=$(( __wisp_v_1 - 1 ))
 	if [ 2 -eq 0 ]; then __wisp_fail 'test.wisp:4:24' "division by zero"; fi
 	__wisp_idiv_ovf 'test.wisp:4:24' "$__wisp_t6" 2
-	__wisp_t7=$(( $__wisp_t6 / 2 ))
+	__wisp_t7=$(( __wisp_t6 / 2 ))
 	if [ 3 -eq 0 ]; then __wisp_fail 'test.wisp:4:32' "division by zero"; fi
-	__wisp_t8=$(( $__wisp_v_1 % 3 ))
-	__wisp_t9=$(( $__wisp_t7 + $__wisp_t8 ))
+	__wisp_t8=$(( __wisp_v_1 % 3 ))
+	__wisp_t9=$(( __wisp_t7 + __wisp_t8 ))
 	__wisp_v_3="$__wisp_t9"
 	__wisp_t10="$__wisp_v_1"
 	__wisp_print "$__wisp_t10" 1

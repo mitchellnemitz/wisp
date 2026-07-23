@@ -17,8 +17,8 @@ __wisp_f_m0_main() {
 	__wisp_t1=$(( 6 * 7 ))
 	__wisp_v_1="$__wisp_t1"
 	__wisp_v_2='answer'
-	__wisp_t2=$(( $__wisp_v_1 + 1 ))
-	__wisp_t3=$(( $__wisp_t2 - 1 ))
+	__wisp_t2=$(( __wisp_v_1 + 1 ))
+	__wisp_t3=$(( __wisp_t2 - 1 ))
 	__wisp_v_3="$__wisp_t3"
 	if [ "$__wisp_v_3" = 42 ]; then __wisp_t4=true; else __wisp_t4=false; fi
 	__wisp_v_4="$__wisp_t4"

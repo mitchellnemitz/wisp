@@ -51,7 +51,7 @@ __wisp_bounds_fail() {
 __wisp_f_m0_dbl() {
 	local __wisp_v_1 __wisp_t1
 	__wisp_v_1="$1"
-	__wisp_t1=$(( $__wisp_v_1 * 2 ))
+	__wisp_t1=$(( __wisp_v_1 * 2 ))
 	__ret="$__wisp_t1"
 	return
 }

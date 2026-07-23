@@ -9,10 +9,14 @@ import (
 // TestBitwise_NoUse_ByteIdentical: a program using arithmetic/comparison/logical
 // but NONE of the bitwise operators & | ^ << >> must emit byte-identical shell to
 // before this feature. The Task-1 precedence-ladder renumber must not change the
-// emitted output for existing operators. Snapshot minted by the merge-base
-// compiler (git merge-base HEAD main) -- non-circular: the on-branch test passing
-// proves the renumber did NOT change emitted shell for a non-bitwise program.
-// Regenerate (ONLY from a merge-base worktree):
+// emitted output for existing operators.
+//
+// Snapshot re-minted ON-BRANCH for the INT_MIN arith-form fix (bare variable refs
+// inside $(( )): $(( $x )) -> $(( x ))): that fix intentionally changes arith()'s
+// operand emission, so the merge-base anchor no longer holds for this program. The
+// only permitted delta from the merge-base snapshot is the dollar->bare flip on
+// arith operands; nothing else changed.
+// Regenerate ON-BRANCH:
 // UPDATE_BITWISE_SNAPSHOT=1 go test ./internal/codegen -run TestBitwise_NoUse_ByteIdentical
 func TestBitwise_NoUse_ByteIdentical(t *testing.T) {
 	const src = `fn main() -> int {

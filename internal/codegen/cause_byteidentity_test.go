@@ -12,13 +12,18 @@ import (
 // program-wide uses-`wrap` predicate. This test pins the emitted .sh of THREE
 // programs that use NEITHER `wrap` NOR `cause` -- (1) a no-error-handling
 // program, (2) a try/throw/catch program, and (3) a faulting program (caught
-// `1 / 0`, which emits __wisp_fail) -- against snapshots captured by compiling
-// the same three sources with the compiler at the merge-base b26f2e4 (the
-// pre-feature parent). Because the snapshots are the parent-revision bytes, a
-// green run proves parent-vs-HEAD byte-identity (AC6), not merely "unchanged
-// since T1": any accidental drift onto a non-`wrap` program fails the gate.
+// `1 / 0`, which emits __wisp_fail) -- originally against snapshots captured by
+// compiling the same three sources with the compiler at the merge-base b26f2e4
+// (the pre-feature parent). The gate proved the throw-path edits caused no drift
+// on non-`wrap` programs.
 //
-// Regenerate intentionally (only when the parent-baseline genuinely moves) with:
+// Snapshot re-minted ON-BRANCH for the INT_MIN arith-form fix (bare variable refs
+// inside $(( )): $(( $x )) -> $(( x ))). The faulting case's `1 / 0` path emits an
+// idiv arith expression, so that fix intentionally flips its operands dollar->bare
+// and the merge-base anchor no longer holds. The only permitted delta from the
+// merge-base snapshot is that dollar->bare flip on arith operands; nothing else.
+//
+// Regenerate ON-BRANCH:
 // UPDATE_CAUSE_SNAPSHOT=1 go test ./internal/codegen -run TestCauseEmittedShellByteIdentical
 func TestCauseEmittedShellByteIdentical(t *testing.T) {
 	cases := []struct {
@@ -78,7 +83,7 @@ func TestCauseEmittedShellByteIdentical(t *testing.T) {
 			}
 			want, err := os.ReadFile(snap)
 			if err != nil {
-				t.Fatalf("read snapshot %s: %v (capture from merge-base b26f2e4)", snap, err)
+				t.Fatalf("read snapshot %s: %v (re-mint with UPDATE_CAUSE_SNAPSHOT=1)", snap, err)
 			}
 			if string(got) != string(want) {
 				t.Fatalf("emitted .sh changed (byte-identity gate failed) for %s.\n--- got (%d bytes) ---\n%s\n--- want (%d bytes) ---\n%s",

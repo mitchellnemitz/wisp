@@ -57,7 +57,7 @@ __wisp_f_m0_main() {
 	local __wisp_v_1 __wisp_v_2 __wisp_t1 __wisp_t2 __wisp_t3 __wisp_t4 __wisp_t5
 	__wisp_f_m0_identity 41
 	__wisp_t1="$__ret"
-	__wisp_t2=$(( $__wisp_t1 + 1 ))
+	__wisp_t2=$(( __wisp_t1 + 1 ))
 	__wisp_v_1="$__wisp_t2"
 	__wisp_f_m0_add__float 1.5 2.5
 	__wisp_t3="$__ret"
