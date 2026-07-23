@@ -40,8 +40,15 @@ const (
 	// representable quotient (|INT_MIN| > INT_MAX) and is a fatal $(( )) exception
 	// on some shells, so codegen calls it before the `/` arithmetic. It aborts
 	// located (the same model as division by zero) when num == INT_MIN && den ==
-	// -1; otherwise it is a no-op. `%` never overflows (INT_MIN % -1 == 0).
+	// -1; otherwise it is a no-op. `%` has the representable result 0 for
+	// INT_MIN % -1, but x86 idiv traps (SIGFPE) computing the overflowing
+	// quotient alongside the remainder, so codegen guards `%` separately with
+	// IMin and substitutes 0 rather than calling this.
 	IDivOvf = "__wisp_idiv_ovf"
+	// IMin sets __ret to INT_MIN (-2^63), computed at runtime by bit-doubling
+	// because zsh cannot parse the 19-digit literal. Used by the `%` overflow
+	// guard to detect an INT_MIN dividend without embedding the literal.
+	IMin = "__wisp_imin"
 	// AssertFail / Skip back the assertion + skip builtins (test framework). Unlike
 	// __wisp_fail they are NEVER mode-aware: an assertion failure / skip EXITS the
 	// current (sub)shell DIRECTLY with a reserved code (122 fail / 121 skip), never
@@ -1340,8 +1347,9 @@ var registry = map[string]helper{
 	// i.e. num == INT_MIN && den == -1 (quotient 2^63 is unrepresentable, and the
 	// $(( )) itself is a fatal exception on some shells). Otherwise a no-op. Called
 	// by codegen before the `/` arithmetic, after the zero guard. INT_MIN is the
-	// runtime-computed minimum (zsh cannot parse the literal). `%` does not call
-	// this (INT_MIN % -1 == 0 on all targets).
+	// runtime-computed minimum (zsh cannot parse the literal). `%` uses IMin +
+	// codegen's mod guard instead (INT_MIN % -1 is representable as 0 but x86
+	// idiv still traps on it).
 	IDivOvf: {
 		id:    IDivOvf,
 		deps:  []string{Fail},
@@ -1355,6 +1363,20 @@ var registry = map[string]helper{
 		__wisp_fail "$1" "division overflow"
 		[ -n "$__wisp_err_pending" ] && return
 	fi
+}`,
+	},
+
+	// __wisp_imin: set __ret to INT_MIN (-2^63). Computed by bit-doubling up to
+	// the largest positive power of two (2^62), then -(m-1)-m-1 = -2^63, so no
+	// 19-digit literal is ever parsed (zsh cannot). Used by codegen's `%` overflow
+	// guard to compare a dividend against INT_MIN. No deps; sets __ret only.
+	IMin: {
+		id:    IMin,
+		order: 84,
+		src: `__wisp_imin() {
+	__im_m=1
+	while [ $(( __im_m + __im_m )) -gt 0 ]; do __im_m=$(( __im_m + __im_m )); done
+	__ret=$(( - (__im_m - 1) - __im_m - 1 ))
 }`,
 	},
 

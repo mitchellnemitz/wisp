@@ -99,9 +99,10 @@ func TestIntMin_SumRuntime(t *testing.T) {
 
 // INT_MIN % -1 has the representable result 0 (unlike INT_MIN / -1, whose
 // quotient 2^63 is unrepresentable and faults). It must be 0, not a crash, on
-// every shell and architecture. On arm64 all shells already return 0; the act/CI
-// run is the x86 check (x86 idiv can SIGFPE on INT_MIN % -1). If x86 diverges,
-// genIntDivMod gains a guard short-circuiting INT_MIN % -1 to 0 (see the plan).
+// every shell and architecture. arm64 returns 0 natively, but x86 idiv SIGFPEs
+// computing the overflowing quotient alongside the remainder, so genIntDivMod
+// guards `%` (modGuardExpr + IMin) and substitutes 0 when the divisor is -1 and
+// the dividend is INT_MIN.
 func TestIntMin_ModNegOne(t *testing.T) {
 	src := "fn main() -> int {\n" +
 		"  let m: int = -9223372036854775808\n" +
