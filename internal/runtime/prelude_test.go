@@ -417,3 +417,36 @@ func TestDictKeyEncodeDistinct(t *testing.T) {
 		}
 	}
 }
+
+func TestFloatKeyCanonicalizer(t *testing.T) {
+	// Each pair: input float text -> expected canonical key text.
+	cases := []struct{ in, want string }{
+		{"1.0", "1"},
+		{"1.00", "1"},
+		{"2.5", "2.5"},
+		{"2.50", "2.5"},
+		{"0.0", "0"},
+		{"-0.0", "0"},
+		{"0", "0"},
+		{"-3.25", "-3.25"},
+	}
+	for _, c := range cases {
+		driver := "__wisp_fkey " + shellSingleQuote(c.in) + "\n" +
+			"printf '%s' \"$__ret\""
+		out, errb, code := runSnippet(t, []string{FKey}, driver)
+		if code != 0 {
+			t.Fatalf("in %q: exit=%d stderr=%q", c.in, code, errb)
+		}
+		if out != c.want {
+			t.Errorf("__wisp_fkey %q = %q, want %q", c.in, out, c.want)
+		}
+	}
+	// -0.0 and 0.0 must fold to the SAME key (the signed-zero collision case).
+	driver := "__wisp_fkey '-0.0'; a=\"$__ret\"\n" +
+		"__wisp_fkey '0.0'; b=\"$__ret\"\n" +
+		"if [ \"$a\" = \"$b\" ]; then echo SAME; else echo DIFF; fi"
+	out, _, code := runSnippet(t, []string{FKey}, driver)
+	if code != 0 || strings.TrimSpace(out) != "SAME" {
+		t.Errorf("-0.0 vs 0.0: out=%q code=%d, want SAME", out, code)
+	}
+}
