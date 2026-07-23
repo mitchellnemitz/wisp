@@ -1,8 +1,6 @@
 package codegen
 
 import (
-	"fmt"
-
 	"github.com/mitchellnemitz/wisp/internal/ast"
 	"github.com/mitchellnemitz/wisp/internal/runtime"
 	"github.com/mitchellnemitz/wisp/internal/types"
@@ -84,19 +82,31 @@ func (g *gen) genSortBy(args []ast.Expr) atom {
 // fresh bool temp (true/false), returning its name. aTmp/bTmp hold the values.
 func (g *gen) emitSortLess(et types.Type, pos, aTmp, bTmp string) string {
 	cmp := g.newTemp()
-	switch et {
-	case types.Float:
+	// Dispatch on the single comparison-class resolver so enum-backing handling
+	// cannot drift from the ordering operators and min/max. Float (raw + float-
+	// backed enum), string, and int stay byte-identical to their prior arms.
+	switch g.comparisonClass(et) {
+	case cmpFloat:
 		g.use(runtime.FCmp)
 		g.line("__wisp_fcmp %s %s \"$%s\" \"$%s\"", pos, shellSingleQuote("lt"), aTmp, bTmp)
 		g.line("%s=\"$__ret\"", cmp)
-	case types.String:
+	case cmpString:
 		g.use(runtime.Scmp)
 		g.line("__wisp_scmp \"$%s\" \"$%s\"", aTmp, bTmp)
 		g.line("%s=\"$__ret\"", cmp)
-	case types.Int:
+	case cmpBool:
+		// Map each operand's true/false text to 1/0, then compare numerically so
+		// false sorts below true. Both b2i calls write __ret, so spill the first.
+		g.use(runtime.B2i)
+		ai := g.newTemp()
+		g.line("__wisp_b2i \"$%s\"", aTmp)
+		g.line("%s=\"$__ret\"", ai)
+		bi := g.newTemp()
+		g.line("__wisp_b2i \"$%s\"", bTmp)
+		g.line("%s=\"$__ret\"", bi)
+		g.line("if [ \"$%s\" -lt \"$%s\" ]; then %s=true; else %s=false; fi", ai, bi, cmp, cmp)
+	default: // cmpInt (plain int + int-backed value enum)
 		g.line("if [ \"$%s\" -lt \"$%s\" ]; then %s=true; else %s=false; fi", aTmp, bTmp, cmp, cmp)
-	default:
-		panic(fmt.Sprintf("emitSortLess: no codegen case for element type %s (checker/codegen drift)", et))
 	}
 	return cmp
 }

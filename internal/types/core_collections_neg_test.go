@@ -60,8 +60,11 @@ func firstNsErr(t *testing.T, ns, rootSrc, substr string) Diagnostic {
 }
 
 func TestCoreArraysNeg_SortNonComparable(t *testing.T) {
-	wantNsErr(t, "array", `fn main() -> int { let xs: bool[] = [true]; let s: bool[] = array.sort(xs); return 0 }`, "int, float, or string")
-	wantNsErr(t, "array", `fn main() -> int { let xs: int[][] = [[1]]; let s: int[][] = array.sort(xs); return 0 }`, "int, float, or string")
+	// bool[] now sorts (bool joined the comparable scalar set, SC-004); only a
+	// non-scalar element type (int[][] whose element is an array handle) is
+	// rejected, with the widened message (SC-010c).
+	expectOKNS(t, `fn main() -> int { let xs: bool[] = [true, false]; let s: bool[] = array.sort(xs); return 0 }`, "array")
+	wantNsErr(t, "array", `fn main() -> int { let xs: int[][] = [[1]]; let s: int[][] = array.sort(xs); return 0 }`, "ordered scalar type")
 }
 
 func TestCoreArraysNeg_ConcatMismatch(t *testing.T) {

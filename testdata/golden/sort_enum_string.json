@@ -1,0 +1,1 @@
+{ "desc": "sort string-backed value enum orders by backing string (SC-004)", "stdout": "S M L\n", "exit": 0 }

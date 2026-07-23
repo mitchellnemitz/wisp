@@ -1,0 +1,1 @@
+{ "desc": "sort float-backed value enum orders by numeric identity (SC-004)", "stdout": "half full\n", "exit": 0 }

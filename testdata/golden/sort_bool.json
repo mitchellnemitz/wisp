@@ -1,0 +1,1 @@
+{ "desc": "sort bool[] orders false before true (SC-004)", "stdout": "false false true true\n", "exit": 0 }

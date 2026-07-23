@@ -7,12 +7,6 @@ import "github.com/mitchellnemitz/wisp/internal/ast"
 // here (like map/keys/contains) and records its own CallInfo. The builtinSigs
 // entries only reserve the names.
 
-// isOrderedElem reports whether t is an element type with a total order usable by
-// `sort` (int, float, string).
-func isOrderedElem(t Type) bool {
-	return t == Int || t == Float || t == String
-}
-
 // arrayBuiltinArg checks that arg is an array and returns its (type, elem, ok).
 func (c *checker) arrayBuiltinArg(arg ast.Expr, name string) (Type, Type, bool) {
 	at := c.checkExpr(arg)
@@ -39,8 +33,8 @@ func (c *checker) checkSortCall(n *ast.CallExpr, dispName string) Type {
 	if c.rejectTypeVar(n.Args[0].Pos(), et, "sort") {
 		return Invalid
 	}
-	if !isOrderedElem(et) {
-		c.errf(n.Args[0].Pos(), "%s requires an array of int, float, or string, got %s", dispName, at)
+	if !c.isComparableScalar(et) {
+		c.errf(n.Args[0].Pos(), "%s requires an array of an ordered scalar type (int, float, bool, string, or a value enum), got %s", dispName, at)
 		return Invalid
 	}
 	c.info.Calls[n] = &CallInfo{Kind: CallBuiltin, Builtin: "sort", Args: []ast.Expr{n.Args[0]}, Result: at}

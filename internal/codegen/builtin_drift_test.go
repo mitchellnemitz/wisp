@@ -163,33 +163,6 @@ func TestMatchTagField_UnhandledVariantPanics(t *testing.T) {
 	g.matchTagField("x", "NotAVariant", false)
 }
 
-// TestEmitSortLess_UnhandledElemTypePanics: emitSortLess's default arm
-// guards against an element type reaching sort codegen that the checker's
-// isOrderedElem gate should have already rejected.
-func TestEmitSortLess_UnhandledElemTypePanics(t *testing.T) {
-	// out must be a real strings.Builder, not nil: before this fix, the
-	// default arm (current "Int" behavior) calls g.line, which would
-	// nil-dereference g.out before the test's recover() sees anything -- see
-	// the identical note on TestGenCall_UnhandledKindPanics above.
-	g := &gen{out: &strings.Builder{}}
-
-	defer func() {
-		r := recover()
-		if r == nil {
-			t.Fatalf("emitSortLess with unhandled element type did not panic; the drift guard is missing")
-		}
-		msg, ok := r.(string)
-		if !ok {
-			t.Fatalf("panic value is %T, want string: %v", r, r)
-		}
-		if !strings.Contains(msg, "emitSortLess") {
-			t.Fatalf("panic message %q does not name emitSortLess", msg)
-		}
-	}()
-
-	g.emitSortLess(types.Type("NotAnOrderedType"), "1:1", "a", "b")
-}
-
 // TestCasePattern_DriftPanics: casePattern returns the folded value for every
 // accepted case value (the checker records a non-nil FoldedValues entry for each
 // type-valid constant case value, so the leading guard always fires). Any node
