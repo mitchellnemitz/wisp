@@ -1,0 +1,1 @@
+{ "desc": "math.min/max on int-backed value enum (SC-003a)", "stdout": "R\nB\n", "exit": 0 }

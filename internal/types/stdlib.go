@@ -480,9 +480,11 @@ func (c *checker) checkAbsCall(n *ast.CallExpr, dispName string) Type {
 	return at
 }
 
-// checkMinMaxCall handles min/max(a, b): both args the same numeric type
-// (int,int->int or float,float->float). Mixing int/float is a compile error (no
-// implicit coercion). The result type equals the shared operand type.
+// checkMinMaxCall handles min/max(a, b): both args the same ordered scalar type
+// (int/float/bool/string/value-enum), result = that shared type. Mixing distinct
+// types (int/float, or two different value enums) is a compile error (no implicit
+// coercion). The funcref forms of min/max are int/float-only and handled
+// elsewhere (overloadedFuncrefArms); this is the direct-call path.
 func (c *checker) checkMinMaxCall(n *ast.CallExpr, name, dispName string) Type {
 	for _, a := range n.Args {
 		c.checkExpr(a)
@@ -496,16 +498,16 @@ func (c *checker) checkMinMaxCall(n *ast.CallExpr, name, dispName string) Type {
 	if a1 == Invalid || a2 == Invalid {
 		return Invalid
 	}
-	if !isNumeric(a1) {
-		c.errf(n.Args[0].Pos(), "argument 1 of %s must be int or float, got %s", dispName, a1)
+	if !c.isComparableScalar(a1) {
+		c.errf(n.Args[0].Pos(), "argument 1 of %s must be an ordered scalar type (int, float, bool, string, or a value enum), got %s", dispName, a1)
 		return Invalid
 	}
-	if !isNumeric(a2) {
-		c.errf(n.Args[1].Pos(), "argument 2 of %s must be int or float, got %s", dispName, a2)
+	if !c.isComparableScalar(a2) {
+		c.errf(n.Args[1].Pos(), "argument 2 of %s must be an ordered scalar type (int, float, bool, string, or a value enum), got %s", dispName, a2)
 		return Invalid
 	}
 	if a1 != a2 {
-		c.errf(n.CalleePos, "%s requires both arguments to be the same numeric type, got %s and %s", dispName, a1, a2)
+		c.errf(n.CalleePos, "%s requires both arguments to be the same ordered scalar type, got %s and %s", dispName, a1, a2)
 		return Invalid
 	}
 	c.info.Calls[n] = &CallInfo{

@@ -1687,9 +1687,14 @@ func (g *gen) genMinMax(args []ast.Expr, isMin bool) atom {
 	a := g.spillToTemp(g.genExpr(args[0]))
 	b := g.spillToTemp(g.genExpr(args[1]))
 	t := g.newTemp()
-	if g.info.Types[args[0]] == types.Float {
-		// Pick a when (isMin ? a<=b : a>=b), else b; copy the chosen operand
-		// unchanged. The op token is compiler-fixed.
+	// Dispatch on the single comparison-class resolver so enum-backing handling
+	// matches the ordering operators and sort. Every branch copies the chosen
+	// ORIGINAL operand ($a/$b) unchanged -- result type == operand type -- so no
+	// arithmetic/awk reformat of the value ever leaks into the result.
+	switch g.comparisonClass(g.info.Types[args[0]]) {
+	case cmpFloat:
+		// Pick a when (isMin ? a<=b : a>=b), else b. Byte-identical to the prior
+		// raw-float branch.
 		op := "ge"
 		if isMin {
 			op = "le"
@@ -1697,13 +1702,39 @@ func (g *gen) genMinMax(args []ast.Expr, isMin bool) atom {
 		g.use(runtime.FCmp)
 		g.line("__wisp_fcmp %s %s \"$%s\" \"$%s\"", g.posLiteral(args[0].Pos()), shellSingleQuote(op), a, b)
 		g.line("if [ \"$__ret\" = true ]; then %s=\"$%s\"; else %s=\"$%s\"; fi", t, a, t, b)
-		return varAtom(t)
+	case cmpString:
+		// min: a if a<=b (= !scmp(b,a)); max: a if a>=b (= !scmp(a,b)). Either way
+		// __ret=true selects b, else a.
+		g.use(runtime.Scmp)
+		if isMin {
+			g.line("__wisp_scmp \"$%s\" \"$%s\"", b, a)
+		} else {
+			g.line("__wisp_scmp \"$%s\" \"$%s\"", a, b)
+		}
+		g.line("if [ \"$__ret\" = true ]; then %s=\"$%s\"; else %s=\"$%s\"; fi", t, b, t, a)
+	case cmpBool:
+		// Compare the 0/1 maps numerically but copy the ORIGINAL bool operand:
+		// the result type is bool, so returning "0"/"1" would be wrong-typed.
+		// Both b2i calls write __ret, so spill the first before the second.
+		g.use(runtime.B2i)
+		ai := g.newTemp()
+		g.line("__wisp_b2i \"$%s\"", a)
+		g.line("%s=\"$__ret\"", ai)
+		bi := g.newTemp()
+		g.line("__wisp_b2i \"$%s\"", b)
+		g.line("%s=\"$__ret\"", bi)
+		op := "-ge"
+		if isMin {
+			op = "-le"
+		}
+		g.line("if [ \"$%s\" %s \"$%s\" ]; then %s=\"$%s\"; else %s=\"$%s\"; fi", ai, op, bi, t, a, t, b)
+	default: // cmpInt (plain int + int-backed value enum); byte-identical.
+		op := "-ge"
+		if isMin {
+			op = "-le"
+		}
+		g.line("if [ \"$%s\" %s \"$%s\" ]; then %s=\"$%s\"; else %s=\"$%s\"; fi", a, op, b, t, a, t, b)
 	}
-	op := "-ge"
-	if isMin {
-		op = "-le"
-	}
-	g.line("if [ \"$%s\" %s \"$%s\" ]; then %s=\"$%s\"; else %s=\"$%s\"; fi", a, op, b, t, a, t, b)
 	return varAtom(t)
 }
 

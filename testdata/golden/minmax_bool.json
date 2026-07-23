@@ -1,0 +1,1 @@
+{ "desc": "math.min/max on bools: false is the min, true the max (SC-003a)", "stdout": "false\ntrue\n", "exit": 0 }
