@@ -1680,9 +1680,10 @@ func (g *gen) genAbs(n *ast.CallExpr, args []ast.Expr) atom {
 
 // genMinMax lowers min/max(a, b). It chooses an operand and returns it UNCHANGED
 // (the chosen operand's original atom): no arithmetic/awk reformat of the value,
-// so a float result carries no new validity obligation. int comparison uses a
-// numeric `[ ]`; float comparison uses __wisp_fcmp (the M3 exit-status compare)
-// to decide which operand to copy.
+// so a float result carries no new validity obligation. The comparison used to
+// decide which operand to copy is selected by the shared comparison-class
+// resolver (int numeric `[ ]`, float __wisp_fcmp, string __wisp_scmp, bool
+// __wisp_b2i then numeric), so it matches the ordering operators and sort.
 func (g *gen) genMinMax(args []ast.Expr, isMin bool) atom {
 	a := g.spillToTemp(g.genExpr(args[0]))
 	b := g.spillToTemp(g.genExpr(args[1]))
