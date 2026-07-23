@@ -144,7 +144,8 @@ The value types are:
 The composite types are:
 
 - Arrays, written `T[]`, for example `int[]`, `string[]`, `Point[]`, `int[][]`.
-- Dicts, written `{K: V}`, where `K` is `string` or `int` and `V` is any type.
+- Dicts, written `{K: V}`, where `K` is `int`, `string`, `bool`, `float`, or a
+  value enum, and `V` is any type.
 - Structs, named record types you declare.
 - Function references, written `fn(T1, T2) -> R`, for example
   `fn(int, int) -> int`.
@@ -714,8 +715,11 @@ fn main() -> int {
 The compiler infers the type arguments at each call site by structurally
 matching the argument types against the declared parameter types. `first_of([1,
 2, 3])` binds `T` to `int`; `first_of(["a"])` binds it to `string`. Unbounded
-and `comparable`-bounded generics are not monomorphized: every call site uses
-the same single shell function.
+generics are not monomorphized: every call site uses the same single shell
+function. A `comparable`-bounded generic is the same, except when it is
+instantiated at `float`: that binding gets its own monomorphized instance (so
+`==`/`!=` inside the body compare by numeric identity), while every
+non-`float` binding continues to share one erased body.
 
 A type parameter is a name for a type the function does not know, so a value of
 that type may only be used in ways that do not depend on what the type is:
@@ -774,8 +778,8 @@ immediately calling an indexed function value, parenthesize the index:
 
 A type parameter may carry the `comparable` bound, written after a colon in the
 declaration list. A `comparable` type parameter unlocks `==` and `!=`; the
-inferred type must be one of `int`, `bool`, `string`, or an enum type (see
-[Enums](#enums)).
+inferred type must be one of `int`, `bool`, `string`, `float`, or an enum type
+(see [Enums](#enums)).
 
 ```wisp
 fn contains_eq[T: comparable](xs: T[], target: T) -> bool {
@@ -797,11 +801,13 @@ bound word is a compile error.
 
 At each call site the inferred type is checked against the bound. Binding a
 `comparable` `T` to a non-comparable type (a struct, array, dict, `Optional`,
-`error`, funcref, or `float`) is a compile error at the argument that bound it.
+`error`, or funcref) is a compile error at the argument that bound it.
 
-`comparable` excludes `float` deliberately: float equality is numeric, and
-admitting it would route a float through the text-based equality lowering, which
-is not provably correct (negative zero serializes inconsistently).
+Float identity is numeric (`1.0 == 1.00`, `-0.0 == 0.0`), so a `comparable`
+generic bound to `float` is monomorphized into its own instance that compares
+through the same numeric primitive as the `==` operator, rather than sharing
+the byte-text equality of the erased body used for the other comparable
+types.
 
 ### The `numeric` bound
 
@@ -871,8 +877,8 @@ a compile error.
 `enum` has two disjoint modes, chosen by whether the declaration carries a
 backing annotation:
 
-- **Value enum** (`enum Name: int|string|bool { ... }`): a closed set of
-  compile-time constants of that backing type. Comparable, usable in
+- **Value enum** (`enum Name: int|string|bool|float { ... }`): a closed set
+  of compile-time constants of that backing type. Comparable, usable in
   `switch`, zero runtime cost.
 - **Tagged-union enum** (`enum Name { ... }`, no backing, at least one
   variant with a payload): a closed set of constructors, at least one of
@@ -895,9 +901,8 @@ enum Priority: int {
 }
 ```
 
-**Backing and defaults.** The backing is `int`, `string`, or `bool`
-(`float` is rejected, since floats are not comparable in wisp). Each
-backing has its own default rule for a variant with no explicit value:
+**Backing and defaults.** The backing is `int`, `string`, `bool`, or `float`.
+Each backing has its own default rule for a variant with no explicit value:
 
 - `int`: C-style auto-increment. The first variant is `0`; each following
   variant is the previous value plus one. An explicit `= <int literal>`
@@ -916,16 +921,23 @@ backing has its own default rule for a variant with no explicit value:
   ```wisp
   enum Answer: bool { No = false, Yes = true }
   ```
+- `float`: no default, like `bool`. Every variant must declare an explicit
+  `= <float literal>`.
+  ```wisp
+  enum Ratio: float { Half = 0.5, Full = 1.0 }
+  ```
 
 Every value within one enum must be distinct; a duplicate (including one
 produced by int auto-increment or a string default colliding with an
-explicit value) is a compile error. An empty enum is a compile error.
+explicit value) is a compile error. For a `float` backing, distinctness is
+numeric identity: `0.5` and `0.50` collide, and so do `0.0` and `-0.0`. An
+empty enum is a compile error.
 
 **Variant access.** Use `EnumName.VariantName`. For an `int`-backed enum
 the access is a constant expression that folds at compile time to its int
 value and is usable in `const`/`final` initializers and `switch` cases;
-`string`- and `bool`-backed variants are also usable directly as `switch`
-subjects and cases.
+`string`-, `bool`-, and `float`-backed variants are also usable directly as
+`switch` subjects and cases.
 
 ```wisp
 enum Color: int { Red, Green, Blue }
@@ -941,13 +953,14 @@ errors. A value enum type also satisfies the generic
 membership builtins (`array.contains`, `array.index_of`, `array.unique`,
 `assert_eq`/`assert_ne`, `assert_contains`); this is a wider set than
 "supports `==`", since `Optional` of a comparable type also supports `==`
-without satisfying `comparable`. A value enum cannot be used as a dict key
-(dict keys are restricted to `int` and `string`).
+without satisfying `comparable`. A value enum, of any backing, may also be
+used as a dict key.
 
-**`to_<backing>()` projection.** `to_int(e)`, `to_string(e)`, and `to_bool(e)`
-each return the underlying value, but only the one matching the enum's own
-backing: calling any other projection, or calling the matching one on the
-wrong backing, is a compile error that names the correct one to use.
+**`to_<backing>()` projection.** `to_int(e)`, `to_string(e)`, `to_bool(e)`,
+and `to_float(e)` each return the underlying value, but only the one
+matching the enum's own backing: calling any other projection, or calling
+the matching one on the wrong backing, is a compile error that names the
+correct one to use.
 
 ```wisp
 enum Color: int { Red, Green, Blue }
@@ -966,7 +979,7 @@ There is no reverse conversion (backing value to enum).
 `true`/`false`) to appear in a `case`, unless a `default` arm is present.
 Covering all cases removes the need for a `default`. A `default` is still
 allowed; omitting a case with no `default` is a compile error. A tagged-union
-enum is rejected as a switch subject (match-only); so is `float`.
+enum is rejected as a switch subject (match-only).
 
 ```wisp
 enum Color: int { Red, Green, Blue }
@@ -979,7 +992,10 @@ fn describe(c: Color) -> string {
 }
 ```
 
-Non-enum, non-`bool` (`int` or `string`) switches still require a `default`.
+Non-enum, non-`bool` (`int`, `string`, or `float`) switches still require a
+`default`. A `float` subject matches its case values by numeric identity
+(`1.0` matches a case `1.00`; `-0.0` falls through to `default` if there is
+no case `0.0`), through the same primitive as `==`, not a byte-text match.
 
 Note: an exhaustive defaultless switch whose every case returns is a
 return-path terminator, the same as an exhaustive `match` -- a function
@@ -1166,11 +1182,13 @@ m["c"] = 3
 print("a=${m["a"]} hasb=${to_string(dict.has(m, "b"))}")
 ```
 
-Keys are strings or ints; values are any type. Reading a missing key aborts, so
-use `dict.has(d, k)` to test membership first. Assigning a key inserts it or
-overwrites it in place. `dict.keys(d)` returns the keys in insertion order, and
-`for-in` iterates keys in insertion order. A duplicate key in a literal is a
-compile error.
+Keys are `int`, `string`, `bool`, `float`, or a value enum; values are any
+type. A `float` key is identified numerically, the same as `==`: `1.0` and
+`1.00` are the same key, and so are `0.0` and `-0.0`. Reading a missing key
+aborts, so use `dict.has(d, k)` to test membership first. Assigning a key
+inserts it or overwrites it in place. `dict.keys(d)` returns the keys in
+insertion order, and `for-in` iterates keys in insertion order. A duplicate
+key in a literal is a compile error.
 
 ## Multi-line collection literals
 
@@ -1266,11 +1284,13 @@ Read the value only through the access builtins:
 `Optional` is opaque like `error` and structs: `to_string()`, interpolation, use as
 a `switch` subject, and any numeric/index/callee use are compile errors.
 `==`/`!=` are supported when the inner type is comparable (`int`, `bool`,
-`string`, or a nested comparable `Optional`); comparison is structural: equal
-iff both are `None`, or both are `Some` with equal inner values. `Optional[float]`
-and `Optional` of non-comparable types (arrays, dicts, structs) remain
-non-comparable, and `==`/`!=` are still compile errors. For those cases the
-explicit workaround applies: `is_none(a) && is_none(b)`, or
+`string`, `float`, an enum type, or a nested comparable `Optional`);
+comparison is structural: equal iff both are `None`, or both are `Some` with
+equal inner values. A `float` inner value compares by numeric identity, the
+same as the `==` operator (`Some(1.0) == Some(1.00)`). `Optional` of a
+non-comparable type (arrays, dicts, structs) remains non-comparable, and
+`==`/`!=` are still compile errors. For those cases the explicit workaround
+applies: `is_none(a) && is_none(b)`, or
 `is_some(a) && is_some(b) && unwrap(a) == unwrap(b)`.
 
 The standard-library functions that once used a `-1` sentinel now return

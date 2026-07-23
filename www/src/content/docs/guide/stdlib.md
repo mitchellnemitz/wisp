@@ -927,9 +927,10 @@ array.contains(xs: T[], x: T) -> bool
 string.contains(xs: T[], x: T) -> bool
 ```
 
-Membership by value. Defined only for arrays of int, bool, string, or an enum
-type; a non-comparable element type, such as float, struct, or function
-reference, is a compile error.
+Membership by value. Defined only for arrays of int, bool, string, float, or
+an enum type; a non-comparable element type, such as struct or function
+reference, is a compile error. A float element compares by numeric identity
+(`1.0` matches `1.00`; `-0.0` matches `0.0`).
 
 ```wisp
 string.contains([1, 2, 3], 2)   // true
@@ -943,7 +944,8 @@ array.index_of(xs: T[], x: T) -> Optional[int]
 
 Same as `string.index_of`'s array form (see the [Strings](#strings) section)
 — returns the index of the first occurrence of `x` in `xs`, or `None` if not
-found. `T` must be `int`, `bool`, `string`, or an enum type.
+found. `T` must be `int`, `bool`, `string`, `float`, or an enum type; a
+`float` element compares by numeric identity.
 
 ### array.reverse
 
@@ -1075,8 +1077,9 @@ array.unique(xs: T[]) -> T[]
 ```
 
 Returns a new array containing each distinct element of `xs` at its first
-occurrence, in order. Defined only for int, bool, string, or enum elements.
-The source is unchanged.
+occurrence, in order. Defined only for int, bool, string, float, or enum
+elements; float elements are deduplicated by numeric identity. The source is
+unchanged.
 
 ```wisp
 array.unique([3, 1, 2, 1, 3])   // [3, 1, 2]
@@ -3286,7 +3289,7 @@ assert_eq[T: comparable](got: T, want: T) -> void
 ```
 
 Fails if `got != want`. Renders both values via `debug()` in the failure message.
-`T` admits int, bool, string, an enum type, or a nested comparable `Optional`.
+`T` admits int, bool, string, float, an enum type, or a nested comparable `Optional`.
 
 ```wisp
 enum Color: int { Red, Green, Blue }
@@ -3305,7 +3308,7 @@ assert_ne[T: comparable](got: T, want: T) -> void
 ```
 
 Fails if `got == want`. Renders both values via `debug()` in the failure message.
-`T` admits int, bool, string, an enum type, or a nested comparable `Optional`.
+`T` admits int, bool, string, float, an enum type, or a nested comparable `Optional`.
 
 ```wisp
 test ("assert_ne example") {
@@ -3382,7 +3385,7 @@ assert_contains(xs: T[], x: T) -> void   // T: comparable
 
 Overloaded on the first argument type. When the first argument is a string, asserts that
 `sub` is a substring. When the first argument is an array, asserts that `x` is a member.
-The array form's `T: comparable` admits int, bool, string, or an enum type.
+The array form's `T: comparable` admits int, bool, string, float, or an enum type.
 
 ```wisp
 test ("assert_contains examples") {

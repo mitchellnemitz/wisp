@@ -265,8 +265,8 @@ not grandchildren the command itself forks (same boundary as `run`).
 - `[x] unwrap_or(o: Optional[T], fallback: T) -> T` / `unwrap_or(r: Result[T], fallback: T) -> T` -- total; fallback evaluated eagerly
 - `[x] unwrap_err(r: Result[T]) -> error` -- the carried error, or abort on Ok (catchable)
 
-`Optional[T]` supports `==`/`!=` when `T` is comparable (`int`/`bool`/`string`,
-or nested comparable `Optional`); `Optional[float]`, `Result`, and aggregate
+`Optional[T]` supports `==`/`!=` when `T` is comparable (`int`/`bool`/`string`/
+`float`, an enum, or nested comparable `Optional`); `Result` and aggregate
 carriers stay non-comparable.
 
 ## Combinators
