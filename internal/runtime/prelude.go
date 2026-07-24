@@ -1807,6 +1807,26 @@ var registry = map[string]helper{
 }`,
 	},
 
+	ParseFloat: {
+		id:    ParseFloat,
+		order: 90,
+		src: `__wisp_parse_float() {
+	__pf_body="$1"
+	case "$1" in -* | +*) __pf_body="${1#?}" ;; esac
+	case "$__pf_body" in
+		'' | *[!0-9.]* | .* | *. | *.*.*) return 1 ;;
+	esac
+	__pf_c="$(LC_ALL=C awk -v a="$1" 'BEGIN{ printf "%.17g", a+0 }')"
+	__pf_cb="$__pf_c"
+	case "$__pf_c" in -* | +*) __pf_cb="${__pf_c#?}" ;; esac
+	case "$__pf_cb" in
+		'' | *[!0-9.]* | .* | *. | *.*.*) return 1 ;;
+	esac
+	__ret="$__pf_c"
+	return 0
+}`,
+	},
+
 	FloatOr: {
 		id:    FloatOr,
 		order: 88,

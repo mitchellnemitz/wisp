@@ -1269,6 +1269,8 @@ func (g *gen) genBuiltinCall(n *ast.CallExpr, ci *types.CallInfo) atom {
 		return g.genHelperCall(runtime.FloatOr, "__wisp_float_or", n, ci.Args)
 	case "parse_int":
 		return g.genStrSentinelToOptional(runtime.ParseInt, "__wisp_parse_int", n, ci.Args)
+	case "parse_float":
+		return g.genStrSentinelToOptional(runtime.ParseFloat, "__wisp_parse_float", n, ci.Args)
 	case "clamp":
 		return g.genClamp(n, ci.Args)
 	case "sign":
