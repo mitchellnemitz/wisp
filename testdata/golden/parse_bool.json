@@ -1,0 +1,5 @@
+{
+  "desc": "parse_bool returns Some(bool) for exact true/false, None for yes/1/empty/True",
+  "stdout": "true\nfalse\ntrue\ntrue\ntrue\ntrue\n",
+  "exit": 0
+}

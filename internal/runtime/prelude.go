@@ -255,6 +255,7 @@ const (
 	FloatOr    = "__wisp_float_or"    // <s> <fallback> -> canonical float or fallback
 	ParseInt   = "__wisp_parse_int"   // <s>: canonical int in __ret + exit 0 if valid, else exit 1 (-> None)
 	ParseFloat = "__wisp_parse_float" // <s>: canonical float in __ret + exit 0 if valid, else exit 1 (-> None)
+	ParseBool  = "__wisp_parse_bool"  // <s>: true/false in __ret + exit 0 if valid, else exit 1 (-> None)
 
 	// --- Filesystem + process (fs milestone) ---
 	//
@@ -1824,6 +1825,18 @@ var registry = map[string]helper{
 	esac
 	__ret="$__pf_c"
 	return 0
+}`,
+	},
+
+	ParseBool: {
+		id:    ParseBool,
+		order: 91,
+		src: `__wisp_parse_bool() {
+	case "$1" in
+		true) __ret=true; return 0 ;;
+		false) __ret=false; return 0 ;;
+		*) return 1 ;;
+	esac
 }`,
 	},
 
