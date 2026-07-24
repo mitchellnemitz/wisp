@@ -1,9 +1,5 @@
 import "env"
 fn main() -> int {
-  try {
-    print(env.get("WISP_GOLDEN_NOPE"))
-  } catch (e) {
-    print("caught")
-  }
+  print(unwrap_or(env.get("WISP_GOLDEN_NOPE"), "caught"))
   return 0
 }

@@ -138,6 +138,31 @@ func TestAggregateHelpersEmittedWhenUsed(t *testing.T) {
 	}
 }
 
+// TestRemovedSugarHelpersAbsent is the SC-015 gate: a program exercising the
+// unwrap_or(parse_int/parse_float/dict.get/env.get, fb) replacement path for
+// the removed int_or/float_or/get_or/env_or sugar must emit none of their old
+// runtime helpers. get_or had no runtime helper of its own (fully inlined
+// codegen), so its removal is covered by go build/test, not a grep here.
+func TestRemovedSugarHelpersAbsent(t *testing.T) {
+	src := `import "env"
+fn main() -> int {
+  print(to_string(unwrap_or(parse_int("42"), -1)))
+  print(to_string(unwrap_or(parse_float("3.14"), -1.0)))
+  print(unwrap_or(env.get("PATH"), "FB"))
+  return 0
+}
+`
+	script, _, diags := driver.Compile("sugar.wisp", src)
+	if errored(diags) {
+		t.Fatalf("unexpected compile errors: %v", diags)
+	}
+	for _, helper := range []string{"__wisp_int_or", "__wisp_float_or", "__wisp_env_or"} {
+		if bytes.Contains(script, []byte(helper)) {
+			t.Errorf("tree-shaking failed: removed helper %q present in emitted output", helper)
+		}
+	}
+}
+
 // TestJSONTreeShaking asserts the json engine and wrappers are tree-shaken: a
 // program with no `import "json"` emits none of them, and the tree-shaking is
 // selective (json.encode/from_int/null do NOT pull the engine; from_string

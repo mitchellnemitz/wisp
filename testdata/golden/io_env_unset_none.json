@@ -1,0 +1,5 @@
+{
+  "desc": "env on an unset variable is None, not an abort (FR-004, SC-005)",
+  "stdout": "true\n",
+  "exit": 0
+}

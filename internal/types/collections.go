@@ -219,33 +219,6 @@ func (c *checker) checkValuesCall(n *ast.CallExpr, dispName string) Type {
 	return res
 }
 
-func (c *checker) checkGetOrCall(n *ast.CallExpr, dispName string) Type {
-	for _, a := range n.Args {
-		c.checkExpr(a)
-	}
-	if len(n.Args) != 3 {
-		c.errf(n.CalleePos, "%s expects 3 arguments, got %d", dispName, len(n.Args))
-		return Invalid
-	}
-	dt := c.info.Types[n.Args[0]]
-	if dt == Invalid {
-		return Invalid
-	}
-	if !isDict(dt) {
-		c.errf(n.Args[0].Pos(), "argument 1 of %s must be a dict, got %s", dispName, dt)
-		return Invalid
-	}
-	kt, vt := dictKeyType(dt), dictValType(dt)
-	if t := c.info.Types[n.Args[1]]; t != Invalid && t != kt {
-		c.errf(n.Args[1].Pos(), "argument 2 of %s has type %s, want %s (the dict key type)", dispName, t, kt)
-	}
-	if t := c.info.Types[n.Args[2]]; t != Invalid && t != vt {
-		c.errf(n.Args[2].Pos(), "argument 3 of %s has type %s, want %s (the dict value type)", dispName, t, vt)
-	}
-	c.info.Calls[n] = &CallInfo{Kind: CallBuiltin, Builtin: "get_or", Args: []ast.Expr{n.Args[0], n.Args[1], n.Args[2]}, Result: vt}
-	return vt
-}
-
 // checkGetCall handles get(d, k) -> Optional[V] (spec 7): the value wrapped in
 // Some if k is present, else None. V is decoded from the dict's value type.
 func (c *checker) checkGetCall(n *ast.CallExpr, dispName string) Type {

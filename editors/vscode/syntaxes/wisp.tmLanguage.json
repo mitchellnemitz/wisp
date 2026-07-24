@@ -72,7 +72,7 @@
     },
     "builtins": {
       "name": "support.function.builtin.wisp",
-      "match": "\\b(?:and_then|assert|assert_contains|assert_eq|assert_err|assert_ne|assert_none|assert_ok|assert_some|cause|debug|error_with|exit|is_err|is_none|is_ok|is_some|length|map_err|now|on_exit|on_signal|or_else|parse_args|print|read_line|read_secret|read_stdin|set_stdin|skip|sleep|test_tmpdir|to_bool|to_float|to_int|to_string|unwrap|unwrap_err|unwrap_or|wrap)\\b"
+      "match": "\\b(?:and_then|assert|assert_contains|assert_eq|assert_err|assert_ne|assert_none|assert_ok|assert_some|cause|debug|error_with|exit|is_err|is_none|is_ok|is_some|length|map_err|now|on_exit|on_signal|or_else|parse_args|parse_bool|parse_float|parse_int|print|read_line|read_secret|read_stdin|set_stdin|skip|sleep|test_tmpdir|to_bool|to_float|to_int|to_string|unwrap|unwrap_err|unwrap_or|wrap)\\b"
     },
     "numbers": {
       "patterns": [

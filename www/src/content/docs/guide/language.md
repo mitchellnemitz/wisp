@@ -1298,7 +1298,7 @@ applies: `is_none(a) && is_none(b)`, or
 
 The standard-library functions that once used a `-1` sentinel now return
 `Optional[int]`: `array.find`, `string.index_of`, `string.last_index_of`. The dict accessor
-`dict.get(d, k) -> Optional[V]` joins `dict.has`/`dict.get_or`. See
+`dict.get(d, k) -> Optional[V]` joins `dict.has`. See
 [the stdlib guide](/guide/stdlib/#optional).
 
 Bind the contained value with `match`, or transform with the combinators

@@ -1030,8 +1030,7 @@ func (g *gen) genBuiltinCall(n *ast.CallExpr, ci *types.CallInfo) atom {
 	case "reduce":
 		return g.genReduce(ci.Args)
 	case "env":
-		// env can abort (unset); pass the located call position.
-		return g.genLocatedHelperCall(runtime.Env, "__wisp_env", n, ci.Args)
+		return g.genStrSentinelToOptional(runtime.Env, "__wisp_env", n, ci.Args)
 	case "has_env":
 		return g.genHelperCall(runtime.HasEnv, "__wisp_has_env", n, ci.Args)
 	case "read_file":
@@ -1098,8 +1097,6 @@ func (g *gen) genBuiltinCall(n *ast.CallExpr, ci *types.CallInfo) atom {
 		return g.genHelperCall(runtime.DirName, "__wisp_dir_name", n, ci.Args)
 	case "base_name":
 		return g.genHelperCall(runtime.BaseName, "__wisp_base_name", n, ci.Args)
-	case "env_or":
-		return g.genHelperCall(runtime.EnvOr, "__wisp_env_or", n, ci.Args)
 	case "make_dir":
 		return g.genVoidLocatedHelperCall(runtime.MakeDir, "__wisp_make_dir", n, ci.Args)
 	case "remove_file":
@@ -1190,8 +1187,6 @@ func (g *gen) genBuiltinCall(n *ast.CallExpr, ci *types.CallInfo) atom {
 		return g.genClear(ci.Args)
 	case "values":
 		return g.genValues(ci.Args)
-	case "get_or":
-		return g.genGetOr(ci.Args)
 	case "get":
 		return g.genGet(ci.Args)
 	case "remove":
@@ -1263,10 +1258,12 @@ func (g *gen) genBuiltinCall(n *ast.CallExpr, ci *types.CallInfo) atom {
 		return g.genLocatedHelperCall(runtime.Gcd, "__wisp_gcd", n, ci.Args)
 	case "lcm":
 		return g.genLocatedHelperCall(runtime.Lcm, "__wisp_lcm", n, ci.Args)
-	case "int_or":
-		return g.genHelperCall(runtime.IntOr, "__wisp_int_or", n, ci.Args)
-	case "float_or":
-		return g.genHelperCall(runtime.FloatOr, "__wisp_float_or", n, ci.Args)
+	case "parse_int":
+		return g.genStrSentinelToOptional(runtime.ParseInt, "__wisp_parse_int", n, ci.Args)
+	case "parse_float":
+		return g.genStrSentinelToOptional(runtime.ParseFloat, "__wisp_parse_float", n, ci.Args)
+	case "parse_bool":
+		return g.genStrSentinelToOptional(runtime.ParseBool, "__wisp_parse_bool", n, ci.Args)
 	case "clamp":
 		return g.genClamp(n, ci.Args)
 	case "sign":

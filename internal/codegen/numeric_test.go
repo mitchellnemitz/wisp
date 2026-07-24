@@ -14,10 +14,9 @@ func numOut(t *testing.T, body string) string {
 	return out
 }
 
-// numOutNS is numOut for programs that need namespaced members (int_or/
-// float_or -> string.int_or/string.float_or; clamp/sign/floor/ceil/round/
-// trunc/sqrt/gcd/lcm -> math.*), since their bare spelling no longer resolves
-// in the single-module check.
+// numOutNS is numOut for programs that need namespaced members
+// (clamp/sign/floor/ceil/round/trunc/sqrt/gcd/lcm -> math.*), since their bare
+// spelling no longer resolves in the single-module check.
 func numOutNS(t *testing.T, body string, namespaces ...string) string {
 	t.Helper()
 	out, errb, code := runNS(t, "fn main() -> int {\n"+body+"\nreturn 0\n}\n", namespaces...)
@@ -27,19 +26,19 @@ func numOutNS(t *testing.T, body string, namespaces ...string) string {
 	return out
 }
 
-func TestNumIntFloatOr(t *testing.T) {
+func TestNumParseIntParseFloatUnwrapOr(t *testing.T) {
 	out := numOutNS(t, `
-print(to_string(string.int_or("007", 0)))
-print(to_string(string.int_or("x", 9)))
-print(to_string(string.int_or(" 5", 9)))
-print(to_string(string.int_or("-0", 5)))
-print(to_string(string.int_or("99999999999999999999999", 7)))
-print(to_string(string.float_or("1.50", 0.0)))
-print(to_string(string.float_or("1e5", 0.0)))
-print(to_string(string.float_or(" 1.0", 0.0)))`, "string")
+print(to_string(unwrap_or(parse_int("007"), 0)))
+print(to_string(unwrap_or(parse_int("x"), 9)))
+print(to_string(unwrap_or(parse_int(" 5"), 9)))
+print(to_string(unwrap_or(parse_int("-0"), 5)))
+print(to_string(unwrap_or(parse_int("99999999999999999999999"), 7)))
+print(to_string(unwrap_or(parse_float("1.50"), 0.0)))
+print(to_string(unwrap_or(parse_float("1e5"), 0.0)))
+print(to_string(unwrap_or(parse_float(" 1.0"), 0.0)))`)
 	want := "7\n9\n9\n0\n7\n1.5\n0\n0\n"
 	if out != want {
-		t.Errorf("int_or/float_or = %q want %q", out, want)
+		t.Errorf("unwrap_or(parse_int/parse_float) = %q want %q", out, want)
 	}
 }
 

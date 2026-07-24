@@ -10,10 +10,6 @@ fn main() -> int {
   print("hasenv=${to_string(env.has(payload))}")
   let out: string = process.run(["echo", payload])
   print("run=${out}")
-  try {
-    print(env.get(payload))
-  } catch (e) {
-    print("env-unset")
-  }
+  print(unwrap_or(env.get(payload), "env-unset"))
   return 0
 }

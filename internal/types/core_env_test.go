@@ -20,11 +20,10 @@ func TestCoreEnvMembersResolve(t *testing.T) {
 		builtin string
 		want    Type
 	}{
-		{`fn main() -> int { let s: string = env.get("X"); return 0 }`, "env", String},
+		{`fn main() -> int { let s: Optional[string] = env.get("X"); return 0 }`, "env", optionalType(String)},
 		{`fn main() -> int { let b: bool = env.has("X"); return 0 }`, "has_env", Bool},
 		{`fn main() -> int { env.set("X", "v"); return 0 }`, "set_env", Void},
 		{`fn main() -> int { env.unset("X"); return 0 }`, "unset_env", Void},
-		{`fn main() -> int { let s: string = env.get_or("X", "d"); return 0 }`, "env_or", String},
 	} {
 		info := checkEnvProg(t, c.src)
 		if len(info.Errors) != 0 {
@@ -41,14 +40,14 @@ func TestCoreEnvMembersResolve(t *testing.T) {
 }
 
 func TestCoreEnvAliasImport(t *testing.T) {
-	root := mod(t, 0, `fn main() -> int { let s: string = e.get("X"); return 0 }`, map[string]int{"e": 1})
+	root := mod(t, 0, `fn main() -> int { let s: Optional[string] = e.get("X"); return 0 }`, map[string]int{"e": 1})
 	em := coreMod(1, "env")
 	info := CheckLinked(&module.Linked{Modules: []*module.Module{root, em}})
 	if len(info.Errors) != 0 {
 		t.Fatalf("aliased e.get should resolve; errors: %v", errMsgs(info))
 	}
-	if ci := callWithBuiltin(info, "env"); ci == nil || ci.Result != String {
-		t.Errorf("e.get result = %v, want string", ci)
+	if ci := callWithBuiltin(info, "env"); ci == nil || ci.Result != optionalType(String) {
+		t.Errorf("e.get result = %v, want Optional[string]", ci)
 	}
 }
 
@@ -56,7 +55,7 @@ func TestCoreEnvAliasImport(t *testing.T) {
 // bound, env.get resolves via the namespace, while the bare flat spelling env(x)
 // has been removed and now yields the moved-to-module diagnostic.
 func TestCoreEnvNamespaceCoexistsWithBuiltin(t *testing.T) {
-	info := checkEnvProg(t, `fn main() -> int { let a: string = env.get("X"); let b: string = env("Y"); return 0 }`)
+	info := checkEnvProg(t, `fn main() -> int { let a: Optional[string] = env.get("X"); let b: string = env("Y"); return 0 }`)
 	if !hasErr(info, `"env" was moved to a module; import "env" and call it as env.get(...)`) {
 		t.Fatalf("want moved-to-module error for bare env(), got %v", errMsgs(info))
 	}

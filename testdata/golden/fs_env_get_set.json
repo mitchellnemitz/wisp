@@ -1,0 +1,5 @@
+{
+  "desc": "unwrap_or(env.get(...)) on an always-set variable (PATH) returns a non-empty value",
+  "stdout": "true\n",
+  "exit": 0
+}

@@ -1,0 +1,5 @@
+{
+  "desc": "env returns Some(value) when set, Some(\"\") when set-empty, None when unset (SC-005, all four shells)",
+  "stdout": "hello\ntrue\n\ntrue\n",
+  "exit": 0
+}

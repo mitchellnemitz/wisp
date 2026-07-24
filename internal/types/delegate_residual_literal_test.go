@@ -46,7 +46,6 @@ var delegateFuncLiteral = map[string]struct {
 	"checkSumCall":          {"collections.go", "sum"},
 	"checkRangeCall":        {"collections.go", "range"},
 	"checkValuesCall":       {"collections.go", "values"},
-	"checkGetOrCall":        {"collections.go", "get_or"},
 	"checkGetCall":          {"collections.go", "get"},
 	"checkRemoveCall":       {"collections.go", "remove"},
 	"checkMergeCall":        {"collections.go", "merge"},

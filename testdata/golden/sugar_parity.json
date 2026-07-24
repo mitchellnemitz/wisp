@@ -1,0 +1,5 @@
+{
+  "desc": "unwrap_or(parse_int/parse_float/dict.get/env.get, fb) reproduces the removed int_or/float_or/get_or/env_or sugar over the full SC-006 matrix",
+  "stdout": "42\n7\n9\n-1\n-1\n-9223372036854775808\n-1\n3.1400000000000001\n-1\n-1\n-1\n1\n-1\nv\n\nFB\n",
+  "exit": 0
+}

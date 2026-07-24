@@ -9,12 +9,12 @@ import (
 	"testing"
 )
 
-// process.pid_alive (and the env.get_or / string.int_or the program uses) are
-// removable builtins whose bare call no longer resolves in the single-module
-// codegen check, so pidAliveProg and the three runtime tests below compile
-// through compileNS in a linked module set with process/env/string bound.
+// process.pid_alive is a removable builtin whose bare call no longer resolves
+// in the single-module codegen check, so pidAliveProg and the three runtime
+// tests below compile through compileNS in a linked module set with
+// process/env bound.
 const pidAliveProg = `fn main() -> int {
-  print(to_string(process.pid_alive(string.int_or(env.get_or("WISP_TEST_PID", "0"), 0))))
+  print(to_string(process.pid_alive(unwrap_or(parse_int(unwrap_or(env.get("WISP_TEST_PID"), "0")), 0))))
   return 0
 }`
 
@@ -22,7 +22,7 @@ const pidAliveProg = `fn main() -> int {
 func TestPidAlive_Live(t *testing.T) {
 	dir := t.TempDir()
 	script := filepath.Join(dir, "pa.sh")
-	if err := os.WriteFile(script, compileNS(t, pidAliveProg, "process", "env", "string"), 0o755); err != nil {
+	if err := os.WriteFile(script, compileNS(t, pidAliveProg, "process", "env"), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	live := exec.Command("sleep", "30")
@@ -51,7 +51,7 @@ func TestPidAlive_Live(t *testing.T) {
 func TestPidAlive_Dead(t *testing.T) {
 	dir := t.TempDir()
 	script := filepath.Join(dir, "pa.sh")
-	if err := os.WriteFile(script, compileNS(t, pidAliveProg, "process", "env", "string"), 0o755); err != nil {
+	if err := os.WriteFile(script, compileNS(t, pidAliveProg, "process", "env"), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	dead := exec.Command("true")
@@ -84,7 +84,7 @@ func TestPidAlive_Dead(t *testing.T) {
 func TestPidAlive_NegativeTotal(t *testing.T) {
 	dir := t.TempDir()
 	script := filepath.Join(dir, "pa.sh")
-	if err := os.WriteFile(script, compileNS(t, pidAliveProg, "process", "env", "string"), 0o755); err != nil {
+	if err := os.WriteFile(script, compileNS(t, pidAliveProg, "process", "env"), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	for _, sh := range execShells(t) {

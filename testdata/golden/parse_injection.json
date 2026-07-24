@@ -1,0 +1,5 @@
+{
+  "desc": "parse_* on shell-metacharacter strings returns None with no command execution (SC-013, all four shells)",
+  "stdout": "true\ntrue\ntrue\ntrue\ntrue\n",
+  "exit": 0
+}

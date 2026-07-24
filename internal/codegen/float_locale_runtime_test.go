@@ -4,9 +4,9 @@ package codegen
 // modes fixed by pinning LC_ALL=C on the float awk helpers: silently wrong
 // float output under a comma-decimal locale, and spurious abort on float
 // arithmetic under the same locale (the comma trips __wisp_ffinite's
-// [0-9.]-only validation glob). It also proves float_or (a validate-and-
-// canonicalize helper, not an arithmetic op) no longer falls back to its
-// default value for an otherwise-valid numeric string under the same locale.
+// [0-9.]-only validation glob). It also proves parse_float (a validate-and-
+// canonicalize helper, not an arithmetic op) still resolves to Some(1.5) for
+// an otherwise-valid numeric string under the same locale, not None.
 
 import (
 	"os"
@@ -89,25 +89,25 @@ fn main() -> int {
 				}
 			})
 
-			// float_or is a validate-then-canonicalize helper, not an arithmetic
-			// op: under the bug, a valid numeric string's awk-canonicalized form
-			// comes back comma-separated, fails the [0-9.]-only case-glob
-			// re-validation, and float_or silently returns its fallback instead
-			// of the parsed value.
-			t.Run("float_or_not_fallback", func(t *testing.T) {
+			// parse_float is a validate-then-canonicalize helper, not an
+			// arithmetic op: under the bug, a valid numeric string's
+			// awk-canonicalized form comes back comma-separated, fails the
+			// [0-9.]-only case-glob re-validation, and parse_float silently
+			// returns None instead of Some(the parsed value).
+			t.Run("parse_float_not_none", func(t *testing.T) {
 				src := `fn main() -> int {
-  let v: float = string.float_or("1.5", 0.0)
+  let v: float = unwrap_or(parse_float("1.5"), 0.0)
   print(to_string(v))
   return 0
 }`
-				script := compileNS(t, src, "string")
+				script := compileNS(t, src)
 				out, stderr, code := runFloatLocale(t, sh, script, commaLocale)
 				if code != 0 {
 					t.Fatalf("exit %d, stderr: %s", code, stderr)
 				}
 				got := strings.TrimSpace(string(out))
 				if got != "1.5" {
-					t.Errorf("got %q, want \"1.5\" (float_or must not fall back to the default for a valid numeric string)", got)
+					t.Errorf("got %q, want \"1.5\" (parse_float must not fall back to None for a valid numeric string)", got)
 				}
 			})
 		})

@@ -35,7 +35,7 @@ var exampleCases = []exampleCase{
 	{file: "collections.wisp", want: "1 1 2 3 4 5 6 9\n9 6 5 4 3 2 1 1\n2\ntrue false\n4 1 5\n0 3 1 4 1 5 9 2 6\n31\n0 1 2 3 4\n3 6\napple,pear,plum\n3,2,5\n2 0\napple,plum\napple,plum,kiwi apple=10\n"},
 	{file: "collections_tail.wisp", want: "index 20: 1\nindex 99 none: true\ncount >2: 3\nflat len: 5\nflat[2]: 3\nunique len: 3\nunique[0]: 3\ntake 3 len: 3\ndrop 2 len: 3\ndrop 2 [0]: 3\npopped: 40\nafter pop len: 3\nafter remove_at[0]: 20\nafter insert_at[0]=99: 99\nafter insert_at len: 3\nsize: 3\nafter clear size: 0\nafter re-add size: 1\n"},
 	{file: "strings.wisp", want: "Hello\nW\nindex: 8\ncount l: 3\nHell0, World\n[spaced]\n[spaced]\nhappy\nrun\n[00042]\n[hi...]\nempty: true\nlines: 3\nalpha / beta / gamma\n"},
-	{file: "numeric.wisp", want: "int_or: 42 -1\nfloat_or: 3.1400000000000001\nclamp: 10 2\nsign: -1 0 1\nfloor/ceil/round: 2 3 3\ntrunc: -3\nsqrt: 12 0.5\ngcd/lcm: 12 12\n"},
+	{file: "numeric.wisp", want: "parse_int: 42 -1\nparse_float: 3.1400000000000001\nclamp: 10 2\nsign: -1 0 1\nfloor/ceil/round: 2 3 3\ntrunc: -3\nsqrt: 12 0.5\ngcd/lcm: 12 12\n"},
 	{file: "optional.wisp", want: "some: 42\nnone is_none: true\nor: -1\nfirst even at: 2\nget x: 10\nget y: 0\n"},
 	{file: "generics.wisp", want: "first int: 10\nfirst str: a\nidentity: 42\nempty has none\n"},
 	{file: "generics_bounds.wisp", want: "has 7: true\nhas 8: false\nhas b: true\n"},

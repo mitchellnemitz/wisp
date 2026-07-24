@@ -133,7 +133,7 @@ const (
 	// printf, and quoted redirection; run rebuilds argv into its own positional
 	// parameters and executes "$@", never an assembled command string. Every
 	// fallible helper routes faults through the mode-aware __wisp_fail.
-	Env         = "__wisp_env"          // <pos> <name>: ENVIRON[name] or located abort if unset
+	Env         = "__wisp_env"          // <name>: ENVIRON[name] in __ret + exit 0, exit 1 if unset (-> None)
 	HasEnv      = "__wisp_has_env"      // <name>: true/false via (name in ENVIRON)
 	ReadFile    = "__wisp_read_file"    // <pos> <path>: exact file bytes; missing/unreadable/NUL abort
 	WriteFile   = "__wisp_write_file"   // <pos> <path> <content>: truncate-write; failure aborts
@@ -226,9 +226,10 @@ const (
 	// Float ops use awk (%.17g) and an op-named located abort on non-finite/undefined
 	// (sqrt) or reuse __wisp_int's range check (floor/ceil/round). gcd/lcm are
 	// shell arithmetic that abort located on an INT_MIN operand (2^63 overflow).
-	// int_or/float_or are NON-aborting validators returning a
-	// canonical value or the fallback. sqrt uses Newton's method (basic arithmetic
-	// only) because minimal busybox awk has no math support (no sqrt()/^).
+	// ParseInt/ParseFloat (below) are the NON-aborting validators, returning a
+	// canonical value via __ret+exit 0 or exit 1 for None. sqrt uses Newton's
+	// method (basic arithmetic only) because minimal busybox awk has no math
+	// support (no sqrt()/^).
 	Sqrt       = "__wisp_sqrt"        // <pos> <x>
 	Floor      = "__wisp_floor"       // <pos> <x> -> int (toward -inf)
 	Ceil       = "__wisp_ceil"        // <pos> <x> -> int (toward +inf)
@@ -251,16 +252,17 @@ const (
 	SignFloat  = "__wisp_sign_float"  // <x> -> -1/0/1 for float (via __wisp_fcmp); total
 	IntMax     = "__wisp_int_max"     // -> int (shell POSIX max; determined at runtime by doubling)
 	IntMin     = "__wisp_int_min"     // -> int (shell POSIX min; -int_max - 1)
-	IntOr      = "__wisp_int_or"      // <s> <fallback> -> canonical int or fallback
-	FloatOr    = "__wisp_float_or"    // <s> <fallback> -> canonical float or fallback
+	ParseInt   = "__wisp_parse_int"   // <s>: canonical int in __ret + exit 0 if valid, else exit 1 (-> None)
+	ParseFloat = "__wisp_parse_float" // <s>: canonical float in __ret + exit 0 if valid, else exit 1 (-> None)
+	ParseBool  = "__wisp_parse_bool"  // <s>: true/false in __ret + exit 0 if valid, else exit 1 (-> None)
 
 	// --- Filesystem + process (fs milestone) ---
 	//
-	// Predicates and cwd/env_or are total (never abort). The mutating ops and
+	// Predicates and cwd are total (never abort). The mutating ops and
 	// list_dir/run_status are fallible and route faults through __wisp_fail with a
 	// leading <pos>. Every path/name flows as a double-quoted expansion; -- is
 	// mandatory on the option-parsing positional-path commands (mkdir/rm/rmdir/mv,
-	// and command -v for which); env_or's name flows only via awk -v / ENVIRON[n].
+	// and command -v for which); env's name flows only via awk -v / ENVIRON[n].
 	FileExists = "__wisp_file_exists" // <path>: [ -e ] -> true/false; total
 	PidAlive   = "__wisp_pid_alive"   // <pid>: kill -0 pid -> true/false; total (ESRCH/EPERM -> false)
 	IsDir      = "__wisp_is_dir"      // <path>: [ -d ] -> true/false; total
@@ -276,7 +278,6 @@ const (
 	ProgramPath = "__wisp_program_path" // -> $__wisp_arg0; total, no args; callers must also g.use(Arg0)
 	DirName     = "__wisp_dir_name"     // <path>: directory portion (pure POSIX-style)
 	BaseName    = "__wisp_base_name"    // <path>: final component (pure POSIX-style)
-	EnvOr       = "__wisp_env_or"       // <name> <fallback>: ENVIRON[name] if set else fallback
 	MakeDir     = "__wisp_make_dir"     // <pos> <path>: mkdir -p -- ; failure aborts located
 	RemoveFile  = "__wisp_remove_file"  // <pos> <path>: rm -f -- ; real failure aborts located
 	RemoveDir   = "__wisp_remove_dir"   // <pos> <path>: rmdir -- ; non-empty/missing aborts located
@@ -1710,69 +1711,83 @@ var registry = map[string]helper{
 }`,
 	},
 
-	IntOr: {
-		id:    IntOr,
-		order: 87,
-		src: `__wisp_int_or() {
-	__io_s="$1"
-	__io_body="$__io_s"
-	__io_neg=0
-	case "$__io_s" in
-		-*) __io_body="${__io_s#-}"; __io_neg=1 ;;
-		+*) __io_body="${__io_s#+}" ;;
+	ParseInt: {
+		id:    ParseInt,
+		order: 89,
+		src: `__wisp_parse_int() {
+	__pi_s="$1"
+	__pi_body="$__pi_s"
+	__pi_neg=0
+	case "$__pi_s" in
+		-*) __pi_body="${__pi_s#-}"; __pi_neg=1 ;;
+		+*) __pi_body="${__pi_s#+}" ;;
 	esac
-	case "$__io_body" in
-		'' | *[!0-9]*) __ret="$2"; return ;;
+	case "$__pi_body" in
+		'' | *[!0-9]*) return 1 ;;
 	esac
-	__io_mag="$__io_body"
+	__pi_mag="$__pi_body"
 	while :; do
-		case "$__io_mag" in
-			0?*) __io_mag="${__io_mag#0}" ;;
+		case "$__pi_mag" in
+			0?*) __pi_mag="${__pi_mag#0}" ;;
 			*) break ;;
 		esac
 	done
-	if [ "$__io_neg" -eq 1 ]; then
-		__io_bound=9223372036854775808
+	if [ "$__pi_neg" -eq 1 ]; then
+		__pi_bound=9223372036854775808
 	else
-		__io_bound=9223372036854775807
+		__pi_bound=9223372036854775807
 	fi
-	if [ "${#__io_mag}" -gt "${#__io_bound}" ]; then __ret="$2"; return; fi
-	if [ "${#__io_mag}" -eq "${#__io_bound}" ]; then
-		__io_x="$__io_mag"
-		__io_y="$__io_bound"
-		while [ -n "$__io_x" ]; do
-			__io_dx="${__io_x%"${__io_x#?}"}"
-			__io_dy="${__io_y%"${__io_y#?}"}"
-			if [ "$__io_dx" -gt "$__io_dy" ]; then __ret="$2"; return; fi
-			if [ "$__io_dx" -lt "$__io_dy" ]; then break; fi
-			__io_x="${__io_x#?}"
-			__io_y="${__io_y#?}"
+	if [ "${#__pi_mag}" -gt "${#__pi_bound}" ]; then return 1; fi
+	if [ "${#__pi_mag}" -eq "${#__pi_bound}" ]; then
+		__pi_x="$__pi_mag"
+		__pi_y="$__pi_bound"
+		while [ -n "$__pi_x" ]; do
+			__pi_dx="${__pi_x%"${__pi_x#?}"}"
+			__pi_dy="${__pi_y%"${__pi_y#?}"}"
+			if [ "$__pi_dx" -gt "$__pi_dy" ]; then return 1; fi
+			if [ "$__pi_dx" -lt "$__pi_dy" ]; then break; fi
+			__pi_x="${__pi_x#?}"
+			__pi_y="${__pi_y#?}"
 		done
 	fi
-	if [ "$__io_neg" -eq 1 ] && [ "$__io_mag" != 0 ]; then
-		__ret="-$__io_mag"
+	if [ "$__pi_neg" -eq 1 ] && [ "$__pi_mag" != 0 ]; then
+		__ret="-$__pi_mag"
 	else
-		__ret="$__io_mag"
+		__ret="$__pi_mag"
 	fi
+	return 0
 }`,
 	},
 
-	FloatOr: {
-		id:    FloatOr,
-		order: 88,
-		src: `__wisp_float_or() {
-	__fo_body="$1"
-	case "$1" in -* | +*) __fo_body="${1#?}" ;; esac
-	case "$__fo_body" in
-		'' | *[!0-9.]* | .* | *. | *.*.*) __ret="$2"; return ;;
+	ParseFloat: {
+		id:    ParseFloat,
+		order: 90,
+		src: `__wisp_parse_float() {
+	__pf_body="$1"
+	case "$1" in -* | +*) __pf_body="${1#?}" ;; esac
+	case "$__pf_body" in
+		'' | *[!0-9.]* | .* | *. | *.*.*) return 1 ;;
 	esac
-	__fo_c="$(LC_ALL=C awk -v a="$1" 'BEGIN{ printf "%.17g", a+0 }')"
-	__fo_cb="$__fo_c"
-	case "$__fo_c" in -* | +*) __fo_cb="${__fo_c#?}" ;; esac
-	case "$__fo_cb" in
-		'' | *[!0-9.]* | .* | *. | *.*.*) __ret="$2"; return ;;
+	__pf_c="$(LC_ALL=C awk -v a="$1" 'BEGIN{ printf "%.17g", a+0 }')"
+	__pf_cb="$__pf_c"
+	case "$__pf_c" in -* | +*) __pf_cb="${__pf_c#?}" ;; esac
+	case "$__pf_cb" in
+		'' | *[!0-9.]* | .* | *. | *.*.*) return 1 ;;
 	esac
-	__ret="$__fo_c"
+	__ret="$__pf_c"
+	return 0
+}`,
+	},
+
+	ParseBool: {
+		id:    ParseBool,
+		order: 91,
+		src: `__wisp_parse_bool() {
+	case "$1" in
+		true) __ret=true; return 0 ;;
+		false) __ret=false; return 0 ;;
+		*) return 1 ;;
+	esac
 }`,
 	},
 
@@ -2194,25 +2209,23 @@ var registry = map[string]helper{
 
 	// --- I/O (M7) ---
 
-	// __wisp_env <pos> <name>: return ENVIRON[name] in __ret, or abort located
-	// naming the variable when unset. The name is passed to awk via -v (never
-	// interpolated into the program text), so a name with shell- or awk-active
-	// bytes is inert. The membership test `(name in ENVIRON)` is true for a
-	// set-but-empty variable and false only when unset, so set-empty correctly
-	// returns "". The value is read through an awk command substitution, which
-	// strips trailing newlines (the documented env/run distinction from
-	// read_file's exact bytes); interior bytes are preserved.
+	// __wisp_env <name>: return ENVIRON[name] in __ret and exit 0, or exit 1 if
+	// unset (the codegen wrapper maps this to None). The name is passed to awk
+	// via -v (never interpolated into the program text), so a name with shell-
+	// or awk-active bytes is inert. The membership test `(name in ENVIRON)` is
+	// true for a set-but-empty variable and false only when unset, so set-empty
+	// correctly returns Some(""). A single awk invocation drives both the value
+	// (via ENVIRON) and the exit status, so the function's own exit status IS
+	// that awk exit status (POSIX: a simple assignment with a command
+	// substitution takes the substitution's status). The value is read through
+	// an awk command substitution, which strips trailing newlines (the
+	// documented env/run distinction from read_file's exact bytes); interior
+	// bytes are preserved. Never aborts.
 	Env: {
 		id:    Env,
-		deps:  []string{Fail},
 		order: 70,
 		src: `__wisp_env() {
-	if awk -v n="$2" 'BEGIN{ exit !(n in ENVIRON) }'; then
-		__ret="$(awk -v n="$2" 'BEGIN{ printf "%s", ENVIRON[n] }')"
-	else
-		__wisp_fail "$1" "env: $2 is not set"
-		[ -n "$__wisp_err_pending" ] && return
-	fi
+	__ret="$(LC_ALL=C awk -v n="$1" 'BEGIN{ if (n in ENVIRON) { printf "%s", ENVIRON[n]; exit 0 } else { exit 1 } }')"
 }`,
 	},
 
@@ -2827,22 +2840,6 @@ var registry = map[string]helper{
 		esac
 	done
 	__ret="${__bn_p##*/}"
-}`,
-	},
-
-	// __wisp_env_or <name> <fallback>: the value of environment variable name if
-	// SET (including set-but-empty -> ""), else fallback. The name flows only via
-	// awk -v (never interpolated into the program); the membership test
-	// (n in ENVIRON) distinguishes set-empty from unset, exactly like env/has_env.
-	EnvOr: {
-		id:    EnvOr,
-		order: 79,
-		src: `__wisp_env_or() {
-	if awk -v n="$1" 'BEGIN{ exit !(n in ENVIRON) }'; then
-		__ret="$(awk -v n="$1" 'BEGIN{ printf "%s", ENVIRON[n] }')"
-	else
-		__ret="$2"
-	fi
 }`,
 	},
 

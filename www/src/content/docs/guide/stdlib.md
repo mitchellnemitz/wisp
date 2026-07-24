@@ -113,6 +113,26 @@ to_bool(0)        // false
 to_bool("true")   // true
 ```
 
+### parse_int, parse_float, parse_bool
+
+```
+parse_int(s: string) -> Optional[int]
+parse_float(s: string) -> Optional[float]
+parse_bool(s: string) -> Optional[bool]
+```
+
+The non-aborting counterparts to `to_int(string)`/`to_float`/`to_bool`: `Some`
+the parsed value on valid input, `None` on anything the conversion would
+otherwise abort on (bad syntax, out of range). Fold the `Optional` into a
+plain value with `unwrap_or`.
+
+```wisp
+parse_int("42")               // Some(42)
+parse_int("oops")             // None
+unwrap_or(parse_int("oops"), -1)      // -1
+unwrap_or(parse_float("3.14"), -1.0)  // 3.1400000000000001
+```
+
 ### error
 
 ```
@@ -874,22 +894,6 @@ math.int_max() > 1000000000   // true
 math.int_min() < -1000000000  // true
 ```
 
-### string.int_or, string.float_or
-
-```
-string.int_or(s: string, fallback: int) -> int
-string.float_or(s: string, fallback: float) -> float
-```
-
-Parse `s` as an int (resp. float) like `int`/`float`, but return `fallback`
-instead of aborting on any input the conversion would reject (invalid syntax or
-out of range). The safe, non-aborting counterpart to the conversions.
-
-```wisp
-string.int_or("42", 0)     // 42
-string.int_or("oops", -1)  // -1
-```
-
 ### math.gcd, math.lcm
 
 ```
@@ -1185,21 +1189,6 @@ dict.values(d: {K: V}) -> V[]
 Returns a new array of values in insertion order, parallel to `keys` (the i-th
 value goes with the i-th key). The dict is unchanged.
 
-### dict.get_or
-
-```
-dict.get_or(d: {K: V}, k: K, fallback: V) -> V
-```
-
-Returns `d[k]` if `k` is present, otherwise `fallback`. Unlike indexing, it never
-aborts on a missing key.
-
-```wisp
-let m: {string: int} = { "a": 1 }
-dict.get_or(m, "a", 0)   // 1
-dict.get_or(m, "z", 0)   // 0
-```
-
 ### dict.get
 
 ```
@@ -1207,13 +1196,14 @@ dict.get(d: {K: V}, k: K) -> Optional[V]
 ```
 
 Returns `Some(d[k])` if `k` is present, otherwise `None` (see
-[Optional](/guide/language/#optional)). The `Optional`-returning counterpart to
-`get_or`; use it when absence needs to be distinguished from a value rather than
-folded into a fallback.
+[Optional](/guide/language/#optional)). Unlike indexing, it never aborts on a
+missing key. Fold the `Optional` into a plain value with `unwrap_or` when
+absence should become a fallback instead of being distinguished.
 
 ```wisp
 let m: {string: int} = { "a": 1 }
 unwrap_or(dict.get(m, "a"), 0)   // 1
+unwrap_or(dict.get(m, "z"), 0)   // 0
 is_none(dict.get(m, "z"))        // true
 ```
 
@@ -1502,17 +1492,18 @@ Every argument is inert data: a path, content, name, or argv element containing
 ### env.get
 
 ```
-env.get(name: string) -> string
+env.get(name: string) -> Optional[string]
 ```
 
-Returns the value of the environment variable `name`. An unset variable is a
-located abort naming the variable; a set-but-empty variable returns `""`. The
-value is read through a command substitution, so trailing newlines are stripped
-(the same as `run`); interior bytes are preserved. For exact trailing bytes, read
-a file with `read_file` instead.
+Returns the value of the environment variable `name`. An unset variable
+returns `None`; a set-but-empty variable returns `Some("")`. Use
+`unwrap_or(env.get(name), fallback)` to supply a default instead of an unset
+variable. The value is read through a command substitution, so trailing
+newlines are stripped (the same as `run`); interior bytes are preserved. For
+exact trailing bytes, read a file with `read_file` instead.
 
 ```wisp
-env.get("HOME")   // "/home/me"
+unwrap_or(env.get("HOME"), "")   // "/home/me"
 ```
 
 ### env.has
@@ -1943,21 +1934,6 @@ unwrap_or(fs.which("sh"), "/bin/sh")    // the resolved path, or the fallback
 fs.which("definitely_missing")          // None
 ```
 
-### env.get_or
-
-```
-env.get_or(name: string, fallback: string) -> string
-```
-
-The non-aborting twin of `env`: returns the value of environment variable
-`name` if it is **set** (including when set to the empty string), otherwise
-`fallback`. Only an unset variable yields the fallback. The name flows into the
-environment lookup as data and is never re-evaluated.
-
-```wisp
-env.get_or("EDITOR", "vi")
-```
-
 ### env.set
 
 ```
@@ -1984,9 +1960,9 @@ import "env"
 
 fn main() -> int {
   env.set("DEPLOY_ENV", "staging")
-  print(env.get_or("DEPLOY_ENV", "unset"))
+  print(unwrap_or(env.get("DEPLOY_ENV"), "unset"))
   env.unset("DEPLOY_ENV")
-  print(env.get_or("DEPLOY_ENV", "unset"))
+  print(unwrap_or(env.get("DEPLOY_ENV"), "unset"))
   return 0
 }
 // stdout: staging

@@ -313,9 +313,9 @@ var builtinSigs = map[string]builtinSig{
 	// run's string[] argument cannot be expressed by the fixed table (like join's
 	// arg-1), so it is validated specially in checkRunCall; this entry only
 	// reserves the name and feeds types.BuiltinNames() for the drift guard.
-	"env": { // env(string) -> string
+	"env": { // env(string) -> Optional[string]
 		params: []builtinParam{{name: "name", types: []Type{String}}},
-		result: String,
+		result: optionalType(String),
 	},
 	"has_env": { // has_env(string) -> bool
 		params: []builtinParam{{name: "name", types: []Type{String}}},
@@ -395,7 +395,7 @@ var builtinSigs = map[string]builtinSig{
 	//
 	// Fixed-signature builtins use the generic checkBuiltinCall path. The four
 	// mutating ops are void and fallible (located abort via __wisp_fail);
-	// file_exists/is_dir/cwd/env_or are total (never abort); which (-> Optional[string])
+	// file_exists/is_dir/cwd are total (never abort); which (-> Optional[string])
 	// and list_dir (-> string[]) are also fixed-signature here. Only run_status takes
 	// an array argument the fixed table cannot express, so it is reserved here and
 	// validated specially in call.go (checkRunStatusCall, mirroring run).
@@ -447,13 +447,9 @@ var builtinSigs = map[string]builtinSig{
 	"program_path": {params: []builtinParam{}, result: String},
 	"dir_name":     {params: []builtinParam{{name: "path", types: []Type{String}}}, result: String},
 	"base_name":    {params: []builtinParam{{name: "path", types: []Type{String}}}, result: String},
-	"env_or": {params: []builtinParam{
-		{name: "name", types: []Type{String}},
-		{name: "fallback", types: []Type{String}},
-	}, result: String},
-	"make_dir":    {params: []builtinParam{{name: "path", types: []Type{String}}}, result: Void},
-	"remove_file": {params: []builtinParam{{name: "path", types: []Type{String}}}, result: Void},
-	"remove_dir":  {params: []builtinParam{{name: "path", types: []Type{String}}}, result: Void},
+	"make_dir":     {params: []builtinParam{{name: "path", types: []Type{String}}}, result: Void},
+	"remove_file":  {params: []builtinParam{{name: "path", types: []Type{String}}}, result: Void},
+	"remove_dir":   {params: []builtinParam{{name: "path", types: []Type{String}}}, result: Void},
 	"rename": {params: []builtinParam{
 		{name: "from", types: []Type{String}},
 		{name: "to", types: []Type{String}},
@@ -554,7 +550,6 @@ var builtinSigs = map[string]builtinSig{
 	"first":   {params: []builtinParam{{name: "xs", types: []Type{}}}, result: Invalid},
 	"last":    {params: []builtinParam{{name: "xs", types: []Type{}}}, result: Invalid},
 	"values":  {params: []builtinParam{{name: "d", types: []Type{}}}, result: Invalid},
-	"get_or":  {params: []builtinParam{{name: "d", types: []Type{}}, {name: "k", types: []Type{}}, {name: "fallback", types: []Type{}}}, result: Invalid},
 	"remove":  {params: []builtinParam{{name: "d", types: []Type{}}, {name: "k", types: []Type{}}}, result: Void},
 	"merge":   {params: []builtinParam{{name: "a", types: []Type{}}, {name: "b", types: []Type{}}}, result: Invalid},
 
@@ -582,10 +577,11 @@ var builtinSigs = map[string]builtinSig{
 	//
 	// Fixed-signature (generic path). clamp/sign are overloaded int/float and
 	// special-cased in call.go (entries reserve the names only).
-	"int_or":   {params: []builtinParam{{name: "s", types: []Type{String}}, {name: "fallback", types: []Type{Int}}}, result: Int},
-	"float_or": {params: []builtinParam{{name: "s", types: []Type{String}}, {name: "fallback", types: []Type{Float}}}, result: Float},
-	"sqrt":     {params: []builtinParam{{name: "x", types: []Type{Float}}}, result: Float},
-	"pow":      {params: []builtinParam{{name: "base", types: []Type{Float}}, {name: "exp", types: []Type{Float}}}, result: Float},
+	"parse_int":   {params: []builtinParam{{name: "s", types: []Type{String}}}, result: optionalType(Int)},
+	"parse_float": {params: []builtinParam{{name: "s", types: []Type{String}}}, result: optionalType(Float)},
+	"parse_bool":  {params: []builtinParam{{name: "s", types: []Type{String}}}, result: optionalType(Bool)},
+	"sqrt":        {params: []builtinParam{{name: "x", types: []Type{Float}}}, result: Float},
+	"pow":         {params: []builtinParam{{name: "base", types: []Type{Float}}, {name: "exp", types: []Type{Float}}}, result: Float},
 	// Transcendentals (pure-arithmetic, no awk libm). Float-only args (match
 	// sqrt: no int->float coercion). exp/ln route through __wisp_exp/__wisp_ln;
 	// log10/log2 = ln(x)/ln(c) with a baked constant; pi() lowers to the float

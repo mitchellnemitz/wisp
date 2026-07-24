@@ -28,7 +28,6 @@ func TestCoreDictMembersResolve(t *testing.T) {
 		{`fn main() -> int { ` + decl + ` let x: bool = dict.has(d, "a"); return 0 }`, "has", Bool},
 		{`fn main() -> int { ` + decl + ` let k: string[] = dict.keys(d); return 0 }`, "keys", arrayType(String)},
 		{`fn main() -> int { ` + decl + ` let o: Optional[int] = dict.get(d, "a"); return 0 }`, "get", optionalType(Int)},
-		{`fn main() -> int { ` + decl + ` let v: int = dict.get_or(d, "a", 0); return 0 }`, "get_or", Int},
 		{`fn main() -> int { ` + decl + ` let vs: int[] = dict.values(d); return 0 }`, "values", arrayType(Int)},
 		{`fn main() -> int { ` + decl + ` let n: int = dict.size(d); return 0 }`, "size", Int},
 		{`fn main() -> int { ` + decl + ` let m: {string: int} = dict.merge(d, d); return 0 }`, "merge", dictType(String, Int)},

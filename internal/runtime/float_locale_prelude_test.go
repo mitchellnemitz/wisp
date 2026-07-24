@@ -17,7 +17,7 @@ func TestFloatHelpers_AreLocaleIndependentViaAwk(t *testing.T) {
 	for _, id := range []string{
 		FAdd, FSub, FMul, FDiv,
 		Sqrt, FormatFloat, Pow, Ln, Exp,
-		FloatOr, FStr, FFloatI, FFloatS, FAbs,
+		FStr, FFloatI, FFloatS, FAbs,
 	} {
 		h, ok := registry[id]
 		if !ok {

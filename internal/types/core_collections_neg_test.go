@@ -91,9 +91,8 @@ func TestCoreArraysNeg_SortByComparatorArity(t *testing.T) {
 fn main() -> int { let xs: int[] = [1]; let s: int[] = array.sort_by(xs, bad); return 0 }`, "must be fn(int,int)->bool")
 }
 
-func TestCoreDictNeg_GetOrTypeChecks(t *testing.T) {
-	wantNsErr(t, "dict", `fn main() -> int { let d: {string: int} = { "a": 1 }; let g: int = dict.get_or(d, 5, 0); return 0 }`, "the dict key type")
-	wantNsErr(t, "dict", `fn main() -> int { let d: {string: int} = { "a": 1 }; let g: int = dict.get_or(d, "a", "x"); return 0 }`, "the dict value type")
+func TestCoreDictNeg_GetTypeChecks(t *testing.T) {
+	wantNsErr(t, "dict", `fn main() -> int { let d: {string: int} = { "a": 1 }; let g: Optional[int] = dict.get(d, 5); return 0 }`, "the dict key type")
 }
 
 func TestCoreDictNeg_MergeMismatch(t *testing.T) {

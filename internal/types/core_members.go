@@ -91,16 +91,18 @@ var coreCatalog = map[string]map[string]coreMember{
 		"replace":  {kind: coreFunc, builtin: "regex_replace", sig: coreSig3(String, String, String, String)},
 	},
 	// env (Unit 13): pure aliases of the flat env builtins. Member names drop the
-	// module-name affix (env/has_env/set_env/unset_env/env_or -> get/has/set/unset/
-	// get_or). None is overloaded or arg-domain-checked, so all use coreSig. The
-	// namespace name "env" equals the flat builtin "env"; they coexist (bare env(x)
-	// still resolves to the builtin; env.get(x) resolves via the namespace).
+	// module-name affix (env/has_env/set_env/unset_env -> get/has/set/unset).
+	// None is overloaded or arg-domain-checked, so all use coreSig. The
+	// namespace name "env" equals the flat builtin "env"; the bare spelling is a
+	// removed flat builtin (moved-to-module diagnostic); env.get(x) resolves via
+	// the namespace. get's own coreSig is independent of builtinSigs["env"] (not a
+	// delegate member), so it must be kept in sync by hand: env(name) returns
+	// Optional[string] (FR-004), so get does too.
 	"env": {
-		"get":    {kind: coreFunc, builtin: "env", sig: coreSig1(String, String)},
-		"has":    {kind: coreFunc, builtin: "has_env", sig: coreSig1(String, Bool)},
-		"set":    {kind: coreFunc, builtin: "set_env", sig: coreSig2(String, String, Void)},
-		"unset":  {kind: coreFunc, builtin: "unset_env", sig: coreSig1(String, Void)},
-		"get_or": {kind: coreFunc, builtin: "env_or", sig: coreSig2(String, String, String)},
+		"get":   {kind: coreFunc, builtin: "env", sig: coreSig1(String, optionalType(String))},
+		"has":   {kind: coreFunc, builtin: "has_env", sig: coreSig1(String, Bool)},
+		"set":   {kind: coreFunc, builtin: "set_env", sig: coreSig2(String, String, Void)},
+		"unset": {kind: coreFunc, builtin: "unset_env", sig: coreSig1(String, Void)},
 	},
 	// math (Unit 16): member name == flat builtin name verbatim. Overloaded
 	// (abs/min/max/clamp/sign) and arg-domain-checked (gcd/random) members
@@ -230,13 +232,11 @@ var coreCatalog = map[string]map[string]coreMember{
 		"reverse":       {kind: coreFunc, builtin: "reverse_string", sig: coreSig1(String, String)},
 		"ord":           {kind: coreFunc, builtin: "ord", sig: coreSig1(String, Int)},
 		"chr":           {kind: coreFunc, builtin: "chr", delegate: true},
-		"int_or":        {kind: coreFunc, builtin: "int_or", sig: coreSig2(String, Int, Int)},
-		"float_or":      {kind: coreFunc, builtin: "float_or", sig: coreSig2(String, Float, Float)},
 		"format_float":  {kind: coreFunc, builtin: "format_float", delegate: true},
 	},
 	// dict (Batch B): the dict builtin group. Every member is generic over the
 	// dict's K/V and is special-cased in checkBuiltinNamed (the fixed table cannot
-	// express the inference), so ALL nine DELEGATE -- the flat generic-inference
+	// express the inference), so ALL eight DELEGATE -- the flat generic-inference
 	// handlers run unchanged and codegen is byte-identical. dict.get delegates to
 	// the flat "get" (dict get, checkGetCall), a DISTINCT builtin key from json's
 	// json_get. Member name == builtin key. Funcref-VALUE form out of scope (as fs).
@@ -244,7 +244,6 @@ var coreCatalog = map[string]map[string]coreMember{
 		"has":    {kind: coreFunc, builtin: "has", delegate: true},
 		"keys":   {kind: coreFunc, builtin: "keys", delegate: true},
 		"get":    {kind: coreFunc, builtin: "get", delegate: true},
-		"get_or": {kind: coreFunc, builtin: "get_or", delegate: true},
 		"remove": {kind: coreFunc, builtin: "remove", delegate: true},
 		"merge":  {kind: coreFunc, builtin: "merge", delegate: true},
 		"values": {kind: coreFunc, builtin: "values", delegate: true},

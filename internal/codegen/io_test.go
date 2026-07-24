@@ -54,7 +54,7 @@ func runWispDir(t *testing.T, src string, env []string) (string, string, int) {
 
 func TestM7_Env_Set(t *testing.T) {
 	out, errb, code := runNSDir(t, `fn main() -> int {
-  print(env.get("WISP_TEST_VAR"))
+  print(unwrap_or(env.get("WISP_TEST_VAR"), "MISSING"))
   return 0
 }`, []string{"WISP_TEST_VAR=hello"}, "env")
 	if code != 0 {
@@ -66,9 +66,9 @@ func TestM7_Env_Set(t *testing.T) {
 }
 
 func TestM7_Env_SetEmpty(t *testing.T) {
-	// A set-but-empty variable: env returns "", has_env returns true.
+	// A set-but-empty variable: env returns Some(""), has_env returns true.
 	out, errb, code := runNSDir(t, `fn main() -> int {
-  print("[${env.get("WISP_EMPTY")}]")
+  print("[${unwrap_or(env.get("WISP_EMPTY"), "MISSING")}]")
   print(to_string(env.has("WISP_EMPTY")))
   return 0
 }`, []string{"WISP_EMPTY="}, "env")
@@ -80,16 +80,17 @@ func TestM7_Env_SetEmpty(t *testing.T) {
 	}
 }
 
-func TestM7_Env_Unset_AbortsLoud(t *testing.T) {
+func TestM7_Env_Unset_ReturnsNone(t *testing.T) {
+	// An unset variable is None (SC-005): no abort, exit 0.
 	out, errb, code := runNSDir(t, `fn main() -> int {
-  print(env.get("WISP_NOPE_XYZ"))
+  print(to_string(is_none(env.get("WISP_NOPE_XYZ"))))
   return 0
 }`, nil, "env")
-	if code != 1 {
-		t.Fatalf("exit=%d, want 1 (out=%q stderr=%q)", code, out, errb)
+	if code != 0 {
+		t.Fatalf("exit=%d, want 0 (out=%q stderr=%q)", code, out, errb)
 	}
-	if !strings.Contains(errb, "WISP_NOPE_XYZ") || !strings.Contains(errb, "not set") {
-		t.Errorf("stderr=%q, want it to name the variable", errb)
+	if out != "true\n" {
+		t.Errorf("out=%q, want %q", out, "true\n")
 	}
 }
 
@@ -106,7 +107,7 @@ func TestM7_HasEnv_Unset(t *testing.T) {
 func TestM7_Env_ShellActiveValueInert(t *testing.T) {
 	const inj = "$(echo PWN); `id`"
 	out, errb, code := runNSDir(t, `fn main() -> int {
-  print(env.get("WISP_INJ"))
+  print(unwrap_or(env.get("WISP_INJ"), "MISSING"))
   return 0
 }`, []string{"WISP_INJ=" + inj}, "env")
 	if code != 0 {
@@ -114,6 +115,40 @@ func TestM7_Env_ShellActiveValueInert(t *testing.T) {
 	}
 	if out != inj+"\n" {
 		t.Errorf("out=%q (value must be inert)", out)
+	}
+}
+
+// TestM7_Env_InjectionBytesVerbatim (SC-013 env half): an env value carrying a
+// dense mix of shell/awk-active bytes -- command substitution, backticks,
+// semicolons, pipes, a glob, and an embedded newline -- must reach the program
+// as inert data with no command execution. The name is passed to awk via -v
+// and the value only through ENVIRON (never interpolated into the awk program
+// text), so this is a pure data path.
+func TestM7_Env_InjectionBytesVerbatim(t *testing.T) {
+	const inj = "$(touch /tmp/wisp_env_pwned); `touch /tmp/wisp_env_pwned2`; touch /tmp/wisp_env_pwned3 | cat; *.txt\nafter-newline"
+	pwnPaths := []string{"/tmp/wisp_env_pwned", "/tmp/wisp_env_pwned2", "/tmp/wisp_env_pwned3"}
+	for _, p := range pwnPaths {
+		os.Remove(p)
+	}
+	defer func() {
+		for _, p := range pwnPaths {
+			os.Remove(p)
+		}
+	}()
+	out, errb, code := runNSDir(t, `fn main() -> int {
+  print(unwrap(env.get("WISP_INJ")))
+  return 0
+}`, []string{"WISP_INJ=" + inj}, "env")
+	if code != 0 {
+		t.Fatalf("exit=%d stderr=%q", code, errb)
+	}
+	if out != inj+"\n" {
+		t.Errorf("out=%q, want the injected value verbatim: %q", out, inj+"\n")
+	}
+	for _, p := range pwnPaths {
+		if _, err := os.Stat(p); err == nil {
+			t.Errorf("injected env value executed a command: %s was created", p)
+		}
 	}
 }
 
