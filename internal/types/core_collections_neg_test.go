@@ -149,3 +149,11 @@ func TestCoreDictNeg_HasNonDict(t *testing.T) {
 func TestCoreDictNeg_KeysNonDict(t *testing.T) {
 	wantNsErr(t, "dict", `fn main() -> int { let xs: int[] = [1]; let ks: int[] = dict.keys(xs); return 0 }`, "argument 1 of dict.keys must be a dict")
 }
+
+func TestCoreArraysNeg_IsEmptyNonArray(t *testing.T) {
+	wantNsErr(t, "array", `fn main() -> int { let m: {string: int} = {}; let b: bool = array.is_empty(m); return 0 }`, "argument 1 of array.is_empty must be an array")
+}
+
+func TestCoreDictNeg_IsEmptyNonDict(t *testing.T) {
+	wantNsErr(t, "dict", `fn main() -> int { let xs: int[] = [1]; let b: bool = dict.is_empty(xs); return 0 }`, "argument 1 of dict.is_empty must be a dict")
+}

@@ -30,6 +30,8 @@ func TestCoreDictMembersResolve(t *testing.T) {
 		{`fn main() -> int { ` + decl + ` let o: Optional[int] = dict.get(d, "a"); return 0 }`, "get", optionalType(Int)},
 		{`fn main() -> int { ` + decl + ` let vs: int[] = dict.values(d); return 0 }`, "values", arrayType(Int)},
 		{`fn main() -> int { ` + decl + ` let n: int = dict.size(d); return 0 }`, "size", Int},
+		{`fn main() -> int { ` + decl + ` let b: bool = dict.is_empty(d); return 0 }`, "dict_is_empty", Bool},
+		{`fn main() -> int { let e: {string: int} = {}; let b: bool = dict.is_empty(e); return 0 }`, "dict_is_empty", Bool},
 		{`fn main() -> int { ` + decl + ` let m: {string: int} = dict.merge(d, d); return 0 }`, "merge", dictType(String, Int)},
 		{`fn main() -> int { ` + decl + ` dict.remove(d, "a"); return 0 }`, "remove", Void},
 		{`fn main() -> int { ` + decl + ` dict.clear(d); return 0 }`, "clear", Void},

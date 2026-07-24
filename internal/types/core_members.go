@@ -249,6 +249,10 @@ var coreCatalog = map[string]map[string]coreMember{
 		"values": {kind: coreFunc, builtin: "values", delegate: true},
 		"size":   {kind: coreFunc, builtin: "size", delegate: true},
 		"clear":  {kind: coreFunc, builtin: "clear", delegate: true},
+		// is_empty gets its OWN builtin key (dict_is_empty), distinct from
+		// string's "is_empty": it takes a handle (dict) argument, not a scalar,
+		// so it must never share string.is_empty's funcref-able classification.
+		"is_empty": {kind: coreFunc, builtin: "dict_is_empty", delegate: true},
 	},
 	// array (Batch B): the array builtin group, including the funcref-heavy
 	// higher-order builtins. Every member is special-cased in checkBuiltinNamed
@@ -293,6 +297,10 @@ var coreCatalog = map[string]map[string]coreMember{
 		"drop":        {kind: coreFunc, builtin: "drop", delegate: true},
 		"insert_at":   {kind: coreFunc, builtin: "insert_at", delegate: true},
 		"remove_at":   {kind: coreFunc, builtin: "remove_at", delegate: true},
+		// is_empty gets its OWN builtin key (array_is_empty), distinct from
+		// string's "is_empty": see dict.is_empty's comment above for the
+		// funcref-classification rationale.
+		"is_empty": {kind: coreFunc, builtin: "array_is_empty", delegate: true},
 	},
 }
 

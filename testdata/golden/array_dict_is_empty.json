@@ -1,0 +1,5 @@
+{
+  "desc": "array.is_empty and dict.is_empty on empty and non-empty collections",
+  "stdout": "true\nfalse\ntrue\nfalse\n",
+  "exit": 0
+}

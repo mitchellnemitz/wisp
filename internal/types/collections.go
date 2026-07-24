@@ -544,6 +544,42 @@ func (c *checker) checkSizeCall(n *ast.CallExpr, dispName string) Type {
 	return Int
 }
 
+// checkArrayIsEmptyCall handles is_empty(xs: T[]) -> bool, delegated as
+// array_is_empty (a distinct builtin key from string's "is_empty" so the two
+// never share a funcref classification -- array.is_empty takes a handle
+// argument and must not become funcref-able).
+func (c *checker) checkArrayIsEmptyCall(n *ast.CallExpr, dispName string) Type {
+	if len(n.Args) != 1 {
+		c.errf(n.CalleePos, "%s expects 1 argument, got %d", dispName, len(n.Args))
+		c.typeArgs(n.Args)
+		return Bool
+	}
+	at := c.checkExpr(n.Args[0])
+	if at != Invalid && !isArray(at) {
+		c.errf(n.Args[0].Pos(), "argument 1 of %s must be an array, got %s", dispName, at)
+		return Bool
+	}
+	c.info.Calls[n] = &CallInfo{Kind: CallBuiltin, Builtin: "array_is_empty", Args: []ast.Expr{n.Args[0]}, Result: Bool}
+	return Bool
+}
+
+// checkDictIsEmptyCall handles is_empty(d: {K:V}) -> bool, delegated as
+// dict_is_empty (a distinct builtin key, same rationale as array_is_empty).
+func (c *checker) checkDictIsEmptyCall(n *ast.CallExpr, dispName string) Type {
+	if len(n.Args) != 1 {
+		c.errf(n.CalleePos, "%s expects 1 argument, got %d", dispName, len(n.Args))
+		c.typeArgs(n.Args)
+		return Bool
+	}
+	dt := c.checkExpr(n.Args[0])
+	if dt != Invalid && !isDict(dt) {
+		c.errf(n.Args[0].Pos(), "argument 1 of %s must be a dict, got %s", dispName, dt)
+		return Bool
+	}
+	c.info.Calls[n] = &CallInfo{Kind: CallBuiltin, Builtin: "dict_is_empty", Args: []ast.Expr{n.Args[0]}, Result: Bool}
+	return Bool
+}
+
 // checkClearCall handles clear(d: {K:V}) -> void.
 func (c *checker) checkClearCall(n *ast.CallExpr, dispName string) Type {
 	if len(n.Args) != 1 {

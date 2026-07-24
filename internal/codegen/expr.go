@@ -1185,6 +1185,10 @@ func (g *gen) genBuiltinCall(n *ast.CallExpr, ci *types.CallInfo) atom {
 		return g.genSize(ci.Args)
 	case "clear":
 		return g.genClear(ci.Args)
+	case "array_is_empty":
+		return g.genEquality(g.genArrayLength(ci.Args[0]), "=", litAtom("0"))
+	case "dict_is_empty":
+		return g.genEquality(g.genSize(ci.Args), "=", litAtom("0"))
 	case "values":
 		return g.genValues(ci.Args)
 	case "get":

@@ -38,6 +38,8 @@ func TestCoreArraysNonFuncrefMembers(t *testing.T) {
 		{`fn main() -> int { ` + xs + ` let ys: int[] = array.unique(xs); return 0 }`, "unique", arrayType(Int)},
 		{`fn main() -> int { ` + xs + ` let ys: int[] = array.take(xs, 2); return 0 }`, "take", arrayType(Int)},
 		{`fn main() -> int { ` + xs + ` let ys: int[] = array.drop(xs, 1); return 0 }`, "drop", arrayType(Int)},
+		{`fn main() -> int { ` + xs + ` let b: bool = array.is_empty(xs); return 0 }`, "array_is_empty", Bool},
+		{`fn main() -> int { let ys: int[] = []; let b: bool = array.is_empty(ys); return 0 }`, "array_is_empty", Bool},
 		{`fn main() -> int { let nn: int[][] = [[1, 2], [3]]; let ys: int[] = array.flatten(nn); return 0 }`, "flatten", arrayType(Int)},
 		// void members, statement position.
 		{`fn main() -> int { ` + xs + ` array.push(xs, 9); return 0 }`, "push", Void},
