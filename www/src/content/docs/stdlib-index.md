@@ -102,11 +102,8 @@ All other math ops above are pure-arithmetic (basic +,-,*,/ only).
 - `[x] array.is_empty` -- no static signature; `array.is_empty(xs: T[]) -> bool`
 - `[x] array.push` -- no static signature; `array.push(xs: T[], v: T) -> void`
 
-`string.contains` (documented under Strings above) also accepts an array form,
-`string.contains(xs: T[], x: T) -> bool`: it has one compiler entry; the array
-form delegates through the same overload resolver and works identically for
-arrays of comparable elements.
-
+- `[x] array.contains` -- no static signature; `array.contains(xs: T[], x: T) -> bool`, mirrors `string.contains` (one compiler entry, delegates through the same overload resolver); arrays of comparable element types
+- `[x] array.index_of` -- no static signature; `array.index_of(xs: T[], x: T) -> Optional[int]`, mirrors `string.index_of`, Some(first matching index) or None; arrays of comparable element types
 - `[x] array.reverse` -- no static signature; `array.reverse(xs: T[]) -> T[]`
 - `[x] array.map` -- no static signature; `array.map(xs: T[], f: fn(T) -> U) -> U[]`
 - `[x] array.filter` -- no static signature; `array.filter(xs: T[], f: fn(T) -> bool) -> T[]`
@@ -160,6 +157,7 @@ arrays of comparable elements.
 - `[x] read_line() -> Optional[string]` -- one line from stdin; None on EOF
 - `[x] read_stdin() -> string` -- all of stdin
 - `[x] read_secret(prompt: string) -> Optional[string]` -- print prompt to stderr, read one line with echo suppressed (stty -echo, best-effort; no-op when stdin is not a TTY); Some(line) or None on EOF
+- `[x] set_stdin(content: string) -> void` -- replace fd 0 with content's exact bytes; test stdin injection
 - `[x] [ref] fs.file_exists(path: string) -> bool`
 - `[x] [ref] fs.is_dir(path: string) -> bool`
 - `[x] [ref] fs.is_file(path: string) -> bool` -- true for a regular file or symlink to one (follows symlinks, like `test -f`); total
