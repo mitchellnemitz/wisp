@@ -178,3 +178,68 @@ func ReservedNames() []string {
 	sort.Strings(out)
 	return out
 }
+
+// DocMember describes one catalog member (a flat builtin or a namespace
+// member) for the docs-completeness/signature-drift checks in
+// internal/docslint. Arity and Return are only meaningful when HasStaticSig
+// is true (see FR-004: a member resolved through a custom checker or
+// delegated to the flat-dispatch machinery has no statically-declared
+// signature).
+type DocMember struct {
+	ID           string // bare name ("length") or "ns.member" ("string.trim")
+	Arity        int
+	Return       string // string(Type) rendered to doc-facing wisp syntax; "" if !HasStaticSig
+	HasStaticSig bool
+}
+
+// renderDocReturnType converts an internal Type's bracket-prefix array
+// spelling ("[string]") to the doc-facing postfix wisp surface syntax
+// ("string[]") used throughout stdlib-index.md, which is real wisp type
+// syntax (see array declarations everywhere in the docs), not merely a doc
+// convention. Scalar, Optional[T], RunResult, and Process spellings already
+// match verbatim and pass through unchanged. No static-signature member
+// returns a dict type today, so a "{K:V}" -> "{K: V}" case is intentionally
+// not handled here; extend this if one is ever added (a docslint test will
+// fail loudly, not silently, if that happens).
+func renderDocReturnType(t Type) string {
+	s := string(t)
+	if strings.HasPrefix(s, "[") && strings.HasSuffix(s, "]") {
+		return s[1:len(s)-1] + "[]"
+	}
+	return s
+}
+
+// DocumentableMembers returns every catalog member that must be documented
+// in the stdlib reference index (FR-001): every flat builtin (BuiltinNames())
+// plus every callable member of every core namespace (CoreNamespaces() x
+// CoreMembers(ns)), sorted by ID. This is the single source of truth
+// internal/docslint checks the docs against for completeness (FR-001) and
+// signature drift (FR-002/FR-003), with the no-static-signature exemption
+// (FR-004) expressed as HasStaticSig.
+func DocumentableMembers() []DocMember {
+	out := make([]DocMember, 0, len(builtinSigs)+64)
+	for _, name := range BuiltinNames() {
+		sig := builtinSigs[name]
+		d := DocMember{ID: name, Arity: len(sig.params)}
+		if sig.result != Invalid {
+			d.HasStaticSig = true
+			d.Return = renderDocReturnType(sig.result)
+		}
+		out = append(out, d)
+	}
+	for _, ns := range CoreNamespaces() {
+		members := coreCatalog[ns]
+		for _, member := range CoreMembers(ns) {
+			m := members[member]
+			d := DocMember{ID: ns + "." + member}
+			if sig, ok := coreMemberSig(m); ok {
+				d.HasStaticSig = true
+				d.Arity = len(sig.params)
+				d.Return = renderDocReturnType(sig.result)
+			}
+			out = append(out, d)
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].ID < out[j].ID })
+	return out
+}

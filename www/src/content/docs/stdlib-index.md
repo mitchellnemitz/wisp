@@ -39,12 +39,12 @@ degradation note.
 - `[x] [ref] string.trim(s: string) -> string`
 - `[x] string.replace(s: string, search: string, with: string) -> string` -- all occurrences
 - `[x] string.split(s: string, sep: string) -> string[]`
-- `[x] string.join(parts: string[], sep: string) -> string`
-- `[x] string.contains(s: string, sub: string) -> bool`
+- `[x] string.join` -- no static signature; `string.join(parts: string[], sep: string) -> string`
+- `[x] string.contains` -- no static signature; `string.contains(s: string, sub: string) -> bool`
 - `[x] string.starts_with(s: string, pre: string) -> bool`
 - `[x] string.ends_with(s: string, suf: string) -> bool`
-- `[x] string.index_of(s: string, sub: string) -> Optional[int]` -- Some(first byte index) or None; also `string.index_of(xs: T[], x: T) -> Optional[int]` for arrays of comparable element types
-- `[x] string.repeat(s: string, n: int) -> string`
+- `[x] string.index_of` -- no static signature; `string.index_of(s: string, sub: string) -> Optional[int]`, Some(first byte index) or None; also `string.index_of(xs: T[], x: T) -> Optional[int]` for arrays of comparable element types
+- `[x] string.repeat` -- no static signature; `string.repeat(s: string, n: int) -> string`
 - `[x] string.substring(s: string, start: int, end: int) -> string` -- byte range [start, end)
 - `[x] string.char_at(s: string, i: int) -> string` -- the one-byte (or one-rune) slice at i
 - `[x] string.last_index_of(s: string, sub: string) -> Optional[int]` -- Some(rightmost byte index) or None
@@ -59,7 +59,8 @@ degradation note.
 - `[x] string.lines(s: string) -> string[]` -- split on newlines
 - `[x] string.is_empty(s: string) -> bool`
 - `[x] string.reverse(s: string) -> string` -- (array `reverse` already exists; strings differ)
-- `[x] string.ord(s: string) -> int` / `[x] string.chr(code: int) -> string` -- byte/codepoint conversion
+- `[x] string.ord(s: string) -> int` -- byte/codepoint conversion
+- `[x] string.chr` -- no static signature; `string.chr(code: int) -> string`, byte/codepoint conversion, arg-domain-checked (code must be in range)
 
 Decisions to settle for strings: byte vs rune (UTF-8) semantics for `length`,
 `substring`, `char_at`, indexing. Today `length` is bytes; a rune-aware set may
@@ -67,22 +68,27 @@ warrant separate `byte_*` vs `char_*` names.
 
 ## Numbers
 
-- `[x] math.abs(x: int) -> int` / `math.abs(x: float) -> float`
-- `[x] math.min(a, b)` / `[x] math.max(a, b)` -- same ordered scalar type (int/float/bool/string/value-enum; funcref value form int/float only)
-- `[x] math.clamp(x, lo, hi)` -- same numeric type
-- `[x] math.sign(x: int) -> int` / `math.sign(x: float) -> int` -- -1, 0, 1
+- `[x] math.abs` -- no static signature; overloaded int/float (`math.abs(x: int) -> int` / `math.abs(x: float) -> float`)
+- `[x] math.min` -- no static signature; `math.min(a, b)`, same ordered scalar type (int/float/bool/string/value-enum; funcref value form int/float only)
+- `[x] math.max` -- no static signature; `math.max(a, b)`, same ordered scalar type (int/float/bool/string/value-enum; funcref value form int/float only)
+- `[x] math.clamp` -- no static signature; `math.clamp(x, lo, hi)`, same numeric type
+- `[x] math.sign` -- no static signature; overloaded int/float (`math.sign(x: int) -> int` / `math.sign(x: float) -> int`), both arms return int: -1, 0, 1
 - `[x] math.pow(base: float, exp: float) -> float`
 - `[x] [ref] math.sqrt(x: float) -> float` -- Newton's method (basic arithmetic, no awk math); exact on perfect squares, within ~1 ulp otherwise; domain x >= 0 (negative aborts located)
-- `[x] math.floor(x: float) -> int` / `[x] math.ceil(x: float) -> int` / `[x] math.round(x: float) -> int`
+- `[x] math.floor(x: float) -> int`
+- `[x] math.ceil(x: float) -> int`
+- `[x] math.round(x: float) -> int`
 - `[x] math.trunc(x: float) -> int` -- toward zero (to_int(float) already truncates)
-- `[x] math.gcd(a: int, b: int) -> int` / `[x] math.lcm(a: int, b: int) -> int`
-- `[x] math.int_min() -> int` / `[x] math.int_max() -> int` -- platform limits, computed at runtime by detecting shell integer width
-- `[x] [ref] math.exp(x: float) -> float` -- e^x, pure-arithmetic Taylor series (no awk libm); a result outside the representable float range aborts located; use `exp(1.0)` for Euler's number -- there is no `e` constant, so `e` stays free as the conventional error-binding name in `catch (e)`
+- `[x] math.gcd` -- no static signature; `math.gcd(a: int, b: int) -> int`
+- `[x] math.lcm(a: int, b: int) -> int`
+- `[x] math.int_min() -> int` -- platform limits, computed at runtime by detecting shell integer width
+- `[x] math.int_max() -> int` -- platform limits, computed at runtime by detecting shell integer width
+- `[x] [ref] math.exp(x: float) -> float` -- e^x, pure-arithmetic Taylor series (no awk libm); a result outside the representable float range aborts located; use `math.exp(1.0)` for Euler's number -- there is no `e` constant, so `e` stays free as the conventional error-binding name in `catch (e)`
 - `[x] [ref] math.ln(x: float) -> float` -- natural log; domain x > 0 (non-positive aborts located, no hang)
 - `[x] math.log10(x: float) -> float` -- base-10 log; domain x > 0
 - `[x] math.log2(x: float) -> float` -- base-2 log; domain x > 0
 - `[x] math.pi() -> float` -- compile-time constant 3.141592653589793 (no awk call)
-- `[x] string.format_float(x: float, decimals: int) -> string` -- render x to exactly `decimals` decimal places via awk `printf` (f-conversion at the given precision); decimals must be >= 0 (negative aborts located); rounding follows platform printf (round-half-to-even on most libc, NOT guaranteed half-up); contrast with `to_string(float)` (full %.17g precision)
+- `[x] string.format_float` -- no static signature; `string.format_float(x: float, decimals: int) -> string`, render x to exactly `decimals` decimal places via awk `printf` (f-conversion at the given precision); decimals must be >= 0 (negative aborts located); rounding follows platform printf (round-half-to-even on most libc, NOT guaranteed half-up); contrast with `to_string(float)` (full %.17g precision)
 
 Trigonometry (sin/cos/tan/asin/acos/atan/atan2) is deferred: awk trig is absent on
 no-libm busybox builds, so each function needs a new pure-arithmetic implementation.
@@ -90,61 +96,70 @@ All other math ops above are pure-arithmetic (basic +,-,*,/ only).
 
 ## Arrays
 
-- `[x] length(xs: T[]) -> int`
-- `[x] array.is_empty(xs: T[]) -> bool`
-- `[x] array.push(xs: T[], v: T) -> void`
-- `[x] string.contains(xs: T[], x: T) -> bool` -- `contains` has one compiler
-  entry, under `string`; the array form delegates through the same overload
-  resolver and works identically for arrays of comparable elements
-- `[x] array.reverse(xs: T[]) -> T[]`
-- `[x] array.map(xs: T[], f: fn(T) -> U) -> U[]`
-- `[x] array.filter(xs: T[], f: fn(T) -> bool) -> T[]`
-- `[x] array.each(xs: T[], f: fn(T) -> void) -> void`
-- `[x] array.reduce(xs: T[], init: U, f: fn(U, T) -> U) -> U`
-- `[x] array.sort(xs: T[]) -> T[]` -- ascending, any ordered scalar element type (int/float/bool/string/value-enum)
-- `[x] array.sort_by(xs: T[], less: fn(T, T) -> bool) -> T[]`
-- `[x] array.find(xs: T[], f: fn(T) -> bool) -> Optional[int]` -- Some(first matching index) or None
-- `[x] array.any(xs: T[], f: fn(T) -> bool) -> bool` / `[x] array.all(xs: T[], f: fn(T) -> bool) -> bool`
-- `[x] array.count_where(xs: T[], f: fn(T) -> bool) -> int`
-- `[x] array.slice(xs: T[], start: int, end: int) -> T[]`
-- `[x] array.concat(a: T[], b: T[]) -> T[]`
-- `[x] array.flatten(xs: T[][]) -> T[]`
-- `[x] array.unique(xs: T[]) -> T[]` -- comparable element types, order-preserving
-- `[x] array.first(xs: T[]) -> T` / `[x] array.last(xs: T[]) -> T` -- abort on empty (catchable)
-- `[x] array.take(xs: T[], n: int) -> T[]` / `[x] array.drop(xs: T[], n: int) -> T[]`
-- `[x] array.pop(xs: T[]) -> T` -- remove and return last; abort on empty
-- `[x] array.remove_at(xs: T[], i: int) -> void` / `[x] array.insert_at(xs: T[], i: int, v: T) -> void`
-- `[x] array.sum(xs: int[]) -> int` / `array.sum(xs: float[]) -> float`
-- `[x] array.range(n: int) -> int[]` -- 0..n-1; and/or `range_from(start, end, step)`
-- `[x] array.zip(a: T[], b: U[]) -> (T, U)[]` -- IMPLEMENTED (tuples milestone)
+`length` (documented under Strings above) also accepts an array argument:
+`length(xs: T[]) -> int`.
+
+- `[x] array.is_empty` -- no static signature; `array.is_empty(xs: T[]) -> bool`
+- `[x] array.push` -- no static signature; `array.push(xs: T[], v: T) -> void`
+
+- `[x] array.contains` -- no static signature; `array.contains(xs: T[], x: T) -> bool`, mirrors `string.contains` (one compiler entry, delegates through the same overload resolver); arrays of comparable element types
+- `[x] array.index_of` -- no static signature; `array.index_of(xs: T[], x: T) -> Optional[int]`, mirrors `string.index_of`, Some(first matching index) or None; arrays of comparable element types
+- `[x] array.reverse` -- no static signature; `array.reverse(xs: T[]) -> T[]`
+- `[x] array.map` -- no static signature; `array.map(xs: T[], f: fn(T) -> U) -> U[]`
+- `[x] array.filter` -- no static signature; `array.filter(xs: T[], f: fn(T) -> bool) -> T[]`
+- `[x] array.each` -- no static signature; `array.each(xs: T[], f: fn(T) -> void) -> void`
+- `[x] array.reduce` -- no static signature; `array.reduce(xs: T[], init: U, f: fn(U, T) -> U) -> U`
+- `[x] array.sort` -- no static signature; `array.sort(xs: T[]) -> T[]`, ascending, any ordered scalar element type (int/float/bool/string/value-enum)
+- `[x] array.sort_by` -- no static signature; `array.sort_by(xs: T[], less: fn(T, T) -> bool) -> T[]`
+- `[x] array.find` -- no static signature; `array.find(xs: T[], f: fn(T) -> bool) -> Optional[int]`, Some(first matching index) or None
+- `[x] array.any` -- no static signature; `array.any(xs: T[], f: fn(T) -> bool) -> bool`
+- `[x] array.all` -- no static signature; `array.all(xs: T[], f: fn(T) -> bool) -> bool`
+- `[x] array.count_where` -- no static signature; `array.count_where(xs: T[], f: fn(T) -> bool) -> int`
+- `[x] array.slice` -- no static signature; `array.slice(xs: T[], start: int, end: int) -> T[]`
+- `[x] array.concat` -- no static signature; `array.concat(a: T[], b: T[]) -> T[]`
+- `[x] array.flatten` -- no static signature; `array.flatten(xs: T[][]) -> T[]`
+- `[x] array.unique` -- no static signature; `array.unique(xs: T[]) -> T[]`, comparable element types, order-preserving
+- `[x] array.first` -- no static signature; `array.first(xs: T[]) -> T`, abort on empty (catchable)
+- `[x] array.last` -- no static signature; `array.last(xs: T[]) -> T`, abort on empty (catchable)
+- `[x] array.take` -- no static signature; `array.take(xs: T[], n: int) -> T[]`
+- `[x] array.drop` -- no static signature; `array.drop(xs: T[], n: int) -> T[]`
+- `[x] array.pop` -- no static signature; `array.pop(xs: T[]) -> T`, remove and return last; abort on empty
+- `[x] array.remove_at` -- no static signature; `array.remove_at(xs: T[], i: int) -> void`
+- `[x] array.insert_at` -- no static signature; `array.insert_at(xs: T[], i: int, v: T) -> void`
+- `[x] array.sum` -- no static signature; overloaded int/float (`array.sum(xs: int[]) -> int` / `array.sum(xs: float[]) -> float`)
+- `[x] array.range` -- no static signature; `array.range(n: int) -> int[]`, 0..n-1; and/or `range_from(start, end, step)`
+- `[x] array.zip` -- no static signature; `array.zip(a: T[], b: U[]) -> (T, U)[]` -- IMPLEMENTED (tuples milestone)
 
 ## Dicts
 
-- `[x] dict.has(d: {K: V}, k: K) -> bool`
-- `[x] dict.is_empty(d: {K: V}) -> bool`
-- `[x] dict.keys(d: {K: V}) -> K[]`
-- `[x] dict.values(d: {K: V}) -> V[]` -- insertion order
-- `[x] dict.get(d: {K: V}, k: K) -> Optional[V]` -- Some(value) if present, else None; fold with `unwrap_or` for a value-or-fallback
-- `[x] dict.remove(d: {K: V}, k: K) -> void`
-- `[x] dict.size(d: {K: V}) -> int`
-- `[x] dict.merge(a: {K: V}, b: {K: V}) -> {K: V}` -- b wins on conflict
-- `[x] dict.clear(d: {K: V}) -> void`
+- `[x] dict.has` -- no static signature; `dict.has(d: {K: V}, k: K) -> bool`
+- `[x] dict.is_empty` -- no static signature; `dict.is_empty(d: {K: V}) -> bool`
+- `[x] dict.keys` -- no static signature; `dict.keys(d: {K: V}) -> K[]`
+- `[x] dict.values` -- no static signature; `dict.values(d: {K: V}) -> V[]`, insertion order
+- `[x] dict.get` -- no static signature; `dict.get(d: {K: V}, k: K) -> Optional[V]`, Some(value) if present, else None; fold with `unwrap_or` for a value-or-fallback
+- `[x] dict.remove` -- no static signature; `dict.remove(d: {K: V}, k: K) -> void`
+- `[x] dict.size` -- no static signature; `dict.size(d: {K: V}) -> int`
+- `[x] dict.merge` -- no static signature; `dict.merge(a: {K: V}, b: {K: V}) -> {K: V}`, b wins on conflict
+- `[x] dict.clear` -- no static signature; `dict.clear(d: {K: V}) -> void`
 
 ## I/O and system
 
 - `[x] print(msg: string, to: int = stdout) -> void`
-- `[x] env.get(name: string) -> Optional[string]` / `[x] env.has(name: string) -> bool`
+- `[x] env.get(name: string) -> Optional[string]`
+- `[x] env.has(name: string) -> bool`
 - `[x] fs.read_file(path: string) -> string`
 - `[x] fs.write_file(path: string, content: string) -> void`
 - `[x] fs.append_file(path: string, content: string) -> void`
-- `[x] process.run(argv: string[]) -> string` -- stdout; aborts on nonzero exit
+- `[x] process.run` -- no static signature; `process.run(argv: string[]) -> string`, stdout; aborts on nonzero exit
 - `[x] exit(code: int) -> void`
 - `[x] env.set(name: string, value: string) -> void` -- export name=value into the process env; all later children inherit it; name must match `[A-Za-z_][A-Za-z0-9_]*` (invalid aborts located); mutates global state (contrast with `process.run_env`)
 - `[x] env.unset(name: string) -> void` -- remove name from the process env; no-op success if not set; same name validation as `env.set`
 - `[x] read_line() -> Optional[string]` -- one line from stdin; None on EOF
 - `[x] read_stdin() -> string` -- all of stdin
 - `[x] read_secret(prompt: string) -> Optional[string]` -- print prompt to stderr, read one line with echo suppressed (stty -echo, best-effort; no-op when stdin is not a TTY); Some(line) or None on EOF
-- `[x] [ref] fs.file_exists(path: string) -> bool` / `[x] [ref] fs.is_dir(path: string) -> bool`
+- `[x] set_stdin(content: string) -> void` -- replace fd 0 with content's exact bytes; test stdin injection
+- `[x] [ref] fs.file_exists(path: string) -> bool`
+- `[x] [ref] fs.is_dir(path: string) -> bool`
 - `[x] [ref] fs.is_file(path: string) -> bool` -- true for a regular file or symlink to one (follows symlinks, like `test -f`); total
 - `[x] [ref] fs.is_symlink(path: string) -> bool` -- true iff `path` itself is a symlink (does not follow); total
 - `[x] fs.file_size(path: string) -> int` -- byte count via `wc -c`; leading whitespace stripped; aborts located on missing/unreadable/dir
@@ -157,22 +172,24 @@ All other math ops above are pure-arithmetic (basic +,-,*,/ only).
 - `[x] fs.temp_dir() -> string` -- `mktemp -d`; located abort on failure; caller owns cleanup via `remove_dir`
 - `[x] fs.list_dir(path: string) -> string[]`
 - `[x] fs.make_dir(path: string) -> void` -- mkdir -p semantics
-- `[x] fs.remove_file(path: string) -> void` / `[x] fs.remove_dir(path: string) -> void`
+- `[x] fs.remove_file(path: string) -> void`
+- `[x] fs.remove_dir(path: string) -> void`
 - `[x] fs.rename(from: string, to: string) -> void` -- enables atomic write-via-rename
-- `[x] fs.cwd() -> string` / `[x] fs.change_dir(path: string) -> void`
+- `[x] fs.cwd() -> string`
+- `[x] fs.change_dir(path: string) -> void`
 - `[x] fs.program_path() -> string` -- the script's invocation path ($0 captured at top level before main; same value from any call depth; meaningful for built artifacts)
 - `[x] [ref] fs.dir_name(path: string) -> string` -- directory portion, POSIX dirname semantics, pure string (no external process)
 - `[x] [ref] fs.base_name(path: string) -> string` -- final component, POSIX basename semantics, pure string (no external process)
 - `[x] fs.which(name: string) -> Optional[string]` -- resolved path, or None if not found
-- `[x] process.run_status(argv: string[]) -> int` -- run, return exit code, do not abort
-- `[x] process.run_full(argv: string[]) -> RunResult` -- stdout + stderr + code; stdin=/dev/null
-- `[x] process.run_input(argv: string[], stdin: string) -> string` -- run argv with stdin fed as exact bytes via printf %s (no added newline); returns stdout (trailing newlines stripped); aborts on nonzero child exit; empty argv aborts
-- `[x] process.run_input_full(argv: string[], stdin: string) -> RunResult` -- same stdin feed; returns RunResult{stdout,stderr,code} without aborting; empty argv aborts
-- `[x] process.run_env(argv: string[], env: {string: string}) -> string` -- run with augmented child env (adds/overrides; does not clear); aborts on nonzero exit like `run`; env NAME must match `[A-Za-z_][A-Za-z0-9_]*` (invalid name aborts located); VALUES are arbitrary; for a supported argv[0], `run_env(argv, {})` == `run(argv)`; argv[0] limitation: a name starting with `-` or containing `=` is unsupported (use a path-qualified form); uses `env` (POSIX); non-goals: no clear-slate, no unset
-- `[x] process.run_env_status(argv: string[], env: {string: string}) -> int` -- run with augmented child env, return exit code, do not abort; same NAME validation and empty-argv abort as `run_env`
-- `[x] process.run_env_full(argv: string[], env: {string: string}) -> RunResult` -- run with augmented child env, return RunResult (stdout+stderr+code), do not abort; same NAME validation and empty-argv abort as `run_env`
-- `[x] process.exec_command(argv: string[]) -> void` -- replace the shell process with argv via POSIX exec (same PID, inherits all fds/signals); never returns on success; empty argv aborts located; exec failure exits 127/126 (not a wisp abort)
-- Non-goal: `mtime` (no POSIX-portable epoch source; use `run(["stat", ...])` platform-specifically)
+- `[x] process.run_status` -- no static signature; `process.run_status(argv: string[]) -> int`, run, return exit code, do not abort
+- `[x] process.run_full` -- no static signature; `process.run_full(argv: string[]) -> RunResult`, stdout + stderr + code; stdin=/dev/null
+- `[x] process.run_input` -- no static signature; `process.run_input(argv: string[], stdin: string) -> string`, run argv with stdin fed as exact bytes via printf %s (no added newline); returns stdout (trailing newlines stripped); aborts on nonzero child exit; empty argv aborts
+- `[x] process.run_input_full` -- no static signature; `process.run_input_full(argv: string[], stdin: string) -> RunResult`, same stdin feed; returns RunResult{stdout,stderr,code} without aborting; empty argv aborts
+- `[x] process.run_env` -- no static signature; `process.run_env(argv: string[], env: {string: string}) -> string`, run with augmented child env (adds/overrides; does not clear); aborts on nonzero exit like `process.run`; env NAME must match `[A-Za-z_][A-Za-z0-9_]*` (invalid name aborts located); VALUES are arbitrary; for a supported argv[0], `process.run_env(argv, {})` == `process.run(argv)`; argv[0] limitation: a name starting with `-` or containing `=` is unsupported (use a path-qualified form); uses `env` (POSIX); non-goals: no clear-slate, no unset
+- `[x] process.run_env_status` -- no static signature; `process.run_env_status(argv: string[], env: {string: string}) -> int`, run with augmented child env, return exit code, do not abort; same NAME validation and empty-argv abort as `run_env`
+- `[x] process.run_env_full` -- no static signature; `process.run_env_full(argv: string[], env: {string: string}) -> RunResult`, run with augmented child env, return RunResult (stdout+stderr+code), do not abort; same NAME validation and empty-argv abort as `run_env`
+- `[x] process.exec_command` -- no static signature; `process.exec_command(argv: string[]) -> void`, replace the shell process with argv via POSIX exec (same PID, inherits all fds/signals); never returns on success; empty argv aborts located; exec failure exits 127/126 (not a wisp abort)
+- Non-goal: `mtime` (no POSIX-portable epoch source; use `process.run(["stat", ...])` platform-specifically)
 
 ## Signals and traps
 
@@ -211,40 +228,40 @@ the zombie; a never-waited Process leaks until the shell exits. `wait_any`
 returns ONE process -- wait the others too. wisp manages the spawned command,
 not grandchildren the command itself forks (same boundary as `run`).
 
-- `[x] process.spawn(argv: string[]) -> Process` -- launch `argv` in the background;
-  stdout/stderr captured to temp files, stdin `/dev/null`. Empty argv aborts.
-- `[x] process.wait(p: Process) -> RunResult` -- block until `p` finishes; returns its
+- `[x] process.spawn` -- no static signature; `process.spawn(argv: string[]) -> Process`, launch
+  `argv` in the background; stdout/stderr captured to temp files, stdin `/dev/null`. Empty argv aborts.
+- `[x] process.wait` -- no static signature; `process.wait(p: Process) -> RunResult`, block until `p` finishes; returns its
   RunResult. IDEMPOTENT (cached; reclaims temps on the first call).
-- `[x] process.is_done(p: Process) -> bool` -- non-blocking, non-reaping liveness check
+- `[x] process.is_done` -- no static signature; `process.is_done(p: Process) -> bool`, non-blocking, non-reaping liveness check
   (true once finished, normal or signaled).
 - `[x] process.pid_alive(pid: int) -> bool` -- total liveness probe: true iff a process with `pid` exists and is signalable by the caller (POSIX `kill -0`); nonexistent PID and EPERM both return false; never aborts. For a process wisp itself spawned, prefer `is_done` (PID-reuse-resistant).
-- `[x] process.signal(p: Process, sig: string) -> void` -- send `sig` to the spawned
+- `[x] process.signal` -- no static signature; `process.signal(p: Process, sig: string) -> void`, send `sig` to the spawned
   command; `sig` must be a STRING LITERAL from
   `{INT, TERM, HUP, QUIT, USR1, USR2, KILL, STOP, CONT}`. Best-effort; no-op once
   finished. PID-reuse-RESISTANT (a documented microsecond residual race,
   unclosable without process groups). Observes the command's CURRENT signal
   disposition (a not-yet-installed handler yields the default action, so an exact
   trapped exit code is not guaranteed from spawn-then-signal).
-- `[x] process.wait_any(ps: Process[], poll_secs: int) -> Process` -- poll `ps` in LIST
+- `[x] process.wait_any` -- no static signature; `process.wait_any(ps: Process[], poll_secs: int) -> Process`, poll `ps` in LIST
   order, return the first observed done; `poll_secs` is WHOLE SECONDS (sub-second
   sleep is non-portable), must be `>= 0` (0 = tight poll). Empty list / negative
   poll abort.
-- `[x] process.make_fifo(path: string) -> void` -- create a named pipe (`mkfifo`) for
+- `[x] process.make_fifo` -- no static signature; `process.make_fifo(path: string) -> void`, create a named pipe (`mkfifo`) for
   IPC; aborts if the path exists.
 
 ## Pipelines
 
-- `[x] process.pipe(stages: string[][]) -> RunResult` -- run a pipeline `stage1 | stage2 | ...`, capturing the last stage's stdout/stderr/code. Last-stage status only (no PIPESTATUS; intermediate failures invisible). First stage's stdin is `/dev/null`; only the last stage's stderr is captured (earlier stages' stderr inherits to the script's stderr). An empty outer array aborts located; an empty inner argv yields 127 from that stage. argv is injection-safe (inert).
+- `[x] process.pipe` -- no static signature; `process.pipe(stages: string[][]) -> RunResult`, run a pipeline `stage1 | stage2 | ...`, capturing the last stage's stdout/stderr/code. Last-stage status only (no PIPESTATUS; intermediate failures invisible). First stage's stdin is `/dev/null`; only the last stage's stderr is captured (earlier stages' stderr inherits to the script's stderr). An empty outer array aborts located; an empty inner argv yields 127 from that stage. argv is injection-safe (inert).
 
 ## Time and randomness
 
 - `[x] now() -> int` -- current Unix epoch in whole seconds via `date +%s`; `date +%s` is a near-universal extension present on every dash/busybox ash/bash/zsh target; wall clock (not monotonic -- can move backward under NTP/adjustment)
 - `[x] sleep(secs: int) -> void` -- pause for `secs` whole seconds via the external `sleep`; `secs >= 0` required (negative aborts located: `sleep: negative duration`); statement-only (Void, not usable as a value); sub-second/fractional sleep is not supported (not portable)
-- `[x] math.random(max: int) -> int` -- non-cryptographic random int in `[0, max)`; `max > 0` required (non-positive aborts located: `random: max must be positive`); uses awk `srand`/`rand` (works on dash, which has no `$RANDOM`; present in busybox awk); seed varied per call via wall-clock time + process id + monotonic per-process counter; not for security/tokens; two runs in the same second with the same PID reproduce the sequence (documented non-crypto limitation)
+- `[x] math.random` -- no static signature; `math.random(max: int) -> int`, non-cryptographic random int in `[0, max)`; `max > 0` required (non-positive aborts located: `random: max must be positive`); uses awk `srand`/`rand` (works on dash, which has no `$RANDOM`; present in busybox awk); seed varied per call via wall-clock time + process id + monotonic per-process counter; not for security/tokens; two runs in the same second with the same PID reproduce the sequence (documented non-crypto limitation)
 
 ## Argument parsing
 
-- `[x] parse_args(args: string[], value_flags: string[]) -> ({string: string}, string[], string[])` -- pure; splits args into (valued-flag dict, boolean-switch array, positional array); `value_flags` names which flags consume the next token; space form `F VALUE` and equals form `F=VALUE` both supported; `--` terminates (space-form value-flag consumes a following `--` as its value); empty `F=` yields present empty string; last occurrence wins; lone `-` is a positional; non-goals: no short bundling, no alias resolution, no type coercion, no help gen
+- `[x] parse_args` -- no static signature; `parse_args(args: string[], value_flags: string[]) -> ({string: string}, string[], string[])`, pure; splits args into (valued-flag dict, boolean-switch array, positional array); `value_flags` names which flags consume the next token; space form `F VALUE` and equals form `F=VALUE` both supported; `--` terminates (space-form value-flag consumes a following `--` as its value); empty `F=` yields present empty string; last occurrence wins; lone `-` is a positional; non-goals: no short bundling, no alias resolution, no type coercion, no help gen
 
 ## Errors
 
@@ -260,10 +277,12 @@ not grandchildren the command itself forks (same boundary as `run`).
 
 ## Optional and Result access
 
-- `[x] is_some(o: Optional[T]) -> bool` / `[x] is_none(o: Optional[T]) -> bool`
-- `[x] is_ok(r: Result[T]) -> bool` / `[x] is_err(r: Result[T]) -> bool`
-- `[x] unwrap(o: Optional[T]) -> T` / `unwrap(r: Result[T]) -> T` -- abort on None/Err (catchable)
-- `[x] unwrap_or(o: Optional[T], fallback: T) -> T` / `unwrap_or(r: Result[T], fallback: T) -> T` -- total; fallback evaluated eagerly
+- `[x] is_some(o: Optional[T]) -> bool`
+- `[x] is_none(o: Optional[T]) -> bool`
+- `[x] is_ok(r: Result[T]) -> bool`
+- `[x] is_err(r: Result[T]) -> bool`
+- `[x] unwrap` -- no static signature; overloaded Optional/Result (`unwrap(o: Optional[T]) -> T` / `unwrap(r: Result[T]) -> T`) -- abort on None/Err (catchable)
+- `[x] unwrap_or` -- no static signature; overloaded Optional/Result (`unwrap_or(o: Optional[T], fallback: T) -> T` / `unwrap_or(r: Result[T], fallback: T) -> T`) -- total; fallback evaluated eagerly
 - `[x] unwrap_err(r: Result[T]) -> error` -- the carried error, or abort on Ok (catchable)
 
 `Optional[T]` supports `==`/`!=` when `T` is comparable (`int`/`bool`/`string`/
@@ -274,16 +293,23 @@ carriers stay non-comparable.
 
 Overloaded over Optional and/or Result; the function runs only on the activating branch.
 
-- `[x] array.map(o: Optional[T], f: fn(T) -> U) -> Optional[U]` / `array.map(r: Result[T], f: fn(T) -> U) -> Result[U]` (U != void) -- success-side transform (array form above)
-- `[x] and_then(o: Optional[T], f: fn(T) -> Optional[U]) -> Optional[U]` / `and_then(r: Result[T], f: fn(T) -> Result[U]) -> Result[U]` -- flat-map
-- `[x] array.filter(o: Optional[T], f: fn(T) -> bool) -> Optional[T]` -- Optional-only (array form above); not defined over Result
+`array.map` (documented under Arrays above) is also the Optional/Result
+combinator: `array.map(o: Optional[T], f: fn(T) -> U) -> Optional[U]` /
+`array.map(r: Result[T], f: fn(T) -> U) -> Result[U]` (U != void) --
+success-side transform.
+
+- `[x] and_then` -- no static signature; overloaded Optional/Result (`and_then(o: Optional[T], f: fn(T) -> Optional[U]) -> Optional[U]` / `and_then(r: Result[T], f: fn(T) -> Result[U]) -> Result[U]`) -- flat-map
+
+`array.filter` (documented under Arrays above) is also the Optional
+combinator: `array.filter(o: Optional[T], f: fn(T) -> bool) -> Optional[T]` --
+Optional-only; not defined over Result.
 
 `map` and `filter` here are the same `array.map`/`array.filter` builtins
 applied through `Optional`'s value-or-empty representation, not a separate
 combinator.
 
-- `[x] or_else(o: Optional[T], f: fn() -> Optional[T]) -> Optional[T]` / `or_else(r: Result[T], f: fn(error) -> Result[T]) -> Result[T]` -- lazy fallback; Err passes the error handle to f
-- `[x] map_err(r: Result[T], f: fn(error) -> error) -> Result[T]` -- Result-only; transform the Err side
+- `[x] or_else` -- no static signature; overloaded Optional/Result (`or_else(o: Optional[T], f: fn() -> Optional[T]) -> Optional[T]` / `or_else(r: Result[T], f: fn(error) -> Result[T]) -> Result[T]`) -- lazy fallback; Err passes the error handle to f
+- `[x] map_err` -- no static signature; `map_err(r: Result[T], f: fn(error) -> error) -> Result[T]` -- Result-only; transform the Err side
 
 ## Regular expressions
 
@@ -300,12 +326,22 @@ The first core module: a reserved namespace opted into with `import "json"`.
 `json.Value` is an opaque handle storing canonical JSON text (numbers/strings
 verbatim, so no precision loss). See the [stdlib guide](/guide/stdlib/#json-import-json).
 
-- `[x] json.decode[T](s: string) -> T` -- validate + parse; `T` defaults to `json.Value`, or `string`/`int`/`float`/`bool`; malformed aborts located
+- `[x] json.decode` -- no static signature; `json.decode[T](s: string) -> T`, validate + parse; `T` defaults to `json.Value`, or `string`/`int`/`float`/`bool`; malformed aborts located
 - `[x] json.encode(v: json.Value) -> string` -- canonical text
-- `[x] json.from_int/from_float/from_bool/from_string(x) -> json.Value`, `json.null() -> json.Value`
-- `[x] json.array(json.Value[]) -> json.Value`, `json.object(dict[string, json.Value]) -> json.Value`
-- `[x] json.type_of(v) -> string`, `json.get(v, key) -> Optional[json.Value]`, `json.at(v, i) -> Optional[json.Value]`
-- `[x] json.as_string/as_int/as_float/as_bool(v)` -- native value; type mismatch aborts located
+- `[x] json.from_string(x: string) -> json.Value`
+- `[x] json.from_int(x: int) -> json.Value`
+- `[x] json.from_float(x: float) -> json.Value`
+- `[x] json.from_bool(x: bool) -> json.Value`
+- `[x] json.null() -> json.Value`
+- `[x] json.array(v: json.Value[]) -> json.Value`
+- `[x] json.object(v: {string: json.Value}) -> json.Value`
+- `[x] json.type_of(v: json.Value) -> string`
+- `[x] json.get(v: json.Value, key: string) -> Optional[json.Value]`
+- `[x] json.at(v: json.Value, i: int) -> Optional[json.Value]`
+- `[x] json.as_string(v: json.Value) -> string` -- type mismatch aborts located
+- `[x] json.as_int(v: json.Value) -> int` -- type mismatch aborts located
+- `[x] json.as_float(v: json.Value) -> float` -- type mismatch aborts located
+- `[x] json.as_bool(v: json.Value) -> bool` -- type mismatch aborts located
 
 ## Deferred / needs a language feature first
 
@@ -332,7 +368,7 @@ verbatim, so no precision loss). See the [stdlib guide](/guide/stdlib/#json-impo
 - [x] Tuples (`(T1, T2, ...)`, n >= 2): fixed-arity, immutable, opaque -- IMPLEMENTED. `zip`, `process.run_full`, and tuple destructuring (`let (a, b) = ...`) are also implemented; only a destructuring `match` remains deferred.
 - [x] An optional/maybe type (`Optional[T]` = `Some(T) | None`) -- IMPLEMENTED.
   `find`/`index_of`/`last_index_of` now return `Optional[int]` and the dict
-  accessor `get(d, k) -> Optional[V]` was added, alongside the access builtins
+  accessor `dict.get(d, k) -> Optional[V]` was added, alongside the access builtins
   `is_some`/`is_none`/`unwrap`/`unwrap_or`. `Optional` is opaque (no
   `==`/`to_string()`/switch); `None` concretizes at `let`/`return`/assignment only.
   `first`/`last`/`char_at` keep their catchable aborts.

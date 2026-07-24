@@ -37,6 +37,18 @@ const (
 	FuncrefBespoke    BuiltinFuncrefClass = "bespoke"    // scalar-shaped but no uniform lowering
 )
 
+// FuncrefClassLabels returns the 8 declared BuiltinFuncrefClass constants, in
+// declaration order. Exported so docslint's count check can assert the
+// documented "8 finer-grained labels" claim in guide/language.md against the
+// real label-set size instead of a hand-copied number.
+func FuncrefClassLabels() []BuiltinFuncrefClass {
+	return []BuiltinFuncrefClass{
+		FuncrefMonomorphic, FuncrefVoid, FuncrefNullary,
+		FuncrefOverloaded, FuncrefGeneric, FuncrefMapFilter,
+		FuncrefStatement, FuncrefBespoke,
+	}
+}
+
 // builtinFuncrefGeneratable is the explicit allowlist of builtins that ARE
 // referenceable as function values. The underlying prelude helper name, its
 // "located" (fallible, name-as-$1) vs "total" (pass-through) shape, and the
