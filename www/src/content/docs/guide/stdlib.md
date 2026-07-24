@@ -1281,11 +1281,12 @@ are the only way to read the contained value; see the
 [Optional language guide](/guide/language/#optional) for the full type, the `None`
 rules, and the opacity (`to_string()`, interpolation, and use as a `switch` subject
 are rejected). `==`/`!=` are the one exception: they are supported when the inner
-type is comparable (`int`, `bool`, `string`, or a nested comparable `Optional`),
-comparing structurally (equal iff both are `None`, or both are `Some` with equal
-inner values). `Optional[float]` and `Optional` of non-comparable types (arrays,
-dicts, structs, `error`, function references) stay non-comparable, so `==`/`!=` on
-them remain compile errors.
+type is comparable (`int`, `bool`, `string`, `float`, or a nested comparable
+`Optional`), comparing structurally (equal iff both are `None`, or both are `Some`
+with equal inner values). `Optional[float]` compares by numeric identity. `Optional`
+of a value enum and `Optional` of non-comparable types (arrays, dicts, structs,
+`error`, function references) stay non-comparable, so `==`/`!=` on them remain
+compile errors.
 
 ### is_some, is_none
 

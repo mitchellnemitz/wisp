@@ -576,10 +576,10 @@ fn main() -> int {
 
 Builtins can be used as function references, but not all of them the same
 way. The compiler groups them into four classes. (Internally the type
-checker tracks 9 finer-grained labels in `BuiltinFuncrefClass` — this doc
+checker tracks 8 finer-grained labels in `BuiltinFuncrefClass` — this doc
 groups them into the 4 that matter for how you write code.)
 
-**Monomorphic-generatable** (no annotation needed). Any of the 75 builtins in
+**Monomorphic-generatable** (no annotation needed). Any of the 71 builtins in
 this class can be referenced directly:
 
 - `string.trim`, `string.lower`, `string.upper`, `string.starts_with`, `string.ends_with`
@@ -628,9 +628,12 @@ fn main() -> int {
 
 **Generic** (annotation selects the container shape). 12 builtins (`map`,
 `filter`, `each`, `reduce`, `sort_by`, `find`, `any`, `all`, `count_where`,
-`and_then`, `or_else`, `map_err`) work over more than one container (array,
-`Optional`, or `Result`); an explicit funcref type annotation picks which
-one:
+`and_then`, `or_else`, `map_err`) are generic over a container shape; an
+explicit funcref type annotation picks the shape. Four of them span more than
+one container -- `map` (array, `Optional`, `Result`), `filter` (array,
+`Optional`), and `and_then`/`or_else` (`Optional`, `Result`) -- while `each`,
+`reduce`, `sort_by`, `find`, `any`, `all`, and `count_where` are array-only and
+`map_err` is `Result`-only:
 
 - `array.map`, `array.filter`, `array.each`, `array.reduce`, `array.sort_by`, `array.find`, `array.any`, `array.all`, `array.count_where`
 
@@ -1171,6 +1174,8 @@ value typed through the alias remains fully interchangeable.
 ## Arrays
 
 ```wisp
+import "array"
+
 let xs: int[] = [3, 4, 5]
 xs[1] = 40
 array.push(xs, 6)
@@ -1187,6 +1192,8 @@ type.
 ## Dicts
 
 ```wisp
+import "dict"
+
 let m: {string: int} = { "a": 1, "b": 2 }
 m["c"] = 3
 print("a=${m["a"]} hasb=${to_string(dict.has(m, "b"))}")

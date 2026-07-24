@@ -39,7 +39,7 @@ Linux or macOS:
 curl -fsSL https://raw.githubusercontent.com/mitchellnemitz/wisp/main/install.sh | sh
 ```
 
-Or build from source with Go 1.26 or newer:
+Or build from source with Go 1.26.4 or newer:
 
 ```sh
 go build -o wisp ./cmd/wisp
