@@ -1156,6 +1156,14 @@ let xs: int[] = [10, 20, 30]
 array.insert_at(xs, 1, 15)   // xs is now [10, 15, 20, 30]
 ```
 
+### array.is_empty
+
+```
+array.is_empty(xs: T[]) -> bool
+```
+
+`is_empty` is `length(xs) == 0`.
+
 ## Dicts
 
 `remove` and `clear` are the only dict builtins that mutate in place; the rest
@@ -1242,6 +1250,14 @@ Returns the number of keys in `d`. An empty dict returns `0`. Does not mutate.
 ```wisp
 dict.size({ "a": 1, "b": 2 })   // 2
 ```
+
+### dict.is_empty
+
+```
+dict.is_empty(d: {K: V}) -> bool
+```
+
+`is_empty` is `dict.size(d) == 0`.
 
 ### dict.clear
 

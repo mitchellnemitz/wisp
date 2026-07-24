@@ -33,6 +33,8 @@ full policy.
 - `<`, `<=`, `>`, `>=`, `math.min`/`math.max`, and `array.sort` accept the full
   comparable scalar set (int, float, bool, string, value enums), matching `==`.
   Bool orders `false < true`; value enums order by backing value.
+- `array.is_empty(xs: T[]) -> bool` and `dict.is_empty(d: {K:V}) -> bool`,
+  mirroring `string.is_empty`.
 
 ### Changed
 
