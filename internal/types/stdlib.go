@@ -303,8 +303,8 @@ func (c *checker) checkRunEnvFullCall(n *ast.CallExpr, dispName string) Type {
 // checkContainsCall resolves the overloaded contains builtin (spec 2.1/2.3).
 // The overload is chosen by ARG-1 type: a string arg-1 is the substring test
 // (string, string) -> bool; an array arg-1 is the membership test (T[], T) ->
-// bool with T restricted to the comparable scalar types int/bool/string (float
-// is excluded -- byte compare is unsound -- as are handle/fn element types).
+// bool with T restricted to the comparable scalar types int/bool/string/float
+// and value enums (handle/fn element types are excluded).
 // THEN arg-2 is checked against the chosen signature, so a wrong arg-2 yields a
 // clear type error rather than a confusing "no matching overload". If arg-1
 // itself has no resolved type, that error is already reported and no overload is
