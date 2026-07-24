@@ -6,6 +6,7 @@ package docslint
 import (
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -118,4 +119,170 @@ func LanguageMdFuncrefExamples(doc string) (mono, overloaded, generic []string, 
 		}
 	}
 	return mono, overloaded, generic, nil
+}
+
+// DocEntry is one parsed member entry from a bullet line of a stdlib doc.
+// Arity/Return are only meaningful when HasStaticSig is true; Malformed is
+// true when the bullet's first backtick span could not be parsed into
+// either the static-signature grammar or the no-static-signature marker
+// grammar, even though a leading identifier was extractable (FR-009).
+type DocEntry struct {
+	Line         int
+	ID           string
+	Raw          string // verbatim first backtick-span text (for malformed reporting)
+	HasStaticSig bool
+	NoSigMarker  bool
+	Arity        int
+	Return       string
+	Malformed    bool
+}
+
+var (
+	docFirstSpanRe = regexp.MustCompile("^- `([^`]*)`")
+	docCheckboxRe  = regexp.MustCompile(`^\[(?:x| )\]\s`)
+	// The optional (?:\[[^\]]*\])? segment tolerates a generic type-param
+	// list between the id and its params, e.g. "assert_eq[T: comparable](got:
+	// T, want: T) -> void" -- the bracket is not part of the DocMember ID
+	// (DocumentableMembers() ids never carry one) and is skipped, not captured.
+	docSigRe    = regexp.MustCompile(`^(?:\[(?:x| )\]\s+)(?:\[ref\]\s+)?([A-Za-z_][\w]*(?:\.[A-Za-z_][\w]*)?)(?:\[[^\]]*\])?\((.*)\)\s*->\s*(.+)$`)
+	docNoSigRe  = regexp.MustCompile(`^(?:\[(?:x| )\]\s+)([A-Za-z_][\w]*(?:\.[A-Za-z_][\w]*)?)$`)
+	docLeadIDRe = regexp.MustCompile(`^(?:\[(?:x| )\]\s+)(?:\[ref\]\s+)?([A-Za-z_][\w]*(?:\.[A-Za-z_][\w]*)?)`)
+	// docKeywordSkipRe matches a checkbox span whose leading identifier is
+	// immediately followed by a bare "<placeholder>" token, e.g.
+	// "[x] throw <error>" -- pseudo-syntax documenting a language KEYWORD
+	// (throw/try/catch/finally are not DocumentableMembers() ids), not a
+	// catalog member entry. Such a span must be skipped as non-member,
+	// never reported Malformed (FR-009's Malformed case is reserved for a
+	// checkbox span that genuinely looks like a broken member entry).
+	docKeywordSkipRe = regexp.MustCompile(`^(?:\[(?:x| )\]\s+)(?:\[ref\]\s+)?[A-Za-z_]\w*\s+<`)
+	noSigMarker      = "-- no static signature"
+)
+
+// splitTopLevel splits s on commas that are not nested inside (), [], or {},
+// so a param list containing a bracketed/braced type (e.g. "a: {K: V}") is
+// not miscounted as extra parameters.
+func splitTopLevel(s string) []string {
+	if strings.TrimSpace(s) == "" {
+		return nil
+	}
+	var parts []string
+	depth := 0
+	start := 0
+	for i, r := range s {
+		switch r {
+		case '(', '[', '{':
+			depth++
+		case ')', ']', '}':
+			depth--
+		case ',':
+			if depth == 0 {
+				parts = append(parts, s[start:i])
+				start = i + 1
+			}
+		}
+	}
+	parts = append(parts, s[start:])
+	return parts
+}
+
+// ParseDocMembers scans doc for every MEMBER bullet -- a line starting with
+// "- `" whose first backtick span begins with the "[x]"/"[ ]" checkbox marker
+// (the doc-format signal that the bullet documents a catalog member) -- and
+// parses that span into a DocEntry. A "- `...`" bullet whose first span has no
+// checkbox is prose or an example (e.g. a bare combinator illustration), not a
+// member entry, and is skipped entirely so it can never be misreported as a
+// malformed member. Likewise, a checkbox span documenting a language keyword's
+// pseudo-syntax (docKeywordSkipRe, e.g. "[x] throw <error>") is skipped as
+// non-member. A checkbox-bearing span that matches neither the
+// static-signature grammar nor the no-static-signature marker grammar is
+// recorded as Malformed (with Raw + a lenient leading ID when extractable),
+// caught later by ParseViolations (FR-009).
+func ParseDocMembers(doc string) []DocEntry {
+	var out []DocEntry
+	lines := strings.Split(doc, "\n")
+	for i, line := range lines {
+		m := docFirstSpanRe.FindStringSubmatch(line)
+		if m == nil {
+			continue
+		}
+		span := m[1]
+		if !docCheckboxRe.MatchString(span) {
+			continue // not a member entry (no checkbox) -- prose/example
+		}
+		if docKeywordSkipRe.MatchString(span) {
+			continue // not a member entry -- language-keyword pseudo-syntax
+		}
+		rest := line[len(m[0]):]
+		if sm := docSigRe.FindStringSubmatch(span); sm != nil {
+			out = append(out, DocEntry{
+				Line: i + 1, ID: sm[1], Raw: span, HasStaticSig: true,
+				Arity: len(splitTopLevel(sm[2])), Return: strings.TrimSpace(sm[3]),
+			})
+			continue
+		}
+		if sm := docNoSigRe.FindStringSubmatch(span); sm != nil && strings.HasPrefix(strings.TrimSpace(rest), noSigMarker) {
+			out = append(out, DocEntry{Line: i + 1, ID: sm[1], Raw: span, NoSigMarker: true})
+			continue
+		}
+		entry := DocEntry{Line: i + 1, Raw: span, Malformed: true}
+		if lm := docLeadIDRe.FindStringSubmatch(span); lm != nil {
+			entry.ID = lm[1]
+		}
+		out = append(out, entry)
+	}
+	return out
+}
+
+// Completeness reports every id in ids with no corresponding DocEntry.ID in
+// entries, sorted. No allowlist: FR-001 requires every catalog member to be
+// documented, with no opt-out.
+func Completeness(entries []DocEntry, ids []string) []string {
+	documented := make(map[string]bool, len(entries))
+	for _, e := range entries {
+		if e.ID != "" {
+			documented[e.ID] = true
+		}
+	}
+	var missing []string
+	for _, id := range ids {
+		if !documented[id] {
+			missing = append(missing, id)
+		}
+	}
+	sort.Strings(missing)
+	return missing
+}
+
+// ParseViolations reports doc-format failures that would let the
+// machine-parseable format be silently abandoned (FR-007/FR-009): every
+// Malformed member entry (a checkbox bullet whose span parsed as neither a
+// static signature nor the no-static-signature marker) and every duplicate
+// member ID (the same ID documented on more than one bullet). Each failure
+// carries path:line, and for malformed entries the expected grammar and the
+// actual span. Returned sorted for stable output.
+func ParseViolations(entries []DocEntry, path string) []string {
+	var out []string
+	firstLine := make(map[string]int, len(entries))
+	for _, e := range entries {
+		if e.Malformed {
+			// FR-010: id + expected + actual + path:line. When the span is too
+			// broken to extract an id, use the "<unparsed>" sentinel.
+			id := e.ID
+			if id == "" {
+				id = "<unparsed>"
+			}
+			out = append(out, fmt.Sprintf("%s:%d: member %q: expected a parseable entry (%q or %q), actual an unparseable span %q", path, e.Line, id, "[x] ns.member(params) -> Return", "[x] ns.member (with -- no static signature)", e.Raw))
+			continue
+		}
+		if e.ID == "" {
+			continue
+		}
+		if prev, dup := firstLine[e.ID]; dup {
+			out = append(out, fmt.Sprintf("%s:%d: member %q: expected exactly one entry, actual a duplicate (first documented at line %d)", path, e.Line, e.ID, prev))
+			continue
+		}
+		firstLine[e.ID] = e.Line
+	}
+	sort.Strings(out)
+	return out
 }
