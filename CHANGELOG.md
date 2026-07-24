@@ -35,6 +35,13 @@ full policy.
   Bool orders `false < true`; value enums order by backing value.
 - `array.is_empty(xs: T[]) -> bool` and `dict.is_empty(d: {K:V}) -> bool`,
   mirroring `string.is_empty`.
+- Context-directed inference of a generic call's type arguments: a type
+  parameter that appears only in the return type is inferred from the call's
+  expected type (a `let`/`final` annotation, `return` type, concretely-typed
+  argument, an assignment whose target has a known type, or an
+  array-element/dict-value type), so `let xs: int[] = empty_list()` no longer
+  needs an explicit `[int]`. Explicit type arguments remain supported and take
+  precedence.
 
 ### Changed
 
