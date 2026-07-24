@@ -1,0 +1,1 @@
+{"desc":"context-directed type-argument inference: return-only params inferred from let, return, call-argument, and dict-value positions with no explicit type args; identical across all four shells","stdout":"0\n0\n0\n0\n","exit":0}
