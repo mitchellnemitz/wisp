@@ -60,7 +60,7 @@ degradation note.
 - `[x] string.is_empty(s: string) -> bool`
 - `[x] string.reverse(s: string) -> string` -- (array `reverse` already exists; strings differ)
 - `[x] string.ord(s: string) -> int` -- byte/codepoint conversion
-- `[x] string.chr` -- no static signature; `[x] string.chr(code: int) -> string`, byte/codepoint conversion, arg-domain-checked (code must be in range)
+- `[x] string.chr` -- no static signature; `string.chr(code: int) -> string`, byte/codepoint conversion, arg-domain-checked (code must be in range)
 
 Decisions to settle for strings: byte vs rune (UTF-8) semantics for `length`,
 `substring`, `char_at`, indexing. Today `length` is bytes; a rune-aware set may
@@ -70,9 +70,9 @@ warrant separate `byte_*` vs `char_*` names.
 
 - `[x] math.abs` -- no static signature; overloaded int/float (`math.abs(x: int) -> int` / `math.abs(x: float) -> float`)
 - `[x] math.min` -- no static signature; `math.min(a, b)`, same ordered scalar type (int/float/bool/string/value-enum; funcref value form int/float only)
-- `[x] math.max` -- no static signature; `[x] math.max(a, b)`, same ordered scalar type (int/float/bool/string/value-enum; funcref value form int/float only)
+- `[x] math.max` -- no static signature; `math.max(a, b)`, same ordered scalar type (int/float/bool/string/value-enum; funcref value form int/float only)
 - `[x] math.clamp` -- no static signature; `math.clamp(x, lo, hi)`, same numeric type
-- `[x] math.sign` -- no static signature; overloaded int/float (`[x] math.sign(x: int) -> int` / `math.sign(x: float) -> int`), both arms return int: -1, 0, 1
+- `[x] math.sign` -- no static signature; overloaded int/float (`math.sign(x: int) -> int` / `math.sign(x: float) -> int`), both arms return int: -1, 0, 1
 - `[x] math.pow(base: float, exp: float) -> float`
 - `[x] [ref] math.sqrt(x: float) -> float` -- Newton's method (basic arithmetic, no awk math); exact on perfect squares, within ~1 ulp otherwise; domain x >= 0 (negative aborts located)
 - `[x] math.floor(x: float) -> int`
@@ -116,19 +116,19 @@ arrays of comparable elements.
 - `[x] array.sort_by` -- no static signature; `array.sort_by(xs: T[], less: fn(T, T) -> bool) -> T[]`
 - `[x] array.find` -- no static signature; `array.find(xs: T[], f: fn(T) -> bool) -> Optional[int]`, Some(first matching index) or None
 - `[x] array.any` -- no static signature; `array.any(xs: T[], f: fn(T) -> bool) -> bool`
-- `[x] array.all` -- no static signature; `[x] array.all(xs: T[], f: fn(T) -> bool) -> bool`
+- `[x] array.all` -- no static signature; `array.all(xs: T[], f: fn(T) -> bool) -> bool`
 - `[x] array.count_where` -- no static signature; `array.count_where(xs: T[], f: fn(T) -> bool) -> int`
 - `[x] array.slice` -- no static signature; `array.slice(xs: T[], start: int, end: int) -> T[]`
 - `[x] array.concat` -- no static signature; `array.concat(a: T[], b: T[]) -> T[]`
 - `[x] array.flatten` -- no static signature; `array.flatten(xs: T[][]) -> T[]`
 - `[x] array.unique` -- no static signature; `array.unique(xs: T[]) -> T[]`, comparable element types, order-preserving
 - `[x] array.first` -- no static signature; `array.first(xs: T[]) -> T`, abort on empty (catchable)
-- `[x] array.last` -- no static signature; `[x] array.last(xs: T[]) -> T`, abort on empty (catchable)
+- `[x] array.last` -- no static signature; `array.last(xs: T[]) -> T`, abort on empty (catchable)
 - `[x] array.take` -- no static signature; `array.take(xs: T[], n: int) -> T[]`
-- `[x] array.drop` -- no static signature; `[x] array.drop(xs: T[], n: int) -> T[]`
+- `[x] array.drop` -- no static signature; `array.drop(xs: T[], n: int) -> T[]`
 - `[x] array.pop` -- no static signature; `array.pop(xs: T[]) -> T`, remove and return last; abort on empty
 - `[x] array.remove_at` -- no static signature; `array.remove_at(xs: T[], i: int) -> void`
-- `[x] array.insert_at` -- no static signature; `[x] array.insert_at(xs: T[], i: int, v: T) -> void`
+- `[x] array.insert_at` -- no static signature; `array.insert_at(xs: T[], i: int, v: T) -> void`
 - `[x] array.sum` -- no static signature; overloaded int/float (`array.sum(xs: int[]) -> int` / `array.sum(xs: float[]) -> float`)
 - `[x] array.range` -- no static signature; `array.range(n: int) -> int[]`, 0..n-1; and/or `range_from(start, end, step)`
 - `[x] array.zip` -- no static signature; `array.zip(a: T[], b: U[]) -> (T, U)[]` -- IMPLEMENTED (tuples milestone)
