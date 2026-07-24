@@ -59,7 +59,7 @@ func (c *checker) exprType(e ast.Expr, want Type) Type {
 	case *ast.BinaryExpr:
 		return c.checkBinary(n)
 	case *ast.CallExpr:
-		return c.checkCall(n)
+		return c.checkCall(n, want)
 	case *ast.StructLit:
 		return c.checkStructLit(n, want)
 	case *ast.ArrayLit:

@@ -128,8 +128,11 @@ func TestGenericUnifyRollback(t *testing.T) {
 
 // cannot infer: return-only parameter (single diagnostic).
 func TestGenericCannotInferReturnOnly(t *testing.T) {
+	// No context type is available here (the call's result is discarded), so the
+	// return-only param T is still uninferable. A `let xs: int[] = make()` form
+	// now succeeds via context-directed inference; see TestContextInferLetReturnOnly.
 	info := check(t, "fn make[T]() -> T[] { return [] }\n"+
-		wrapMain("let xs: int[] = make()"))
+		wrapMain("make()"))
 	if !containsErr(info, "cannot infer") {
 		t.Fatalf("want 'cannot infer', got:\n%s", diagList(info.Errors))
 	}
