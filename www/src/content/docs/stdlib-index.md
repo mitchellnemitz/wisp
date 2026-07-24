@@ -91,6 +91,7 @@ All other math ops above are pure-arithmetic (basic +,-,*,/ only).
 ## Arrays
 
 - `[x] length(xs: T[]) -> int`
+- `[x] array.is_empty(xs: T[]) -> bool`
 - `[x] array.push(xs: T[], v: T) -> void`
 - `[x] string.contains(xs: T[], x: T) -> bool` -- `contains` has one compiler
   entry, under `string`; the array form delegates through the same overload
@@ -120,6 +121,7 @@ All other math ops above are pure-arithmetic (basic +,-,*,/ only).
 ## Dicts
 
 - `[x] dict.has(d: {K: V}, k: K) -> bool`
+- `[x] dict.is_empty(d: {K: V}) -> bool`
 - `[x] dict.keys(d: {K: V}) -> K[]`
 - `[x] dict.values(d: {K: V}) -> V[]` -- insertion order
 - `[x] dict.get(d: {K: V}, k: K) -> Optional[V]` -- Some(value) if present, else None; fold with `unwrap_or` for a value-or-fallback
@@ -131,14 +133,14 @@ All other math ops above are pure-arithmetic (basic +,-,*,/ only).
 ## I/O and system
 
 - `[x] print(msg: string, to: int = stdout) -> void`
-- `[x] env.get(name: string) -> string` / `[x] env.has(name: string) -> bool`
+- `[x] env.get(name: string) -> Optional[string]` / `[x] env.has(name: string) -> bool`
 - `[x] fs.read_file(path: string) -> string`
 - `[x] fs.write_file(path: string, content: string) -> void`
 - `[x] fs.append_file(path: string, content: string) -> void`
 - `[x] process.run(argv: string[]) -> string` -- stdout; aborts on nonzero exit
 - `[x] exit(code: int) -> void`
-- `[x] env.set(name: string, value: string) -> void` -- export name=value into the process env; all later children inherit it; name must match `[A-Za-z_][A-Za-z0-9_]*` (invalid aborts located); mutates global state (contrast with `run_env`)
-- `[x] env.unset(name: string) -> void` -- remove name from the process env; no-op success if not set; same name validation as `set_env`
+- `[x] env.set(name: string, value: string) -> void` -- export name=value into the process env; all later children inherit it; name must match `[A-Za-z_][A-Za-z0-9_]*` (invalid aborts located); mutates global state (contrast with `process.run_env`)
+- `[x] env.unset(name: string) -> void` -- remove name from the process env; no-op success if not set; same name validation as `env.set`
 - `[x] read_line() -> Optional[string]` -- one line from stdin; None on EOF
 - `[x] read_stdin() -> string` -- all of stdin
 - `[x] read_secret(prompt: string) -> Optional[string]` -- print prompt to stderr, read one line with echo suppressed (stty -echo, best-effort; no-op when stdin is not a TTY); Some(line) or None on EOF
@@ -315,7 +317,7 @@ verbatim, so no precision loss). See the [stdlib guide](/guide/stdlib/#json-impo
   program continues in further slices, each its own milestone:
   - [x] M-gen-2: the `comparable` bound (`fn f[T: comparable](...)`) -- IMPLEMENTED.
     A `comparable` `T` unlocks `==`/`!=`, with the inferred type restricted to
-    `int`/`bool`/`string` (float excluded) and checked at the call site. Codegen
+    `int`/`bool`/`string`/`float` (and value enums) and checked at the call site. Codegen
     unchanged. Ordered comparison and arithmetic on a `T` remain errors under any
     bound (they need monomorphization).
   - [x] M-gen-3: the `numeric` bound (`fn f[T: numeric](...)`) -- IMPLEMENTED.
@@ -327,7 +329,7 @@ verbatim, so no precision loss). See the [stdlib guide](/guide/stdlib/#json-impo
   - [x] M-gen-4: generic structs (`struct Box[T]`) -- IMPLEMENTED (R7-generics-mgen4).
   Explicit type arguments at call sites (`f[int](...)`) remain unsupported; the
   postfix `[` is array indexing, so that syntax is decided in a later slice.
-- [x] Tuples (`(T1, T2, ...)`, n >= 2): fixed-arity, immutable, opaque -- IMPLEMENTED. `zip` is also implemented. `run_full` and tuple destructuring remain deferred.
+- [x] Tuples (`(T1, T2, ...)`, n >= 2): fixed-arity, immutable, opaque -- IMPLEMENTED. `zip`, `process.run_full`, and tuple destructuring (`let (a, b) = ...`) are also implemented; only a destructuring `match` remains deferred.
 - [x] An optional/maybe type (`Optional[T]` = `Some(T) | None`) -- IMPLEMENTED.
   `find`/`index_of`/`last_index_of` now return `Optional[int]` and the dict
   accessor `get(d, k) -> Optional[V]` was added, alongside the access builtins

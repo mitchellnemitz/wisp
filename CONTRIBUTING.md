@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Go 1.26 or newer.
+- Go 1.26.4 or newer.
 - For the full golden suite locally: `dash`, `busybox`, and `shellcheck` on
   your PATH. The suite still runs without them, but the shell-execution and
   lint checks that need them are skipped.
@@ -25,9 +25,10 @@ gofmt -l .           # must print nothing
 
 CI runs the same checks plus a golden job, which compiles and runs the fixtures
 under dash, busybox ash, bash, and zsh and ShellChecks the generated output with
-a pinned ShellCheck, and a static-binary job, which builds both binaries with
-`CGO_ENABLED=0` and runs the hello example in a busybox container. Keep
-`gofmt -l` clean; the build-test job fails on any unformatted file.
+a pinned ShellCheck; a static-binary job, which builds both binaries with
+`CGO_ENABLED=0` and runs the hello example in a busybox container; and a
+release-dryrun job, which runs a goreleaser config check and a snapshot build.
+Keep `gofmt -l` clean; the build-test job fails on any unformatted file.
 
 ## Golden fixtures
 

@@ -198,7 +198,7 @@ would have before error handling existed.
 
 ## CI
 
-The GitHub Actions workflow runs three jobs on every push and pull request:
+The GitHub Actions workflow runs four jobs on every push and pull request:
 
 - build-test: a gofmt check, `go vet`, `go build`, and `go test` over the whole
   module.
@@ -225,3 +225,5 @@ The GitHub Actions workflow runs three jobs on every push and pull request:
   frame range; 1000000 is well clear of any realistic recursion depth.
 - static-binary: builds static `wisp` and `wisp-lsp` binaries and runs the
   hello example inside a busybox container, asserting the output.
+- release-dryrun: runs a goreleaser config check and a snapshot build to keep
+  the release pipeline buildable, without publishing anything.
