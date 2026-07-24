@@ -28,7 +28,7 @@ func arityWant(min, max int) string {
 // callee expression of function type -> indirect call; of any non-function type
 // -> compile error. It validates arguments, records a CallInfo, and returns the
 // result type.
-func (c *checker) checkCall(n *ast.CallExpr) Type {
+func (c *checker) checkCall(n *ast.CallExpr, want Type) Type {
 	// Explicit call-site type arguments (M9) are consumed ONLY by a direct or
 	// qualified user-function call. Reject them on every other callee form at this
 	// single choke point, BEFORE dispatch. The guard does not return: the call then
@@ -38,7 +38,7 @@ func (c *checker) checkCall(n *ast.CallExpr) Type {
 		c.errf(n.TypeArgs[0].Pos, "%s does not take type arguments", c.uncallableTypeArgForm(n))
 	}
 	if n.CalleeName != "" {
-		return c.checkNamedCall(n)
+		return c.checkNamedCall(n, want)
 	}
 	// A tagged-union construction call `Enum.Variant(arg)`: the callee is a
 	// FieldAccess whose base names an enum type (checked before the namespace path,
@@ -50,7 +50,7 @@ func (c *checker) checkCall(n *ast.CallExpr) Type {
 	// A qualified cross-module call `ns.fn(...)` (M8): the callee is a FieldAccess
 	// whose base is an in-scope namespace alias not shadowed by a local variable.
 	if field, modid, ok := c.qualifiedNsTarget(n.Callee); ok {
-		return c.checkQualifiedCall(n, field, modid)
+		return c.checkQualifiedCall(n, field, modid, want)
 	}
 	return c.checkIndirectCall(n, c.checkExpr(n.Callee))
 }
@@ -97,7 +97,7 @@ func (c *checker) uncallableTypeArgForm(n *ast.CallExpr) string {
 // a direct user call and records a CallUser CallInfo whose Func is the target decl
 // (so reachability tree-shaking follows the cross-module edge) and whose Mangled
 // uses the target module's modid.
-func (c *checker) checkQualifiedCall(n *ast.CallExpr, field string, modid int) Type {
+func (c *checker) checkQualifiedCall(n *ast.CallExpr, field string, modid int, want Type) Type {
 	// Resolve the namespace alias name for diagnostics.
 	nsName := n.Callee.(*ast.FieldAccess).X.(*ast.Ident).Name
 	// A reserved core module (json, ...) resolves its members through the core
@@ -117,11 +117,11 @@ func (c *checker) checkQualifiedCall(n *ast.CallExpr, field string, modid int) T
 		c.typeArgs(n.Args)
 		return Invalid
 	}
-	return c.checkUserCallIn(n, fn, modid)
+	return c.checkUserCallIn(n, fn, modid, want)
 }
 
 // checkNamedCall resolves a call whose callee is a bare identifier.
-func (c *checker) checkNamedCall(n *ast.CallExpr) Type {
+func (c *checker) checkNamedCall(n *ast.CallExpr, want Type) Type {
 	name := n.CalleeName
 	if name == "Some" {
 		return c.checkSomeCall(n)
@@ -151,7 +151,7 @@ func (c *checker) checkNamedCall(n *ast.CallExpr) Type {
 		return Invalid
 	}
 	if fn, ok := c.cur.funcs[name]; ok {
-		return c.checkUserCallIn(n, fn, c.cur.id)
+		return c.checkUserCallIn(n, fn, c.cur.id, want)
 	}
 	if isBuiltin(name) {
 		// ERGO-6: map/filter are removable (array namespace) but their
@@ -712,7 +712,7 @@ func (c *checker) checkBuiltinSig(n *ast.CallExpr, dispName, builtin string, sig
 // typed as one of that module's own structs resolves to that module's token, which
 // the caller's same-struct argument also resolves to -- cross-module type equality
 // holds). The recorded CallInfo's Mangled carries the defining module's modid.
-func (c *checker) checkUserCallIn(n *ast.CallExpr, fn *ast.FuncDecl, modid int) Type {
+func (c *checker) checkUserCallIn(n *ast.CallExpr, fn *ast.FuncDecl, modid int, want Type) Type {
 	callName := n.CalleeName
 	if callName == "" {
 		callName = fn.Name
@@ -828,7 +828,7 @@ func (c *checker) checkUserCallIn(n *ast.CallExpr, fn *ast.FuncDecl, modid int) 
 	}
 
 	if len(fn.TypeParams) > 0 {
-		return c.checkGenericUserCall(n, fn, modid, callName, argTypes, paramTypes, ret, explicit, seeded, typeArgPos, preSuppressed)
+		return c.checkGenericUserCall(n, fn, modid, callName, argTypes, paramTypes, ret, explicit, seeded, typeArgPos, preSuppressed, want)
 	}
 
 	for i := range fn.Params {
@@ -874,7 +874,7 @@ func (c *checker) checkUserCallIn(n *ast.CallExpr, fn *ast.FuncDecl, modid int) 
 func (c *checker) checkGenericUserCall(n *ast.CallExpr, fn *ast.FuncDecl, modid int,
 	callName string, argTypes, paramTypes []Type, ret Type,
 	explicit []Type, seeded map[string]bool, typeArgPos map[string]token.Position,
-	preSuppressed map[string]bool) Type {
+	preSuppressed map[string]bool, want Type) Type {
 	subst := map[string]Type{}
 	// Seed explicit call-site type arguments before unifying value args, so the
 	// same engine that infers also validates the explicit bindings (a value arg
@@ -948,6 +948,44 @@ func (c *checker) checkGenericUserCall(n *ast.CallExpr, fn *ast.FuncDecl, modid 
 			suppressed[tp] = true
 		}
 		ret = Invalid
+	}
+	// Context-directed type-argument inference (FR-001, FR-002, FR-005): when the
+	// call site supplies a concrete expected type, unify the callee's declared
+	// return type against it to bind any type parameter the value arguments left
+	// unbound. unify only checks consistency for an already-bound param (it never
+	// rebinds one), so value-argument bindings always win; a context type that
+	// contradicts a bound param surfaces via the same conflict path as a value-arg
+	// conflict. Skipped when there is no context (want == Invalid), when the call
+	// wrote explicit type arguments (those govern, FR-007), when an argument
+	// already errored, or when want itself carries an unresolved type variable
+	// (FR-004 concreteness: a "$"-typevar binding must never reach bound
+	// enforcement or monomorphization).
+	if want != Invalid && !anyArgErrored && len(n.TypeArgs) == 0 && !strings.Contains(string(want), "$") {
+		unbound := false
+		for _, tp := range fn.TypeParams {
+			if _, ok := subst[tp]; !ok {
+				unbound = true
+				break
+			}
+		}
+		if unbound {
+			tentative := cloneSubst(subst)
+			var cf conflict
+			if c.unify(ret, want, tentative, &cf) {
+				subst = tentative
+			} else if cf.found {
+				c.errf(n.CalleePos, "cannot infer type parameter %s of %s: bound to %s but also %s",
+					cf.param, callName, cf.prior, cf.next)
+				for _, tp := range fn.TypeParams {
+					suppressed[tp] = true // no cannot-infer cascade behind the conflict
+				}
+				ret = Invalid
+			}
+			// A non-conflict unify failure (a structural shape mismatch between the
+			// return type and the expected type) binds nothing; the still-unbound
+			// params fall through to the cannot-infer sweep below, unchanged from
+			// before this feature.
+		}
 	}
 	for _, tp := range fn.TypeParams {
 		if _, ok := subst[tp]; !ok {

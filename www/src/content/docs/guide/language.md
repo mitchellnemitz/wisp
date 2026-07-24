@@ -734,8 +734,15 @@ ordered and equality comparisons, string interpolation, struct field access,
 `switch`, and `array.sort`/`array.sum`.
 
 Inference is local and one-pass. A type parameter that no argument constrains
-(for example one that appears only in the return type) cannot be inferred; supply
-it explicitly (see below).
+(for example one that appears only in the return type) is inferred from the
+call's context when the call sits in a position with a known type -- a `let` or
+`final` annotation, a `return` in a function with a declared return type, an
+argument to a concretely-typed parameter, an assignment whose target has a known
+type, or an array element or dict value with a known type. So `let xs: int[] =
+empty_list()` needs no `[int]`. When there is no such context -- for example the
+call is nested inside another generic whose parameter is itself unconstrained, or
+the enclosing type is itself generic -- the parameter still cannot be inferred;
+supply it explicitly (see below).
 
 ### Explicit type arguments
 
