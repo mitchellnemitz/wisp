@@ -8,6 +8,8 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/mitchellnemitz/wisp/internal/types"
 )
 
 var bulletLineRe = regexp.MustCompile(`(?m)^- ` + "`")
@@ -282,6 +284,60 @@ func ParseViolations(entries []DocEntry, path string) []string {
 			continue
 		}
 		firstLine[e.ID] = e.Line
+	}
+	sort.Strings(out)
+	return out
+}
+
+// SignatureDrift compares each member in members (the compiler's catalog,
+// from types.DocumentableMembers()) against its parsed DocEntry in entries,
+// returning one formatted failure per drift. A member absent from entries is
+// NOT reported here (that is Completeness's job) -- SignatureDrift only
+// checks members that ARE documented.
+//
+//   - FR-002/FR-003: for a member with HasStaticSig true, its documented
+//     entry must have HasStaticSig true with matching Arity and Return.
+//   - FR-004: a member with HasStaticSig false is exempt from the arity/
+//     return check, but FR-009 still requires its entry to carry the
+//     no-static-signature marker (NoSigMarker true) -- a member with no
+//     static signature that IS documented with a full "(params) -> Return"
+//     signature, or with a malformed entry, is a failure (the exemption must
+//     never silently swallow a real mismatch).
+//   - FR-009: a member with HasStaticSig true whose entry is Malformed (the
+//     signature grammar didn't parse) is a failure, not a silent skip.
+func SignatureDrift(entries []DocEntry, members []types.DocMember, path string) []string {
+	byID := make(map[string]DocEntry, len(entries))
+	for _, e := range entries {
+		if e.ID != "" {
+			byID[e.ID] = e
+		}
+	}
+	var out []string
+	for _, m := range members {
+		e, ok := byID[m.ID]
+		if !ok {
+			continue // Completeness's responsibility
+		}
+		if !m.HasStaticSig {
+			if !e.NoSigMarker {
+				out = append(out, fmt.Sprintf("%s:%d: %q: expected the %q marker (member has no static signature), actual an entry without it", path, e.Line, m.ID, noSigMarker))
+			}
+			continue
+		}
+		if e.Malformed {
+			out = append(out, fmt.Sprintf("%s:%d: %q: expected a parseable %q signature (arity %d, return %s), actual an unparseable doc entry", path, e.Line, m.ID, "(params) -> Return", m.Arity, m.Return))
+			continue
+		}
+		if !e.HasStaticSig {
+			out = append(out, fmt.Sprintf("%s:%d: %q: expected a static signature (arity %d, return %s), actual the no-static-signature marker", path, e.Line, m.ID, m.Arity, m.Return))
+			continue
+		}
+		if e.Arity != m.Arity {
+			out = append(out, fmt.Sprintf("%s:%d: %q documented arity %d, source arity %d", path, e.Line, m.ID, e.Arity, m.Arity))
+		}
+		if e.Return != m.Return {
+			out = append(out, fmt.Sprintf("%s:%d: %q documented return type %q, source return type %q", path, e.Line, m.ID, e.Return, m.Return))
+		}
 	}
 	sort.Strings(out)
 	return out

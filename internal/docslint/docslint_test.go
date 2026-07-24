@@ -138,6 +138,51 @@ func TestParseDocMembers_KeywordLineSkipped(t *testing.T) {
 	}
 }
 
+func TestStdlibIndexSignaturesMatch(t *testing.T) {
+	data, err := os.ReadFile(stdlibIndexPath)
+	if err != nil {
+		t.Fatalf("reading %s: %v", stdlibIndexPath, err)
+	}
+	entries := docslint.ParseDocMembers(string(data))
+	drift := docslint.SignatureDrift(entries, types.DocumentableMembers(), stdlibIndexPath)
+	for _, d := range drift {
+		t.Error(d)
+	}
+}
+
+func TestSignatureDrift_ReturnTypeMismatch(t *testing.T) {
+	// Reproduces the audited env.get drift: documented as returning string
+	// instead of Optional[string].
+	doc := "## I/O and system\n\n- `[x] env.get(name: string) -> string`\n"
+	entries := docslint.ParseDocMembers(doc)
+	members := []types.DocMember{{ID: "env.get", Arity: 1, Return: "Optional[string]", HasStaticSig: true}}
+	drift := docslint.SignatureDrift(entries, members, "synthetic.md")
+	if len(drift) == 0 {
+		t.Fatalf("SignatureDrift() found no drift for a documented env.get return-type mismatch")
+	}
+}
+
+func TestSignatureDrift_ArityMismatch(t *testing.T) {
+	// Documented arity (2) disagrees with the source arity (1).
+	doc := "## Strings\n\n- `[x] string.trim(s: string, extra: string) -> string`\n"
+	entries := docslint.ParseDocMembers(doc)
+	members := []types.DocMember{{ID: "string.trim", Arity: 1, Return: "string", HasStaticSig: true}}
+	drift := docslint.SignatureDrift(entries, members, "synthetic.md")
+	if len(drift) == 0 {
+		t.Fatalf("SignatureDrift() found no drift for a documented string.trim arity mismatch (2 vs source 1)")
+	}
+}
+
+func TestSignatureDrift_NoStaticSigSkipped(t *testing.T) {
+	doc := "## Combinators\n\n- `[x] and_then` -- no static signature; flat-map over Optional/Result\n"
+	entries := docslint.ParseDocMembers(doc)
+	members := []types.DocMember{{ID: "and_then", HasStaticSig: false}}
+	drift := docslint.SignatureDrift(entries, members, "synthetic.md")
+	if len(drift) != 0 {
+		t.Fatalf("SignatureDrift() = %v, want none: a no-static-sig member documented with the marker must not be flagged", drift)
+	}
+}
+
 func TestDocslintGuard_ExecutableNegative(t *testing.T) {
 	syntheticDoc := "## Arrays\n\n- `[x] push(a: T[], v: T) -> T[]`\n"
 	offenses := docslint.StaleBareSpellings(syntheticDoc, types.RemovableBuiltins())
