@@ -394,8 +394,9 @@ func (s *ReturnStmt) stmtNode()           {}
 
 // ElseIf is one `else if (cond) { body }` arm.
 type ElseIf struct {
-	Cond Expr
-	Body []Stmt
+	KwPos token.Position // the `else` keyword of this else-if arm
+	Cond  Expr
+	Body  []Stmt
 }
 
 // IfStmt is an if / else-if* / else? chain. Else is nil when absent.
@@ -404,6 +405,7 @@ type IfStmt struct {
 	Cond    Expr
 	Then    []Stmt
 	ElseIfs []ElseIf
+	ElsePos token.Position // the final `else` keyword; zero when Else is nil
 	Else    []Stmt
 }
 
@@ -537,6 +539,7 @@ type TryStmt struct {
 	CatchVar    string
 	Catch       []Stmt
 	HasFinally  bool
+	FinallyPos  token.Position // the `finally` keyword; zero when HasFinally is false
 	Finally     []Stmt
 }
 

@@ -138,6 +138,52 @@ func TestCommentBeforeCatchStaysWithTry(t *testing.T) {
 	}
 }
 
+// TestTrailingCommentOnElseBrace (M8): a comment ON the `} else if`/`} else`
+// continuation-brace line stays on that line, not swallowed into the branch body.
+func TestTrailingCommentOnElseBrace(t *testing.T) {
+	src := "fn main() -> int {\n" +
+		"    if (true) {\n" +
+		"        let a: int = 1\n" +
+		"    } else if (false) { // on elseif\n" +
+		"        let b: int = 2\n" +
+		"    } else { // on else\n" +
+		"        let c: int = 3\n" +
+		"    }\n" +
+		"    return 0\n" +
+		"}\n"
+	want := src
+	got := mustFormat(t, src)
+	if got != want {
+		t.Fatalf("M8 trailing comment on else brace:\n--got--\n%s\n--want--\n%s", got, want)
+	}
+	if got != mustFormat(t, got) {
+		t.Fatalf("M8 else-brace not idempotent:\n--once--\n%s\n--twice--\n%s", got, mustFormat(t, got))
+	}
+}
+
+// TestTrailingCommentOnCatchFinallyBrace (M8): a comment ON the `} catch`/
+// `} finally` continuation-brace line stays on that line.
+func TestTrailingCommentOnCatchFinallyBrace(t *testing.T) {
+	src := "fn main() -> int {\n" +
+		"    try {\n" +
+		"        print(\"body\")\n" +
+		"    } catch (e) { // on catch\n" +
+		"        print(e.message)\n" +
+		"    } finally { // on finally\n" +
+		"        print(\"cleanup\")\n" +
+		"    }\n" +
+		"    return 0\n" +
+		"}\n"
+	want := src
+	got := mustFormat(t, src)
+	if got != want {
+		t.Fatalf("M8 trailing comment on catch/finally brace:\n--got--\n%s\n--want--\n%s", got, want)
+	}
+	if got != mustFormat(t, got) {
+		t.Fatalf("M8 catch/finally-brace not idempotent:\n--once--\n%s\n--twice--\n%s", got, mustFormat(t, got))
+	}
+}
+
 // TestCommentEndOfMatchArm (M8/H8): a comment at the tail of a match arm body
 // stays inside that arm.
 func TestCommentEndOfMatchArm(t *testing.T) {
