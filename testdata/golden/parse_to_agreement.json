@@ -1,0 +1,5 @@
+{
+  "desc": "parse_int/parse_float/parse_bool agree with to_int/to_float/to_bool across the SI-005 boundary edge-set: Some exactly when to_T succeeds, None exactly when to_T would abort (SC-004)",
+  "stdout": "true\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\n",
+  "exit": 0
+}
