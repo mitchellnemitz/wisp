@@ -1,0 +1,5 @@
+{
+  "desc": "parse_int returns Some(canonical int) for valid input, None for invalid",
+  "stdout": "42\n-9223372036854775808\ntrue\n7\n",
+  "exit": 0
+}

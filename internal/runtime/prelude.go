@@ -253,6 +253,8 @@ const (
 	IntMin     = "__wisp_int_min"     // -> int (shell POSIX min; -int_max - 1)
 	IntOr      = "__wisp_int_or"      // <s> <fallback> -> canonical int or fallback
 	FloatOr    = "__wisp_float_or"    // <s> <fallback> -> canonical float or fallback
+	ParseInt   = "__wisp_parse_int"   // <s>: canonical int in __ret + exit 0 if valid, else exit 1 (-> None)
+	ParseFloat = "__wisp_parse_float" // <s>: canonical float in __ret + exit 0 if valid, else exit 1 (-> None)
 
 	// --- Filesystem + process (fs milestone) ---
 	//
@@ -1754,6 +1756,54 @@ var registry = map[string]helper{
 	else
 		__ret="$__io_mag"
 	fi
+}`,
+	},
+
+	ParseInt: {
+		id:    ParseInt,
+		order: 89,
+		src: `__wisp_parse_int() {
+	__pi_s="$1"
+	__pi_body="$__pi_s"
+	__pi_neg=0
+	case "$__pi_s" in
+		-*) __pi_body="${__pi_s#-}"; __pi_neg=1 ;;
+		+*) __pi_body="${__pi_s#+}" ;;
+	esac
+	case "$__pi_body" in
+		'' | *[!0-9]*) return 1 ;;
+	esac
+	__pi_mag="$__pi_body"
+	while :; do
+		case "$__pi_mag" in
+			0?*) __pi_mag="${__pi_mag#0}" ;;
+			*) break ;;
+		esac
+	done
+	if [ "$__pi_neg" -eq 1 ]; then
+		__pi_bound=9223372036854775808
+	else
+		__pi_bound=9223372036854775807
+	fi
+	if [ "${#__pi_mag}" -gt "${#__pi_bound}" ]; then return 1; fi
+	if [ "${#__pi_mag}" -eq "${#__pi_bound}" ]; then
+		__pi_x="$__pi_mag"
+		__pi_y="$__pi_bound"
+		while [ -n "$__pi_x" ]; do
+			__pi_dx="${__pi_x%"${__pi_x#?}"}"
+			__pi_dy="${__pi_y%"${__pi_y#?}"}"
+			if [ "$__pi_dx" -gt "$__pi_dy" ]; then return 1; fi
+			if [ "$__pi_dx" -lt "$__pi_dy" ]; then break; fi
+			__pi_x="${__pi_x#?}"
+			__pi_y="${__pi_y#?}"
+		done
+	fi
+	if [ "$__pi_neg" -eq 1 ] && [ "$__pi_mag" != 0 ]; then
+		__ret="-$__pi_mag"
+	else
+		__ret="$__pi_mag"
+	fi
+	return 0
 }`,
 	},
 

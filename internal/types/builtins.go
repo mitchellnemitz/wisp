@@ -582,10 +582,13 @@ var builtinSigs = map[string]builtinSig{
 	//
 	// Fixed-signature (generic path). clamp/sign are overloaded int/float and
 	// special-cased in call.go (entries reserve the names only).
-	"int_or":   {params: []builtinParam{{name: "s", types: []Type{String}}, {name: "fallback", types: []Type{Int}}}, result: Int},
-	"float_or": {params: []builtinParam{{name: "s", types: []Type{String}}, {name: "fallback", types: []Type{Float}}}, result: Float},
-	"sqrt":     {params: []builtinParam{{name: "x", types: []Type{Float}}}, result: Float},
-	"pow":      {params: []builtinParam{{name: "base", types: []Type{Float}}, {name: "exp", types: []Type{Float}}}, result: Float},
+	"int_or":      {params: []builtinParam{{name: "s", types: []Type{String}}, {name: "fallback", types: []Type{Int}}}, result: Int},
+	"float_or":    {params: []builtinParam{{name: "s", types: []Type{String}}, {name: "fallback", types: []Type{Float}}}, result: Float},
+	"parse_int":   {params: []builtinParam{{name: "s", types: []Type{String}}}, result: optionalType(Int)},
+	"parse_float": {params: []builtinParam{{name: "s", types: []Type{String}}}, result: optionalType(Float)},
+	"parse_bool":  {params: []builtinParam{{name: "s", types: []Type{String}}}, result: optionalType(Bool)},
+	"sqrt":        {params: []builtinParam{{name: "x", types: []Type{Float}}}, result: Float},
+	"pow":         {params: []builtinParam{{name: "base", types: []Type{Float}}, {name: "exp", types: []Type{Float}}}, result: Float},
 	// Transcendentals (pure-arithmetic, no awk libm). Float-only args (match
 	// sqrt: no int->float coercion). exp/ln route through __wisp_exp/__wisp_ln;
 	// log10/log2 = ln(x)/ln(c) with a baked constant; pi() lowers to the float
