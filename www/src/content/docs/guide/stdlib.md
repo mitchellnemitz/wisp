@@ -2545,8 +2545,11 @@ fn shutdown() -> void {
   print("shutting down")
   exit(0)
 }
-on_exit(cleanup)
-on_signal("TERM", shutdown)
+fn main() -> int {
+  on_exit(cleanup)
+  on_signal("TERM", shutdown)
+  return 0
+}
 ```
 
 When `TERM` is received, `shutdown` runs, its `exit(0)` fires the EXIT trap, and
