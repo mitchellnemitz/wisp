@@ -16,7 +16,7 @@ endif
 syn keyword wispKeyword break case catch const continue default else enum export false final finally fn for if import include let match return struct switch test throw true try type while
 syn keyword wispType Optional Process RunResult bool error float int void
 syn match   wispType "\<string\>\.\@!"
-syn keyword wispBuiltin and_then assert assert_contains assert_eq assert_err assert_ne assert_none assert_ok assert_some cause debug error_with exit is_err is_none is_ok is_some length map_err now on_exit on_signal or_else parse_args print read_line read_secret read_stdin set_stdin sleep test_tmpdir to_bool to_float to_int to_string unwrap unwrap_err unwrap_or wrap
+syn keyword wispBuiltin and_then assert assert_contains assert_eq assert_err assert_ne assert_none assert_ok assert_some cause debug error_with exit is_err is_none is_ok is_some length map_err now on_exit on_signal or_else parse_args parse_bool parse_float parse_int print read_line read_secret read_stdin set_stdin sleep test_tmpdir to_bool to_float to_int to_string unwrap unwrap_err unwrap_or wrap
 " `skip` is a reserved :syn keyword argument, so it is matched separately
 " (still group wispBuiltin; the drift-guard test folds single-word `syn match`
 " contributions into the group's set). `contains` was moved to a module
