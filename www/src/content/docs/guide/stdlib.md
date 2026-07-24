@@ -440,7 +440,10 @@ string.char_at(s: string, i: int) -> string
 returns the one-byte string at byte index `i` and aborts on an out-of-range index.
 Indices are byte offsets, not codepoint positions. The implementation uses
 `LC_ALL=C awk`, so results are byte-identical across all supported shells
-including dash, busybox ash, bash, and zsh.
+including dash, busybox ash, bash, and zsh. Because the range is in bytes, a
+`start`/`end`/`i` that falls in the middle of a multibyte (UTF-8) character
+yields a string containing partial bytes, not a whole character; the same
+partial bytes are returned on every shell.
 
 ```wisp
 string.substring("hello", 1, 4)   // "ell"
