@@ -167,4 +167,13 @@ func TestContextInferAnnotationStillRequired(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected a parse error for a let without a type annotation, got none")
 	}
+
+	// SC-010 also covers parameter and return-type annotations: both stay
+	// grammar-mandatory (parse errors), unaffected by this feature.
+	if _, err := parser.Parse("fn f(x) -> int {\n return 0\n}\n", "test.wisp"); err == nil {
+		t.Fatalf("expected a parse error for a parameter without a type annotation, got none")
+	}
+	if _, err := parser.Parse("fn g() {\n return\n}\n", "test.wisp"); err == nil {
+		t.Fatalf("expected a parse error for a function without a return-type annotation, got none")
+	}
 }

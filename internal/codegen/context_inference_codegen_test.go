@@ -40,10 +40,12 @@ func TestContextInferByteIdenticalToExplicit(t *testing.T) {
 	}
 }
 
-// SC-005 per-position byte-identity: return, call-argument, and assignment
-// positions each compile byte-identically to their explicit-type-argument form.
-// (array-element and dict-value positions are covered by the delegation argument
-// plus the Task 5 cross-shell golden fixture.)
+// SC-005 per-position byte-identity: the return, call-argument, assignment,
+// array-element, and dict-value positions each compile byte-identically to their
+// explicit-type-argument form. Together with TestContextInferByteIdenticalToExplicit
+// (the let/final binding position) this directly covers byte-identity for every
+// SC-001..SC-004 position; the golden fixture (Task 5) additionally proves the
+// dict-value and other positions identical at runtime across all four shells.
 func TestContextInferByteIdenticalPerPosition(t *testing.T) {
 	cases := []struct {
 		name, inferred, explicit string
@@ -62,6 +64,16 @@ func TestContextInferByteIdenticalPerPosition(t *testing.T) {
 			"assign",
 			ctxEmptyList + "fn main() -> int {\n let xs: int[] = [1]\n xs = empty_list()\n print(to_string(length(xs)))\n return 0\n}",
 			ctxEmptyList + "fn main() -> int {\n let xs: int[] = [1]\n xs = empty_list[int]()\n print(to_string(length(xs)))\n return 0\n}",
+		},
+		{
+			"array-elem",
+			ctxEmptyList + "fn main() -> int {\n let grid: int[][] = [empty_list()]\n print(to_string(length(grid)))\n return 0\n}",
+			ctxEmptyList + "fn main() -> int {\n let grid: int[][] = [empty_list[int]()]\n print(to_string(length(grid)))\n return 0\n}",
+		},
+		{
+			"dict-value",
+			ctxEmptyList + "fn main() -> int {\n let m: {string: int[]} = {\"k\": empty_list()}\n print(to_string(length(m[\"k\"])))\n return 0\n}",
+			ctxEmptyList + "fn main() -> int {\n let m: {string: int[]} = {\"k\": empty_list[int]()}\n print(to_string(length(m[\"k\"])))\n return 0\n}",
 		},
 	}
 	for _, tc := range cases {
