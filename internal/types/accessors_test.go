@@ -285,3 +285,83 @@ func TestScopePartitionDisjoint(t *testing.T) {
 		t.Error("true/false should be in the control-keyword scope")
 	}
 }
+
+func TestDocumentableMembers(t *testing.T) {
+	members := types.DocumentableMembers()
+	if !sort.SliceIsSorted(members, func(i, j int) bool { return members[i].ID < members[j].ID }) {
+		t.Fatalf("DocumentableMembers() not sorted by ID")
+	}
+	// Derive the expected total from the source-of-truth accessors at test
+	// time rather than pinning a snapshot literal: a legitimate builtin/member
+	// change should NOT false-fail this test (that drift is caught by the
+	// completeness/signature checks in Tasks 3-4). This still catches a real
+	// derivation bug -- a dropped or double-counted member -- because it
+	// cross-checks DocumentableMembers() against an independent re-count over
+	// the same two sources.
+	want := len(types.BuiltinNames())
+	for _, ns := range types.CoreNamespaces() {
+		want += len(types.CoreMembers(ns))
+	}
+	if len(members) != want {
+		t.Errorf("DocumentableMembers() = %d entries, want %d (flat + namespace)", len(members), want)
+	}
+	byID := make(map[string]types.DocMember, len(members))
+	for _, m := range members {
+		if _, dup := byID[m.ID]; dup {
+			t.Errorf("duplicate DocMember ID %q", m.ID)
+		}
+		byID[m.ID] = m
+	}
+	// Structural invariant (FR-004/FR-009), not a snapshot count: a member has
+	// a rendered Return exactly when it has a static signature, and no
+	// static-sig member is left with an empty Return.
+	for _, m := range members {
+		if m.HasStaticSig && m.Return == "" {
+			t.Errorf("%s: HasStaticSig but empty Return", m.ID)
+		}
+		if !m.HasStaticSig && m.Return != "" {
+			t.Errorf("%s: !HasStaticSig but non-empty Return %q", m.ID, m.Return)
+		}
+	}
+
+	// Spot checks: return type + arity for a scalar, an Optional-returning
+	// member, an array-returning member (renderDocReturnType conversion), and
+	// the six flat no-static-sig names.
+	cases := []struct {
+		id         string
+		wantArity  int
+		wantReturn string
+		wantHasSig bool
+	}{
+		{"length", 1, "int", true},
+		{"env.get", 1, "Optional[string]", true},
+		{"string.split", 2, "string[]", true},
+		{"fs.list_dir", 1, "string[]", true},
+		{"and_then", 2, "", false},
+		{"unwrap", 1, "", false},
+		{"parse_args", 2, "", false},
+		{"math.abs", 1, "", false},    // delegate: no static sig
+		{"dict.get", 2, "", false},    // delegate: no static sig
+		{"json.decode", 1, "", false}, // custom-checked: no static sig
+	}
+	for _, c := range cases {
+		m, ok := byID[c.id]
+		if !ok {
+			t.Errorf("DocumentableMembers() missing %q", c.id)
+			continue
+		}
+		if m.HasStaticSig != c.wantHasSig {
+			t.Errorf("%s: HasStaticSig = %v, want %v", c.id, m.HasStaticSig, c.wantHasSig)
+			continue
+		}
+		if !c.wantHasSig {
+			continue
+		}
+		if m.Arity != c.wantArity {
+			t.Errorf("%s: Arity = %d, want %d", c.id, m.Arity, c.wantArity)
+		}
+		if m.Return != c.wantReturn {
+			t.Errorf("%s: Return = %q, want %q", c.id, m.Return, c.wantReturn)
+		}
+	}
+}
