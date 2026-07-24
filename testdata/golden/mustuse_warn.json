@@ -1,0 +1,6 @@
+{
+  "desc": "discarded Optional warns (non-gating); _ = opt-out is silent; program still runs",
+  "stdout": "done\n",
+  "exit": 0,
+  "warnContains": "discarded"
+}

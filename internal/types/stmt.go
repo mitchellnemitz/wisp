@@ -131,6 +131,14 @@ func (c *checker) checkStmt(s ast.Stmt) {
 		// At statement level only a call is valid (parser already restricts the
 		// useful cases); just type it so codegen has its type.
 		c.checkExpr(n.X)
+		// A bare Optional/Result statement silently discards the value that
+		// carries whether the operation succeeded (FR-006/FR-007). Warn, but
+		// never gate: `_ = expr` (AssignStmt) and `let _: T = expr` (LetStmt)
+		// are the deliberate opt-outs and never reach this ExprStmt case.
+		t := c.info.Types[n.X]
+		if isOptional(t) || isResult(t) {
+			c.warnf(n.X.Pos(), "discarded %s value; use `_ = ...` to ignore it deliberately", t)
+		}
 	}
 }
 
