@@ -30,7 +30,7 @@ func Add(root string, args AddArgs, f Fetcher, stderr io.Writer) int {
 
 	man, err := readManifest(manifestPath)
 	if err != nil {
-		fmt.Fprintf(stderr, "wisp: %v\n", err)
+		fmt.Fprintf(stderr, "wisp: add: %v\n", err)
 		return 1
 	}
 
@@ -105,7 +105,7 @@ func Remove(root, key string, f Fetcher, stderr io.Writer) int {
 
 	man, err := readManifest(manifestPath)
 	if err != nil {
-		fmt.Fprintf(stderr, "wisp: %v\n", err)
+		fmt.Fprintf(stderr, "wisp: remove: %v\n", err)
 		return 1
 	}
 	if _, ok := man.Dependencies[key]; !ok {
