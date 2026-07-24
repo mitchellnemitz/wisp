@@ -1,6 +1,19 @@
-// Package docslint guards www/src/content/docs/stdlib-index.md and
-// www/src/content/docs/guide/language.md against drift from the compiler's
-// builtin tables.
+// Package docslint guards www/src/content/docs/stdlib-index.md,
+// www/src/content/docs/guide/stdlib.md, and www/src/content/docs/guide/language.md
+// against drift from the compiler's builtin tables: every catalog member must
+// be documented (Completeness), a documented member's return type and arity
+// must match its source signature where one is statically known
+// (SignatureDrift), four funcref-class prose counts must match their
+// source-of-truth set sizes (FuncrefCounts), and a moved builtin's old bare
+// call spelling must not reappear anywhere in either stdlib doc
+// (StaleBareSpellings).
+//
+// Deliberately out of scope: free-prose semantic claims ("float is
+// excluded", "X remains deferred", "spans more than one container", and
+// similar English assertions) have no clean anchor to a source symbol and
+// are not checked here -- they are left to manual audit. This package
+// checks structure and mechanically-derivable facts, not prose correctness
+// in general.
 package docslint
 
 import (
