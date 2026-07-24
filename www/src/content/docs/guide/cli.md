@@ -161,8 +161,8 @@ Multiple consecutive `///` lines form a single doc-comment block:
 ```wisp
 /// Parses a decimal integer from s.
 /// Returns none when s is not a valid integer.
-fn parse_int(s: string) -> Optional[int] {
-    return int_of_string(s)
+fn checked_int(s: string) -> Optional[int] {
+    return parse_int(s)
 }
 ```
 

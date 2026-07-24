@@ -1492,17 +1492,18 @@ Every argument is inert data: a path, content, name, or argv element containing
 ### env.get
 
 ```
-env.get(name: string) -> string
+env.get(name: string) -> Optional[string]
 ```
 
-Returns the value of the environment variable `name`. An unset variable is a
-located abort naming the variable; a set-but-empty variable returns `""`. The
-value is read through a command substitution, so trailing newlines are stripped
-(the same as `run`); interior bytes are preserved. For exact trailing bytes, read
-a file with `read_file` instead.
+Returns the value of the environment variable `name`. An unset variable
+returns `None`; a set-but-empty variable returns `Some("")`. Use
+`unwrap_or(env.get(name), fallback)` to supply a default instead of an unset
+variable. The value is read through a command substitution, so trailing
+newlines are stripped (the same as `run`); interior bytes are preserved. For
+exact trailing bytes, read a file with `read_file` instead.
 
 ```wisp
-env.get("HOME")   // "/home/me"
+unwrap_or(env.get("HOME"), "")   // "/home/me"
 ```
 
 ### env.has
