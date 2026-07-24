@@ -1,5 +1,5 @@
 {
-  "desc": "set_env value is inert -- env_or reads back the exact literal, no substitution/glob (AC3)",
+  "desc": "set_env value is inert -- env.get reads back the exact literal, no substitution/glob (AC3)",
   "stdout": "$(touch PWNED); `id`; *\n",
   "exit": 0
 }

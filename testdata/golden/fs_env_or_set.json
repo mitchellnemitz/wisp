@@ -1,5 +1,0 @@
-{
-  "desc": "env_or on an always-set variable (PATH) returns a non-empty value",
-  "stdout": "true\n",
-  "exit": 0
-}

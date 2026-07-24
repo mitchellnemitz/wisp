@@ -51,8 +51,30 @@ non-call, documentary contexts and are intentionally kept:
   `[]string{"__wisp_int_or","__wisp_float_or","__wisp_env_or"}` list, which
   asserts these generated helpers are *absent* from tree-shaken output
   (SC-015). This is a negative assertion, not a live reference.
+- `testdata/golden/sugar_parity.json:2` — the fixture `desc` naming the removed
+  sugar it reproduces. Documentary; the fixture calls only surviving builtins.
 
 ## Category B — fixed
+
+Second pass (final-review follow-up): stale documentary references outside the
+Category A set were cleaned so SC-014 holds honestly, not just for live calls:
+
+- Golden `.json` `desc` strings that named removed sugar were reworded to the
+  surviving spelling: `coll_dicts.json` (`get_or`->`get`), `set_env_child.json`
+  and `set_env_injection.json` (`env_or`->`env.get`).
+- Two misleadingly-named fixtures were renamed (bodies already called
+  `unwrap_or(env.get(...), "FB")`): `fs_env_or_set.{wisp,json}` ->
+  `fs_env_get_set.{wisp,json}`, `fs_env_or_unset.{wisp,json}` ->
+  `fs_env_get_unset.{wisp,json}`; their descs updated too.
+
+First pass:
+
+- `examples/numeric.wisp:6-7` — printed labels said `int_or:`/`float_or:`
+  though the calls had already migrated to
+  `unwrap_or(parse_int(...), ...)`/`unwrap_or(parse_float(...), ...)`.
+  Relabeled to `parse_int:`/`parse_float:`.
+- `internal/doctest/doctest_test.go:38` — updated the pinned expected stdout
+  for `numeric.wisp` to match the relabeled output byte-for-byte.
 
 - `examples/numeric.wisp:6-7` — printed labels said `int_or:`/`float_or:`
   though the calls had already migrated to
