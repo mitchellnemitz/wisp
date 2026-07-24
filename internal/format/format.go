@@ -572,11 +572,18 @@ func (p *printer) ifStmt(n *ast.IfStmt, depth, closeLine int) {
 
 	for i, ei := range n.ElseIfs {
 		mid := "} else if (" + p.expr(ei.Cond, depth) + ") {"
+		if tc, ok := p.trailingComment(ei.KwPos.Line); ok {
+			mid += " " + tc
+		}
 		p.writeLine(depth, mid)
 		p.block(ei.Body, depth+1, branchBound(i+1))
 	}
 	if n.Else != nil {
-		p.writeLine(depth, "} else {")
+		mid := "} else {"
+		if tc, ok := p.trailingComment(n.ElsePos.Line); ok {
+			mid += " " + tc
+		}
+		p.writeLine(depth, mid)
 		p.block(n.Else, depth+1, closeLine)
 	}
 	p.writeLine(depth, "}")
@@ -684,7 +691,11 @@ func (p *printer) tryStmt(n *ast.TryStmt, depth, closeLine int) {
 	// The try body is bounded by the `} catch` line; the catch body by the
 	// `} finally` line (or the construct closeLine when there is no finally).
 	p.block(n.Body, depth+1, n.CatchPos.Line)
-	p.writeLine(depth, "} catch ("+n.CatchVar+") {")
+	catchHead := "} catch (" + n.CatchVar + ") {"
+	if tc, ok := p.trailingComment(n.CatchPos.Line); ok {
+		catchHead += " " + tc
+	}
+	p.writeLine(depth, catchHead)
 	catchBound := closeLine
 	if n.HasFinally {
 		catchBound = firstStmtLine(n.Finally)
@@ -694,7 +705,11 @@ func (p *printer) tryStmt(n *ast.TryStmt, depth, closeLine int) {
 	}
 	p.block(n.Catch, depth+1, catchBound)
 	if n.HasFinally {
-		p.writeLine(depth, "} finally {")
+		finallyHead := "} finally {"
+		if tc, ok := p.trailingComment(n.FinallyPos.Line); ok {
+			finallyHead += " " + tc
+		}
+		p.writeLine(depth, finallyHead)
 		p.block(n.Finally, depth+1, closeLine)
 	}
 	p.writeLine(depth, "}")

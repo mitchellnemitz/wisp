@@ -1084,12 +1084,13 @@ func (p *parser) parseTry() (ast.Stmt, error) {
 	ts.Catch = handler
 
 	if p.curKind() == token.Finally {
-		p.advance() // finally
+		finKw := p.advance() // finally
 		fin, err := p.parseBlock()
 		if err != nil {
 			return nil, err
 		}
 		ts.HasFinally = true
+		ts.FinallyPos = finKw.Pos
 		if fin == nil {
 			fin = []ast.Stmt{}
 		}
@@ -1347,7 +1348,7 @@ func (p *parser) parseIf() (ast.Stmt, error) {
 	stmt := &ast.IfStmt{KwPos: kw.Pos, Cond: cond, Then: then}
 
 	for p.curKind() == token.Else {
-		p.advance() // else
+		elseKw := p.advance() // else
 		if p.curKind() == token.If {
 			p.advance() // if
 			c, err := p.parseParenCond()
@@ -1358,7 +1359,7 @@ func (p *parser) parseIf() (ast.Stmt, error) {
 			if err != nil {
 				return nil, err
 			}
-			stmt.ElseIfs = append(stmt.ElseIfs, ast.ElseIf{Cond: c, Body: body})
+			stmt.ElseIfs = append(stmt.ElseIfs, ast.ElseIf{KwPos: elseKw.Pos, Cond: c, Body: body})
 			continue
 		}
 		// final else
@@ -1366,6 +1367,7 @@ func (p *parser) parseIf() (ast.Stmt, error) {
 		if err != nil {
 			return nil, err
 		}
+		stmt.ElsePos = elseKw.Pos
 		stmt.Else = body
 		break
 	}
