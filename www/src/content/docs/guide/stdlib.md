@@ -679,7 +679,7 @@ math.sqrt(x: float) -> float
 ```
 
 The non-negative square root. `sqrt` of a negative aborts (catchable). It is
-computed with Newton's method in plain shell arithmetic, not awk's `sqrt()`,
+computed with Newton's method in plain shell arithmetic, not awk's `sqrt`,
 because a minimal busybox awk is commonly built without math support. The result
 is exact on perfect squares and within about one unit in the last place
 otherwise. A result whose magnitude `%.17g` would render in exponent form (very

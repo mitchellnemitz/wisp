@@ -83,7 +83,7 @@ warrant separate `byte_*` vs `char_*` names.
 - `[x] math.lcm(a: int, b: int) -> int`
 - `[x] math.int_min() -> int` -- platform limits, computed at runtime by detecting shell integer width
 - `[x] math.int_max() -> int` -- platform limits, computed at runtime by detecting shell integer width
-- `[x] [ref] math.exp(x: float) -> float` -- e^x, pure-arithmetic Taylor series (no awk libm); a result outside the representable float range aborts located; use `exp(1.0)` for Euler's number -- there is no `e` constant, so `e` stays free as the conventional error-binding name in `catch (e)`
+- `[x] [ref] math.exp(x: float) -> float` -- e^x, pure-arithmetic Taylor series (no awk libm); a result outside the representable float range aborts located; use `math.exp(1.0)` for Euler's number -- there is no `e` constant, so `e` stays free as the conventional error-binding name in `catch (e)`
 - `[x] [ref] math.ln(x: float) -> float` -- natural log; domain x > 0 (non-positive aborts located, no hang)
 - `[x] math.log10(x: float) -> float` -- base-10 log; domain x > 0
 - `[x] math.log2(x: float) -> float` -- base-2 log; domain x > 0
@@ -185,11 +185,11 @@ All other math ops above are pure-arithmetic (basic +,-,*,/ only).
 - `[x] process.run_full` -- no static signature; `process.run_full(argv: string[]) -> RunResult`, stdout + stderr + code; stdin=/dev/null
 - `[x] process.run_input` -- no static signature; `process.run_input(argv: string[], stdin: string) -> string`, run argv with stdin fed as exact bytes via printf %s (no added newline); returns stdout (trailing newlines stripped); aborts on nonzero child exit; empty argv aborts
 - `[x] process.run_input_full` -- no static signature; `process.run_input_full(argv: string[], stdin: string) -> RunResult`, same stdin feed; returns RunResult{stdout,stderr,code} without aborting; empty argv aborts
-- `[x] process.run_env` -- no static signature; `process.run_env(argv: string[], env: {string: string}) -> string`, run with augmented child env (adds/overrides; does not clear); aborts on nonzero exit like `run`; env NAME must match `[A-Za-z_][A-Za-z0-9_]*` (invalid name aborts located); VALUES are arbitrary; for a supported argv[0], `run_env(argv, {})` == `run(argv)`; argv[0] limitation: a name starting with `-` or containing `=` is unsupported (use a path-qualified form); uses `env` (POSIX); non-goals: no clear-slate, no unset
+- `[x] process.run_env` -- no static signature; `process.run_env(argv: string[], env: {string: string}) -> string`, run with augmented child env (adds/overrides; does not clear); aborts on nonzero exit like `process.run`; env NAME must match `[A-Za-z_][A-Za-z0-9_]*` (invalid name aborts located); VALUES are arbitrary; for a supported argv[0], `process.run_env(argv, {})` == `process.run(argv)`; argv[0] limitation: a name starting with `-` or containing `=` is unsupported (use a path-qualified form); uses `env` (POSIX); non-goals: no clear-slate, no unset
 - `[x] process.run_env_status` -- no static signature; `process.run_env_status(argv: string[], env: {string: string}) -> int`, run with augmented child env, return exit code, do not abort; same NAME validation and empty-argv abort as `run_env`
 - `[x] process.run_env_full` -- no static signature; `process.run_env_full(argv: string[], env: {string: string}) -> RunResult`, run with augmented child env, return RunResult (stdout+stderr+code), do not abort; same NAME validation and empty-argv abort as `run_env`
 - `[x] process.exec_command` -- no static signature; `process.exec_command(argv: string[]) -> void`, replace the shell process with argv via POSIX exec (same PID, inherits all fds/signals); never returns on success; empty argv aborts located; exec failure exits 127/126 (not a wisp abort)
-- Non-goal: `mtime` (no POSIX-portable epoch source; use `run(["stat", ...])` platform-specifically)
+- Non-goal: `mtime` (no POSIX-portable epoch source; use `process.run(["stat", ...])` platform-specifically)
 
 ## Signals and traps
 
@@ -368,7 +368,7 @@ verbatim, so no precision loss). See the [stdlib guide](/guide/stdlib/#json-impo
 - [x] Tuples (`(T1, T2, ...)`, n >= 2): fixed-arity, immutable, opaque -- IMPLEMENTED. `zip`, `process.run_full`, and tuple destructuring (`let (a, b) = ...`) are also implemented; only a destructuring `match` remains deferred.
 - [x] An optional/maybe type (`Optional[T]` = `Some(T) | None`) -- IMPLEMENTED.
   `find`/`index_of`/`last_index_of` now return `Optional[int]` and the dict
-  accessor `get(d, k) -> Optional[V]` was added, alongside the access builtins
+  accessor `dict.get(d, k) -> Optional[V]` was added, alongside the access builtins
   `is_some`/`is_none`/`unwrap`/`unwrap_or`. `Optional` is opaque (no
   `==`/`to_string()`/switch); `None` concretizes at `let`/`return`/assignment only.
   `first`/`last`/`char_at` keep their catchable aborts.

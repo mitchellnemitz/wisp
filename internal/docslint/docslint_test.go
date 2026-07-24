@@ -11,17 +11,39 @@ import (
 
 const (
 	stdlibIndexPath = "../../www/src/content/docs/stdlib-index.md"
+	stdlibGuidePath = "../../www/src/content/docs/guide/stdlib.md"
 	languageMdPath  = "../../www/src/content/docs/guide/language.md"
 )
 
-func TestStdlibIndexNoStaleBareSpelling(t *testing.T) {
-	data, err := os.ReadFile(stdlibIndexPath)
-	if err != nil {
-		t.Fatalf("reading %s: %v", stdlibIndexPath, err)
+// removableMinusCombinatorCarveOut is types.RemovableBuiltins() minus
+// {"map", "filter"}: call.go's ERGO-6 carve-out lets a bare 2-arg
+// map(o, f)/filter(o, p) dispatch to the flat combinator on Optional/Result,
+// so those two bare spellings are correct in prose, not stale.
+func removableMinusCombinatorCarveOut() []string {
+	excluded := map[string]bool{"map": true, "filter": true}
+	var out []string
+	for _, n := range types.RemovableBuiltins() {
+		if !excluded[n] {
+			out = append(out, n)
+		}
 	}
-	offenses := docslint.StaleBareSpellings(string(data), types.RemovableBuiltins())
-	for _, o := range offenses {
-		t.Errorf("%s:%d: stale bare spelling %q; use its RemovedHint()-qualified form", stdlibIndexPath, o.Line, o.Name)
+	return out
+}
+
+func TestStdlibDocsNoStaleBareSpelling(t *testing.T) {
+	removable := removableMinusCombinatorCarveOut()
+	for _, path := range []string{stdlibIndexPath, stdlibGuidePath} {
+		data, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("reading %s: %v", path, err)
+		}
+		offenses := docslint.StaleBareSpellings(string(data), removable)
+		for _, o := range offenses {
+			// FR-010: id + expected + actual + file:line. Expected = the
+			// namespaced migration spelling from types.RemovedHint.
+			want, _ := types.RemovedHint(o.Name)
+			t.Errorf("%s:%d: %q: expected the namespaced call form %q, actual a bare call spelling", path, o.Line, o.Name, want)
+		}
 	}
 }
 
@@ -184,16 +206,18 @@ func TestSignatureDrift_NoStaticSigSkipped(t *testing.T) {
 }
 
 func TestDocslintGuard_ExecutableNegative(t *testing.T) {
-	syntheticDoc := "## Arrays\n\n- `[x] push(a: T[], v: T) -> T[]`\n"
+	syntheticDoc := "Some prose mentioning `push(xs, v)` inline, not in a bullet.\n\n" +
+		"## Arrays\n\n- `[x] push(a: T[], v: T) -> T[]`\n"
 	offenses := docslint.StaleBareSpellings(syntheticDoc, types.RemovableBuiltins())
-	found := false
+	names := map[string]bool{}
 	for _, o := range offenses {
-		if o.Name == "push" && o.Line == 3 {
-			found = true
-		}
+		names[o.Name] = true
 	}
-	if !found {
+	if !names["push"] {
 		t.Fatalf("StaleBareSpellings did not detect synthetic drift for %q; got %v", "push", offenses)
+	}
+	if len(offenses) < 2 {
+		t.Fatalf("StaleBareSpellings should flag BOTH the prose mention and the bullet mention (widened scope); got %v", offenses)
 	}
 }
 

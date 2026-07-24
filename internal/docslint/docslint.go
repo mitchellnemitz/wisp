@@ -13,7 +13,6 @@ import (
 	"github.com/mitchellnemitz/wisp/internal/types"
 )
 
-var bulletLineRe = regexp.MustCompile(`(?m)^- ` + "`")
 var spanRe = regexp.MustCompile("`([^`]*)`")
 var identRe = regexp.MustCompile(`^(?:(?:\[(?:x| )\]|\[ref\])\s*){0,2}(\w+)\(`)
 
@@ -23,15 +22,15 @@ type StaleSpelling struct {
 	Name string // the stale bare identifier found
 }
 
-// StaleBareSpellings scans doc (the full text of stdlib-index.md, or a
-// synthetic stand-in for testing) for bullet lines documenting a builtin
-// call spelling, and flags any extracted identifier that is a member of
-// removable (the RemovableBuiltins() set) -- i.e. documented using its old
-// bare spelling instead of its RemovedHint()-qualified form.
-//
-// Only backtick spans appearing before a line's first " -- " prose
-// separator are scanned, so prose usage notes like "use `exp(1.0)`" or
-// "(`exit(n)`, or ...)" after " -- " are correctly excluded.
+// StaleBareSpellings scans doc (the full text of a stdlib doc, or a
+// synthetic stand-in for testing) for any call-shaped backtick span (`name(`)
+// naming a builtin in removable (the RemovableBuiltins() set, minus any
+// caller-applied carve-out -- see internal/docslint's callers), and flags it
+// regardless of where in the line or file it appears: a signature bullet, a
+// prose sentence, or after a bullet's " -- " separator. A legitimate
+// reference to a moved builtin must use its namespaced form (ns.member),
+// which never matches identRe's bare \w+( shape -- there is no bare-name
+// exception (FR-006).
 func StaleBareSpellings(doc string, removable []string) []StaleSpelling {
 	removableSet := make(map[string]bool, len(removable))
 	for _, n := range removable {
@@ -41,15 +40,7 @@ func StaleBareSpellings(doc string, removable []string) []StaleSpelling {
 	var out []StaleSpelling
 	lines := strings.Split(doc, "\n")
 	for i, line := range lines {
-		if !bulletLineRe.MatchString(line) {
-			continue
-		}
-		boundary := len(line)
-		if idx := strings.Index(line, " -- "); idx >= 0 {
-			boundary = idx
-		}
-		head := line[:boundary]
-		for _, spanMatch := range spanRe.FindAllStringSubmatch(head, -1) {
+		for _, spanMatch := range spanRe.FindAllStringSubmatch(line, -1) {
 			inner := spanMatch[1]
 			m := identRe.FindStringSubmatch(inner)
 			if m == nil {
