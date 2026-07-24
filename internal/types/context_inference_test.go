@@ -1,6 +1,10 @@
 package types
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/mitchellnemitz/wisp/internal/parser"
+)
 
 // A return-only type parameter is inferred from the let-binding annotation, with
 // no explicit type argument on the call. (FR-001, FR-002, FR-004a, SC-001)
@@ -122,14 +126,14 @@ func TestContextInferNestedExplicitOK(t *testing.T) {
 func TestContextInferExplicitArgsWinOverContext(t *testing.T) {
 	expectErr(t, "fn empty_list[T]() -> T[] {\n let xs: T[] = []\n return xs\n}\n"+
 		wrapMain("let xs: string[] = empty_list[int]()\n print(to_string(length(xs)))"),
-		"has type int[], want string[]")
+		"has type [int], want [string]")
 }
 
 // Expected type carrying a type variable is not concrete: inside a generic body a
 // return whose type is U[] does not drive inference; explicit args still required. (FR-004 concreteness)
 func TestContextInferWantWithTypeVarErrors(t *testing.T) {
 	expectErr(t, "fn empty_list[T]() -> T[] {\n let xs: T[] = []\n return xs\n}\n"+
-		"fn wrap[U]() -> U[] {\n return empty_list()\n}\n"+
+		"fn wraplist[U]() -> U[] {\n return empty_list()\n}\n"+
 		wrapMain("return 0"),
 		"cannot infer type parameter T of empty_list")
 }
@@ -137,8 +141,8 @@ func TestContextInferWantWithTypeVarErrors(t *testing.T) {
 // The same generic body compiles when the inner call names the enclosing type param. (FR-004 concreteness)
 func TestContextInferWantWithTypeVarExplicitOK(t *testing.T) {
 	expectOK(t, "fn empty_list[T]() -> T[] {\n let xs: T[] = []\n return xs\n}\n"+
-		"fn wrap[U]() -> U[] {\n return empty_list[U]()\n}\n"+
-		wrapMain("let xs: int[] = wrap[int]()\n print(to_string(length(xs)))"))
+		"fn wraplist[U]() -> U[] {\n return empty_list[U]()\n}\n"+
+		wrapMain("let xs: int[] = wraplist[int]()\n print(to_string(length(xs)))"))
 }
 
 // No context at all: a bare return-only call still cannot be inferred. (FR-006)
@@ -154,12 +158,13 @@ func TestContextInferNoContextErrors(t *testing.T) {
 		"cannot infer type parameter T of empty_list")
 }
 
-// No let-type inference: an unannotated let is still a parse/type error, unchanged. (SC-010)
-// (An annotation is required by the grammar; assert the feature did not relax that.)
+// No let-type inference: an unannotated let is still rejected, unchanged. (SC-010)
+// The annotation is required by the grammar, so the missing `: T` surfaces as a
+// parse error (before Check runs); assert the feature did not relax that.
 func TestContextInferAnnotationStillRequired(t *testing.T) {
-	info := check(t, "fn empty_list[T]() -> T[] {\n let xs: T[] = []\n return xs\n}\n"+
-		wrapMain("let xs = empty_list()\n return 0"))
-	if len(info.Errors) == 0 {
-		t.Fatalf("expected an error for a let without a type annotation, got none")
+	_, err := parser.Parse("fn empty_list[T]() -> T[] {\n let xs: T[] = []\n return xs\n}\n"+
+		wrapMain("let xs = empty_list()\n return 0"), "test.wisp")
+	if err == nil {
+		t.Fatalf("expected a parse error for a let without a type annotation, got none")
 	}
 }
