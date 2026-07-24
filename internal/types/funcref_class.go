@@ -64,7 +64,7 @@ var builtinFuncrefGeneratable = map[string]bool{
 	"replace": true, "replace_first": true, "matches": true, "regex_replace": true,
 	"repeat": true, "count": true, "substring": true, "char_at": true,
 	"pad_start": true, "pad_end": true, "ord": true, "chr": true,
-	"env": true, "read_file": true, "file_size": true,
+	"read_file": true, "file_size": true,
 	"sqrt": true, "exp": true, "ln": true, "log10": true, "log2": true, "pow": true,
 	"floor": true, "ceil": true, "round": true, "trunc": true,
 	"format_float": true, "gcd": true, "lcm": true, "random": true,

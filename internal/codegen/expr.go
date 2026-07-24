@@ -1030,8 +1030,7 @@ func (g *gen) genBuiltinCall(n *ast.CallExpr, ci *types.CallInfo) atom {
 	case "reduce":
 		return g.genReduce(ci.Args)
 	case "env":
-		// env can abort (unset); pass the located call position.
-		return g.genLocatedHelperCall(runtime.Env, "__wisp_env", n, ci.Args)
+		return g.genStrSentinelToOptional(runtime.Env, "__wisp_env", n, ci.Args)
 	case "has_env":
 		return g.genHelperCall(runtime.HasEnv, "__wisp_has_env", n, ci.Args)
 	case "read_file":

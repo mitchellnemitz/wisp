@@ -313,9 +313,9 @@ var builtinSigs = map[string]builtinSig{
 	// run's string[] argument cannot be expressed by the fixed table (like join's
 	// arg-1), so it is validated specially in checkRunCall; this entry only
 	// reserves the name and feeds types.BuiltinNames() for the drift guard.
-	"env": { // env(string) -> string
+	"env": { // env(string) -> Optional[string]
 		params: []builtinParam{{name: "name", types: []Type{String}}},
-		result: String,
+		result: optionalType(String),
 	},
 	"has_env": { // has_env(string) -> bool
 		params: []builtinParam{{name: "name", types: []Type{String}}},

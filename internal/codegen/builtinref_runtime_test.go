@@ -24,7 +24,7 @@ func TestBuiltinRef_Runtime_VoidSideEffect(t *testing.T) {
 	out, errb, code := runNS(t, `fn main() -> int {
   let setter: fn(string, string) -> void = env.set
   setter("WISP_FUNCREF_TEST", "on")
-  print(env.get("WISP_FUNCREF_TEST"))
+  print(unwrap_or(env.get("WISP_FUNCREF_TEST"), ""))
   return 0
 }`, "env")
 	if code != 0 {

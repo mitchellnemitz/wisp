@@ -1,5 +1,5 @@
 {
-  "desc": "env on an unset variable is catchable inside try",
+  "desc": "env on an unset variable is None, so unwrap_or falls back (formerly catchable via try)",
   "stdout": "caught\n",
   "exit": 0
 }

@@ -93,10 +93,13 @@ var coreCatalog = map[string]map[string]coreMember{
 	// env (Unit 13): pure aliases of the flat env builtins. Member names drop the
 	// module-name affix (env/has_env/set_env/unset_env/env_or -> get/has/set/unset/
 	// get_or). None is overloaded or arg-domain-checked, so all use coreSig. The
-	// namespace name "env" equals the flat builtin "env"; they coexist (bare env(x)
-	// still resolves to the builtin; env.get(x) resolves via the namespace).
+	// namespace name "env" equals the flat builtin "env"; the bare spelling is a
+	// removed flat builtin (moved-to-module diagnostic); env.get(x) resolves via
+	// the namespace. get's own coreSig is independent of builtinSigs["env"] (not a
+	// delegate member), so it must be kept in sync by hand: env(name) returns
+	// Optional[string] (FR-004), so get does too.
 	"env": {
-		"get":    {kind: coreFunc, builtin: "env", sig: coreSig1(String, String)},
+		"get":    {kind: coreFunc, builtin: "env", sig: coreSig1(String, optionalType(String))},
 		"has":    {kind: coreFunc, builtin: "has_env", sig: coreSig1(String, Bool)},
 		"set":    {kind: coreFunc, builtin: "set_env", sig: coreSig2(String, String, Void)},
 		"unset":  {kind: coreFunc, builtin: "unset_env", sig: coreSig1(String, Void)},

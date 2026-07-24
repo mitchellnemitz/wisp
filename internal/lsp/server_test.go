@@ -735,7 +735,7 @@ func TestDiagnosticsIncludeDefaultStemStillSuppressed(t *testing.T) {
 func TestDiagnosticsSuppressAliasedRemovedBuiltinModule(t *testing.T) {
 	src := "import \"env\" as e\n" +
 		"fn main() -> int {\n" +
-		"  print(e.get(\"HOME\"))\n" +
+		"  print(unwrap_or(e.get(\"HOME\"), \"\"))\n" +
 		"  return 0\n" +
 		"}\n"
 	diags := computeDiagnostics(src)
@@ -751,7 +751,7 @@ func TestDiagnosticsSuppressAliasedRemovedBuiltinModule(t *testing.T) {
 func TestDiagnosticsSuppressUnaliasedRemovedBuiltinModule(t *testing.T) {
 	src := "import \"env\"\n" +
 		"fn main() -> int {\n" +
-		"  print(env.get(\"HOME\"))\n" +
+		"  print(unwrap_or(env.get(\"HOME\"), \"\"))\n" +
 		"  return 0\n" +
 		"}\n"
 	diags := computeDiagnostics(src)

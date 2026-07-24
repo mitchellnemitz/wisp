@@ -154,8 +154,8 @@ func TestRemovedExhaustive_DelegateNonPerturbation(t *testing.T) {
 			ns: "env", member: "get", builtin: "env",
 			collideDecl: `const env: int = 0`,
 			collideUse:  `let n: int = env`,
-			nsCallSrc:   `let s: string = env.get("X")`,
-			want:        String,
+			nsCallSrc:   `let s: Optional[string] = env.get("X")`,
+			want:        optionalType(String),
 		},
 	}
 	for _, tc := range cases {

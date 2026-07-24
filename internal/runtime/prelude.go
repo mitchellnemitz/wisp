@@ -133,7 +133,7 @@ const (
 	// printf, and quoted redirection; run rebuilds argv into its own positional
 	// parameters and executes "$@", never an assembled command string. Every
 	// fallible helper routes faults through the mode-aware __wisp_fail.
-	Env         = "__wisp_env"          // <pos> <name>: ENVIRON[name] or located abort if unset
+	Env         = "__wisp_env"          // <name>: ENVIRON[name] in __ret + exit 0, exit 1 if unset (-> None)
 	HasEnv      = "__wisp_has_env"      // <name>: true/false via (name in ENVIRON)
 	ReadFile    = "__wisp_read_file"    // <pos> <path>: exact file bytes; missing/unreadable/NUL abort
 	WriteFile   = "__wisp_write_file"   // <pos> <path> <content>: truncate-write; failure aborts
@@ -2277,25 +2277,23 @@ var registry = map[string]helper{
 
 	// --- I/O (M7) ---
 
-	// __wisp_env <pos> <name>: return ENVIRON[name] in __ret, or abort located
-	// naming the variable when unset. The name is passed to awk via -v (never
-	// interpolated into the program text), so a name with shell- or awk-active
-	// bytes is inert. The membership test `(name in ENVIRON)` is true for a
-	// set-but-empty variable and false only when unset, so set-empty correctly
-	// returns "". The value is read through an awk command substitution, which
-	// strips trailing newlines (the documented env/run distinction from
-	// read_file's exact bytes); interior bytes are preserved.
+	// __wisp_env <name>: return ENVIRON[name] in __ret and exit 0, or exit 1 if
+	// unset (the codegen wrapper maps this to None). The name is passed to awk
+	// via -v (never interpolated into the program text), so a name with shell-
+	// or awk-active bytes is inert. The membership test `(name in ENVIRON)` is
+	// true for a set-but-empty variable and false only when unset, so set-empty
+	// correctly returns Some(""). A single awk invocation drives both the value
+	// (via ENVIRON) and the exit status, so the function's own exit status IS
+	// that awk exit status (POSIX: a simple assignment with a command
+	// substitution takes the substitution's status). The value is read through
+	// an awk command substitution, which strips trailing newlines (the
+	// documented env/run distinction from read_file's exact bytes); interior
+	// bytes are preserved. Never aborts.
 	Env: {
 		id:    Env,
-		deps:  []string{Fail},
 		order: 70,
 		src: `__wisp_env() {
-	if awk -v n="$2" 'BEGIN{ exit !(n in ENVIRON) }'; then
-		__ret="$(awk -v n="$2" 'BEGIN{ printf "%s", ENVIRON[n] }')"
-	else
-		__wisp_fail "$1" "env: $2 is not set"
-		[ -n "$__wisp_err_pending" ] && return
-	fi
+	__ret="$(LC_ALL=C awk -v n="$1" 'BEGIN{ if (n in ENVIRON) { printf "%s", ENVIRON[n]; exit 0 } else { exit 1 } }')"
 }`,
 	},
 

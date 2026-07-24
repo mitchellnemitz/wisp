@@ -104,7 +104,6 @@ var builtinWrapperSpecs = []builtinWrapperSpec{
 	{builtin: "pad_end", dep: PadEnd, located: true},
 	{builtin: "ord", dep: Ord, located: true},
 	{builtin: "chr", dep: Chr, located: true},
-	{builtin: "env", dep: Env, located: true},
 	{builtin: "read_file", dep: ReadFile, located: true},
 	{builtin: "file_size", dep: FileSize, located: true},
 	{builtin: "sqrt", dep: Sqrt, located: true},

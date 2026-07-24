@@ -13,8 +13,9 @@ fn main() -> int {
     print("both: ${a} / ${b}")
     // PATH is always set, so has_env is a deterministic true here.
     print("has PATH: ${to_string(env.has("PATH"))}")
-    // env reads it; the value varies, so just report its presence by length sign.
-    let path: string = env.get("PATH")
+    // env reads it (Optional[string]); PATH is always set, so unwrap_or's
+    // fallback never triggers here. Report its presence by length sign.
+    let path: string = unwrap_or(env.get("PATH"), "")
     let nonEmpty: bool = length(path) > 0
     print("PATH is non-empty: ${to_string(nonEmpty)}")
     return 0
