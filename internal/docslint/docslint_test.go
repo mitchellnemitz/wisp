@@ -196,3 +196,62 @@ func TestDocslintGuard_ExecutableNegative(t *testing.T) {
 		t.Fatalf("StaleBareSpellings did not detect synthetic drift for %q; got %v", "push", offenses)
 	}
 }
+
+func TestLanguageMdCountsAccurate(t *testing.T) {
+	data, err := os.ReadFile(languageMdPath)
+	if err != nil {
+		t.Fatalf("reading %s: %v", languageMdPath, err)
+	}
+	counts, err := docslint.FuncrefCounts(string(data))
+	if err != nil {
+		t.Fatalf("%s: FuncrefCounts: %v", languageMdPath, err)
+	}
+	checks := []struct {
+		class string
+		want  int
+		desc  string
+	}{
+		{"mono", len(types.GeneratableBuiltinFuncrefs()), "monomorphic-generatable"},
+		{"labels", len(types.FuncrefClassLabels()), "finer-grained labels"},
+		{"overloaded", len(types.OverloadedFuncrefNames()), "overloaded"},
+		{"generic", len(types.GenericFuncrefNames()), "generic"},
+	}
+	for _, c := range checks {
+		fc, ok := counts[c.class]
+		if !ok {
+			t.Errorf("%s: %s count phrase not found", languageMdPath, c.desc)
+			continue
+		}
+		if fc.Value != c.want {
+			t.Errorf("%s:%d: documents %d %s builtins, source has %d",
+				languageMdPath, fc.Line, fc.Value, c.desc, c.want)
+		}
+	}
+}
+
+func TestFuncrefCounts_ExecutableNegative(t *testing.T) {
+	// Line numbers below are 1-based within this synthetic doc.
+	doc := "checker tracks 9 finer-grained labels\n" + // line 1
+		"Any of the 70 builtins in this class\n" + // line 2
+		"**Overloaded** (annotation selects the arm). 6 builtins\n" + // line 3
+		"**Generic** (annotation selects the container shape). 13 builtins\n" // line 4
+	counts, err := docslint.FuncrefCounts(doc)
+	if err != nil {
+		t.Fatalf("FuncrefCounts: %v", err)
+	}
+	want := map[string]docslint.FuncrefCount{
+		"labels":     {Class: "labels", Value: 9, Line: 1},
+		"mono":       {Class: "mono", Value: 70, Line: 2},
+		"overloaded": {Class: "overloaded", Value: 6, Line: 3},
+		"generic":    {Class: "generic", Value: 13, Line: 4},
+	}
+	for class, w := range want {
+		got, ok := counts[class]
+		if !ok {
+			t.Fatalf("FuncrefCounts() missing class %q", class)
+		}
+		if got != w {
+			t.Fatalf("FuncrefCounts()[%q] = %+v, want %+v", class, got, w)
+		}
+	}
+}

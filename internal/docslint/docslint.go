@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/mitchellnemitz/wisp/internal/types"
@@ -341,4 +342,74 @@ func SignatureDrift(entries []DocEntry, members []types.DocMember, path string) 
 	}
 	sort.Strings(out)
 	return out
+}
+
+var (
+	// NOTE: the mono anchor is deliberately the short prefix "Any of the N
+	// builtins", NOT "...in this class": in the real language.md today that
+	// full phrase is line-wrapped (L582 ends "Any of the 71 builtins in",
+	// L583 begins "this class..."), and FuncrefCounts scans line by line, so
+	// the longer regex would never match. "Any of the" occurs exactly once in
+	// language.md (verified), so the short form is unambiguous.
+	monoCountRe       = regexp.MustCompile(`Any of the (\d+) builtins`)
+	labelCountRe      = regexp.MustCompile(`checker tracks (\d+) finer-grained labels`)
+	overloadedCountRe = regexp.MustCompile(`\*\*Overloaded\*\* \(annotation selects the arm\)\. (\d+) builtins`)
+	genericCountRe    = regexp.MustCompile(`\*\*Generic\*\* \(annotation selects the container shape\)\. (\d+) builtins`)
+)
+
+// FuncrefCount is one documented funcref-class count located in a doc: its
+// class key, the documented number, and the 1-based line it was found on (so a
+// drift failure can name file:line per FR-010).
+type FuncrefCount struct {
+	Class string // "mono" | "labels" | "overloaded" | "generic"
+	Value int
+	Line  int
+}
+
+// FuncrefCounts extracts the four documented funcref-class counts from doc
+// (the full text of guide/language.md, or a synthetic stand-in), keyed by
+// class: the monomorphic-generatable count ("mono"), the BuiltinFuncrefClass
+// label-set count ("labels"), the overloaded count ("overloaded"), and the
+// generic count ("generic"). It scans line by line so each returned
+// FuncrefCount carries the exact line its phrase was found on. Each anchor
+// regex is scoped to text that fits on a single source line in language.md
+// today (the mono anchor is intentionally the short "Any of the N builtins"
+// prefix because its full "...in this class" continuation wraps to the next
+// line); if a future edit wraps an anchor's captured portion across lines it
+// will surface as a loud "not found" error here, not a silent miss. It errors
+// if any of the four phrases is absent.
+func FuncrefCounts(doc string) (map[string]FuncrefCount, error) {
+	specs := []struct {
+		class string
+		re    *regexp.Regexp
+		desc  string
+	}{
+		{"mono", monoCountRe, "monomorphic-generatable count"},
+		{"labels", labelCountRe, "label-set count"},
+		{"overloaded", overloadedCountRe, "overloaded count"},
+		{"generic", genericCountRe, "generic count"},
+	}
+	out := make(map[string]FuncrefCount, len(specs))
+	lines := strings.Split(doc, "\n")
+	for i, line := range lines {
+		for _, s := range specs {
+			if _, done := out[s.class]; done {
+				continue
+			}
+			if m := s.re.FindStringSubmatch(line); m != nil {
+				v, err := strconv.Atoi(m[1])
+				if err != nil {
+					return nil, fmt.Errorf("%s: %v", s.desc, err)
+				}
+				out[s.class] = FuncrefCount{Class: s.class, Value: v, Line: i + 1}
+			}
+		}
+	}
+	for _, s := range specs {
+		if _, ok := out[s.class]; !ok {
+			// Failure-message contract: class id + expected anchor + actual.
+			return nil, fmt.Errorf("count class %q (%s): expected a line matching %q, actual none found (anchor phrase removed or reworded)", s.class, s.desc, s.re.String())
+		}
+	}
+	return out, nil
 }
