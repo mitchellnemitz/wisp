@@ -570,6 +570,10 @@ func (c *checker) checkBuiltinNamed(n *ast.CallExpr, name, dispName string) Type
 		return c.checkSizeCall(n, dispName)
 	case "clear":
 		return c.checkClearCall(n, dispName)
+	case "array_is_empty":
+		return c.checkArrayIsEmptyCall(n, dispName)
+	case "dict_is_empty":
+		return c.checkDictIsEmptyCall(n, dispName)
 	case "to_int":
 		if t, ok := c.checkIntEnumCall(n); ok {
 			return t
