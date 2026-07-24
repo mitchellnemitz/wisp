@@ -1,8 +1,8 @@
 import "math"
 import "string"
 fn main() -> int {
-    print(to_string(string.int_or("007", 0)) + " " + to_string(string.int_or("x", 9)) + " " + to_string(string.int_or("-0", 5)))
-    print(to_string(string.float_or("1.50", 0.0)) + " " + to_string(string.float_or("1e9", 0.0)))
+    print(to_string(unwrap_or(parse_int("007"), 0)) + " " + to_string(unwrap_or(parse_int("x"), 9)) + " " + to_string(unwrap_or(parse_int("-0"), 5)))
+    print(to_string(unwrap_or(parse_float("1.50"), 0.0)) + " " + to_string(unwrap_or(parse_float("1e9"), 0.0)))
     print(to_string(math.clamp(15, 0, 10)) + " " + to_string(math.clamp(-3, 0, 10)) + " " + to_string(math.clamp(5, 0, 10)))
     print(to_string(math.clamp(2.5, 0.0, 2.0)))
     print(to_string(math.sign(-9)) + " " + to_string(math.sign(0)) + " " + to_string(math.sign(7)) + " " + to_string(math.sign(-1.5)) + " " + to_string(math.sign(-0.0)))

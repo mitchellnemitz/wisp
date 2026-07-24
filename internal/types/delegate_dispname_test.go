@@ -21,7 +21,7 @@ func TestDelegateDispName_ArityErrors(t *testing.T) {
 		{"array", `fn main() -> int { let xs: int[] = [1]; let f: int = array.first(xs, xs); return 0 }`, "array.first expects 1 argument, got 2"},
 		{"array", `fn main() -> int { let xs: int[] = [1]; let ys: int[] = array.take(xs); return 0 }`, "array.take expects 2 arguments, got 1"},
 		{"string", `fn main() -> int { let i: int = string.join([1]); return 0 }`, "string.join expects 2 arguments, got 1"},
-		{"dict", `fn main() -> int { let m: {string: int} = {}; let g: int = dict.get_or(m); return 0 }`, "dict.get_or expects"},
+		{"dict", `fn main() -> int { let m: {string: int} = {}; let g: Optional[int] = dict.get(m); return 0 }`, "dict.get expects"},
 		{"process", `fn main() -> int { let p: Process = process.spawn(); return 0 }`, "process.spawn expects"},
 	} {
 		info := checkNsProg(t, c.ns, c.src)

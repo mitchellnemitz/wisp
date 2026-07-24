@@ -43,8 +43,6 @@ func TestCoreStringsCoreSigMembers(t *testing.T) {
 		{`fn main() -> int { let b: bool = string.is_empty(""); return 0 }`, "is_empty", Bool},
 		{`fn main() -> int { let s: string = string.reverse("abc"); return 0 }`, "reverse_string", String},
 		{`fn main() -> int { let i: int = string.ord("a"); return 0 }`, "ord", Int},
-		{`fn main() -> int { let i: int = string.int_or("x", 0); return 0 }`, "int_or", Int},
-		{`fn main() -> int { let f: float = string.float_or("x", 0.0); return 0 }`, "float_or", Float},
 	} {
 		info := checkStringsProg(t, c.src)
 		if len(info.Errors) != 0 {

@@ -83,9 +83,6 @@ func TestCoreEnvByteIdentical(t *testing.T) {
 	// env.get -> env (coreSig, Optional[string] result).
 	assertCoreByteIdentical(t, "env", "env.get", "env", `"X"`,
 		"fn main() -> int { let s: Optional[string] = @CALL@; return 0 }")
-	// env.get_or -> env_or (two args).
-	assertCoreByteIdentical(t, "env", "env.get_or", "env_or", `"X", "d"`,
-		"fn main() -> int { let s: string = @CALL@; print(s); return 0 }")
 	// env.set -> set_env (void, statement position).
 	assertCoreByteIdentical(t, "env", "env.set", "set_env", `"X", "v"`,
 		"fn main() -> int { @CALL@; return 0 }")

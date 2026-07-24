@@ -24,7 +24,6 @@ func TestCoreEnvMembersResolve(t *testing.T) {
 		{`fn main() -> int { let b: bool = env.has("X"); return 0 }`, "has_env", Bool},
 		{`fn main() -> int { env.set("X", "v"); return 0 }`, "set_env", Void},
 		{`fn main() -> int { env.unset("X"); return 0 }`, "unset_env", Void},
-		{`fn main() -> int { let s: string = env.get_or("X", "d"); return 0 }`, "env_or", String},
 	} {
 		info := checkEnvProg(t, c.src)
 		if len(info.Errors) != 0 {

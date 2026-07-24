@@ -116,7 +116,7 @@ __wisp_run_full() {
 
 # test.wisp:1
 __wisp_f_m0_main() {
-	local __wisp_v_1 __wisp_v_2 __wisp_v_3 __wisp_v_4 __wisp_v_5 __wisp_t1 __wisp_t2 __wisp_t3 __wisp_t4 __wisp_t5 __wisp_t6 __wisp_t7 __wisp_t8 __wisp_t9 __wisp_t10 __wisp_t11 __wisp_t12 __wisp_t13 __wisp_t14 __wisp_t15 __wisp_t16 __wisp_t17 __wisp_t18 __wisp_t19 __wisp_t20 __wisp_t21
+	local __wisp_v_1 __wisp_v_2 __wisp_v_3 __wisp_v_4 __wisp_v_5 __wisp_t1 __wisp_t2 __wisp_t3 __wisp_t4 __wisp_t5 __wisp_t6 __wisp_t7 __wisp_t8 __wisp_t9 __wisp_t10 __wisp_t11 __wisp_t12 __wisp_t13 __wisp_t14 __wisp_t15 __wisp_t16 __wisp_t17 __wisp_t18 __wisp_t19 __wisp_t20 __wisp_t21 __wisp_t22 __wisp_t23 __wisp_t24 __wisp_t25 __wisp_t26 __wisp_t27
 	__wisp_alloc
 	__wisp_t1="$__ret"
 	__wisp_t2='echo'
@@ -163,23 +163,39 @@ __wisp_f_m0_main() {
 		*) eval "__wisp_d_${__wisp_t12}_keys=\"\$__wisp_t15 \$__wisp_t13\"" ;;
 	esac
 	__wisp_v_4="$__wisp_t12"
-	__wisp_t16='x'
 	__wisp_dkey_enc 'K'
-	__wisp_t17="$__ret"
+	__wisp_t16="$__ret"
 	eval "__ret=\$__wisp_d_${__wisp_v_4}_keys"
+	__wisp_t17="$__ret"
+	__wisp_alloc
 	__wisp_t18="$__ret"
-	case " $__wisp_t18 " in
-		*" $__wisp_t17 "*) eval "__wisp_t19=\$__wisp_d_${__wisp_v_4}_${__wisp_t17}" ;;
-		*) __wisp_t19="$__wisp_t16" ;;
+	case " $__wisp_t17 " in
+		*" $__wisp_t16 "*)
+			eval "__ret=\$__wisp_d_${__wisp_v_4}_${__wisp_t16}"
+			__wisp_t19="$__ret"
+			__wisp_t20=some
+			eval "__wisp_s_${__wisp_t18}_tag=\$__wisp_t20"
+			eval "__wisp_s_${__wisp_t18}_value=\$__wisp_t19"
+			;;
+		*)
+			__wisp_t21=none
+			eval "__wisp_s_${__wisp_t18}_tag=\$__wisp_t21"
+			;;
 	esac
-	__wisp_v_5="$__wisp_t19"
+	__wisp_t22='x'
+	eval "__ret=\$__wisp_s_${__wisp_t18}_tag"
+	__wisp_t23="$__ret"
+	eval "__ret=\$__wisp_s_${__wisp_t18}_value"
+	__wisp_t24="$__ret"
+	if [ "$__wisp_t23" = some ]; then __wisp_t25="$__wisp_t24"; else __wisp_t25="$__wisp_t22"; fi
+	__wisp_v_5="$__wisp_t25"
 	__wisp_print "$__wisp_v_1" 1
 	__wisp_string "$__wisp_v_2"
-	__wisp_t20="$__ret"
-	__wisp_print "$__wisp_t20" 1
+	__wisp_t26="$__ret"
+	__wisp_print "$__wisp_t26" 1
 	eval "__ret=\$__wisp_s_${__wisp_v_3}_stdout"
-	__wisp_t21="$__ret"
-	__wisp_print "$__wisp_t21" 1
+	__wisp_t27="$__ret"
+	__wisp_print "$__wisp_t27" 1
 	__wisp_print "$__wisp_v_5" 1
 	__ret=0
 	return

@@ -29,7 +29,7 @@ fn main() -> int {
     let inv: {string: int} = { "apple": 3, "pear": 2, "plum": 5 }
     print(string.join(dict.keys(inv), ","))
     print(string.join(array.map(dict.values(inv), show), ","))
-    print(to_string(dict.get_or(inv, "pear", 0)) + " " + to_string(dict.get_or(inv, "fig", 0)))
+    print(to_string(unwrap_or(dict.get(inv, "pear"), 0)) + " " + to_string(unwrap_or(dict.get(inv, "fig"), 0)))
     dict.remove(inv, "pear")
     print(string.join(dict.keys(inv), ","))
     let more: {string: int} = dict.merge(inv, { "apple": 10, "kiwi": 7 })

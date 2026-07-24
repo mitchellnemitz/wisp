@@ -3,15 +3,17 @@ package types
 import "testing"
 
 // Filesystem + process stdlib (fs milestone): type-checker coverage for the
-// non-array fixed-signature builtins added in Task 1 (file_exists, is_dir, cwd,
-// env_or) plus the void mutating ops (make_dir, remove_file, remove_dir,
-// rename). All are removable builtins now spelled fs.file_exists / fs.is_dir /
-// fs.cwd / env.get_or (env_or's member name) / fs.make_dir / fs.remove_file /
-// fs.remove_dir / fs.rename, so every test below checks through the linked
-// module set with the fs (and, for run_status, process) namespace bound.
-// Positive cases assert the result type flows; negative cases assert the
-// located compile error; name-freed cases mirror the M7 pattern (a removable
-// builtin's bare name is no longer reserved).
+// non-array fixed-signature builtins added in Task 1 (file_exists, is_dir, cwd)
+// plus the void mutating ops (make_dir, remove_file, remove_dir, rename). All
+// are removable builtins now spelled fs.file_exists / fs.is_dir / fs.cwd /
+// fs.make_dir / fs.remove_file / fs.remove_dir / fs.rename, so every test
+// below checks through the linked module set with the fs (and, for
+// run_status, process) namespace bound. Positive cases assert the result type
+// flows; negative cases assert the located compile error; name-freed cases
+// mirror the M7 pattern (a removable builtin's bare name is no longer
+// reserved). env_or itself is gone entirely (Task 6): its arg-type/arg-count
+// checking is covered by env.get's own tests in core_env_test.go, since
+// unwrap_or(env.get(n), fb) is the replacement.
 
 // --- well-typed results ---
 
@@ -19,7 +21,7 @@ func TestFS_Task1Builtins_OK(t *testing.T) {
 	expectOKNS(t, wrapMain(`let a: bool = fs.file_exists("x")
 let b: bool = fs.is_dir("x")
 let c: string = fs.cwd()
-let d: string = env.get_or("HOME", "fb")
+let d: string = unwrap_or(env.get("HOME"), "fb")
 fs.make_dir("x")
 fs.remove_file("x")
 fs.remove_dir("x")
@@ -38,15 +40,6 @@ func TestFS_IsDir_PathMustBeString(t *testing.T) {
 
 func TestFS_Cwd_TakesNoArgs(t *testing.T) {
 	expectErrNS(t, wrapMain(`let c: string = fs.cwd("x")`), "fs.cwd", "fs")
-}
-
-func TestFS_EnvOr_ArgsMustBeStrings(t *testing.T) {
-	expectErrNS(t, wrapMain(`let d: string = env.get_or(1, "fb")`), "env.get_or", "fs", "env")
-	expectErrNS(t, wrapMain(`let d: string = env.get_or("HOME", 1)`), "env.get_or", "fs", "env")
-}
-
-func TestFS_EnvOr_ArgCount(t *testing.T) {
-	expectErrNS(t, wrapMain(`let d: string = env.get_or("HOME")`), "env.get_or", "fs", "env")
 }
 
 func TestFS_MakeDir_PathMustBeString(t *testing.T) {
@@ -75,14 +68,16 @@ func TestFS_MutatingOps_AreVoid(t *testing.T) {
 	expectErrNS(t, wrapMain(`let x: string = fs.rename("a", "b")`), "void", "fs")
 }
 
-// --- names freed for user binding (all eight) ---
+// --- names freed for user binding (all seven) ---
 
-// file_exists/is_dir/cwd/env_or/make_dir/remove_file/remove_dir/rename are
+// file_exists/is_dir/cwd/make_dir/remove_file/remove_dir/rename are
 // removable builtins: their flat names were freed by the modules-only
 // migration (isReservedName excludes the removable set), so they are now
 // ordinary identifiers a user may bind -- unlike the pre-removal original,
-// which reserved them as bare builtin names.
-var fsTask1Names = []string{"file_exists", "is_dir", "cwd", "env_or", "make_dir", "remove_file", "remove_dir", "rename"}
+// which reserved them as bare builtin names. env_or is not in this list: it
+// was fully removed (Task 6), not merely moved to a module, so it was never a
+// "removable builtin" in this test's sense to begin with.
+var fsTask1Names = []string{"file_exists", "is_dir", "cwd", "make_dir", "remove_file", "remove_dir", "rename"}
 
 func TestFS_Task1_NamesFreed_Fn(t *testing.T) {
 	for _, name := range fsTask1Names {

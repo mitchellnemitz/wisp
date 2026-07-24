@@ -9,12 +9,12 @@ import (
 // TestRunEnvEmittedShellByteIdentical is the byte-identity GATE for the run_env
 // family, reconstructed for the modules-only surface. It compiles a fixed program
 // that exercises the existing run family (process.run / process.run_status /
-// process.run_full) plus dict.get_or, but NONE of the three run_env builtins
-// (run_env, run_env_status, run_env_full). The namespaced delegate lowering is
-// byte-identical to the pre-removal flat call, so the pre-removal snapshot still
-// matches; a green run proves the new catalog entries, the shared
-// __wisp_run_env_argv builder, and the RunEnv helper are tree-shaken out of
-// programs that do not call them (AC5 / N2).
+// process.run_full) plus unwrap_or(dict.get(...), fb), but NONE of the three
+// run_env builtins (run_env, run_env_status, run_env_full). The namespaced
+// delegate lowering is byte-identical to the pre-removal flat call, so the
+// pre-removal snapshot still matches; a green run proves the new catalog
+// entries, the shared __wisp_run_env_argv builder, and the RunEnv helper are
+// tree-shaken out of programs that do not call them (AC5 / N2).
 //
 // Regenerate the snapshot intentionally with:
 // UPDATE_RUNENV_SNAPSHOT=1 go test ./internal/codegen -run TestRunEnvEmittedShellByteIdentical
@@ -24,7 +24,7 @@ func TestRunEnvEmittedShellByteIdentical(t *testing.T) {
   let rc: int = process.run_status(["true"])
   let r: RunResult = process.run_full(["echo", "world"])
   let e: {string: string} = {"K": "v"}
-  let v: string = dict.get_or(e, "K", "x")
+  let v: string = unwrap_or(dict.get(e, "K"), "x")
   print(out)
   print(to_string(rc))
   print(r.stdout)

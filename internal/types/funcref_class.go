@@ -52,7 +52,7 @@ var builtinFuncrefGeneratable = map[string]bool{
 	"trim_start": true, "trim_end": true, "trim_prefix": true, "trim_suffix": true,
 	"is_empty": true, "reverse_string": true,
 	"starts_with": true, "ends_with": true,
-	"has_env": true, "env_or": true, "int_or": true, "float_or": true,
+	"has_env":     true,
 	"pid_alive":   true,
 	"file_exists": true, "is_dir": true, "is_file": true, "is_symlink": true,
 	"dir_name": true, "base_name": true,

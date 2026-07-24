@@ -21,8 +21,8 @@ fn main() -> int {
   fs.make_dir("x`touch pwned2`")
   print(to_string(fs.file_exists("pwned2")))
 
-  print(env.get_or("-v BADNAME", "FB"))
-  print(env.get_or("$(touch pwned3)", "FB"))
+  print(unwrap_or(env.get("-v BADNAME"), "FB"))
+  print(unwrap_or(env.get("$(touch pwned3)"), "FB"))
   print(to_string(fs.file_exists("pwned3")))
 
   fs.which("-v")

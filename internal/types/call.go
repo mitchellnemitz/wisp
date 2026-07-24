@@ -542,8 +542,6 @@ func (c *checker) checkBuiltinNamed(n *ast.CallExpr, name, dispName string) Type
 		return c.checkFirstLastCall(n, "last", dispName)
 	case "values":
 		return c.checkValuesCall(n, dispName)
-	case "get_or":
-		return c.checkGetOrCall(n, dispName)
 	case "remove":
 		return c.checkRemoveCall(n, dispName)
 	case "merge":

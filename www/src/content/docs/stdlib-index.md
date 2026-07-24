@@ -27,8 +27,9 @@ degradation note.
 - `[x] to_int(x: string | float) -> int`
 - `[x] to_float(x: int | string) -> float`
 - `[x] to_bool(x: int | float | string) -> bool`
-- `[x] string.int_or(x: string, fallback: int) -> int` -- parse, or fallback on bad input (no abort)
-- `[x] string.float_or(x: string, fallback: float) -> float`
+- `[x] parse_int(s: string) -> Optional[int]` -- parse, or None on bad input (no abort); fold with `unwrap_or`
+- `[x] parse_float(s: string) -> Optional[float]`
+- `[x] parse_bool(s: string) -> Optional[bool]`
 
 ## Strings
 
@@ -121,8 +122,7 @@ All other math ops above are pure-arithmetic (basic +,-,*,/ only).
 - `[x] dict.has(d: {K: V}, k: K) -> bool`
 - `[x] dict.keys(d: {K: V}) -> K[]`
 - `[x] dict.values(d: {K: V}) -> V[]` -- insertion order
-- `[x] dict.get_or(d: {K: V}, k: K, fallback: V) -> V` -- value or fallback, no abort
-- `[x] dict.get(d: {K: V}, k: K) -> Optional[V]` -- Some(value) if present, else None
+- `[x] dict.get(d: {K: V}, k: K) -> Optional[V]` -- Some(value) if present, else None; fold with `unwrap_or` for a value-or-fallback
 - `[x] dict.remove(d: {K: V}, k: K) -> void`
 - `[x] dict.size(d: {K: V}) -> int`
 - `[x] dict.merge(a: {K: V}, b: {K: V}) -> {K: V}` -- b wins on conflict
@@ -137,7 +137,6 @@ All other math ops above are pure-arithmetic (basic +,-,*,/ only).
 - `[x] fs.append_file(path: string, content: string) -> void`
 - `[x] process.run(argv: string[]) -> string` -- stdout; aborts on nonzero exit
 - `[x] exit(code: int) -> void`
-- `[x] env.get_or(name: string, fallback: string) -> string` -- value or fallback, no abort
 - `[x] env.set(name: string, value: string) -> void` -- export name=value into the process env; all later children inherit it; name must match `[A-Za-z_][A-Za-z0-9_]*` (invalid aborts located); mutates global state (contrast with `run_env`)
 - `[x] env.unset(name: string) -> void` -- remove name from the process env; no-op success if not set; same name validation as `set_env`
 - `[x] read_line() -> Optional[string]` -- one line from stdin; None on EOF
@@ -368,7 +367,7 @@ verbatim, so no precision loss). See the [stdlib guide](/guide/stdlib/#json-impo
 These are a starting point, to be turned into specs one at a time.
 
 - Collections core: `sort`, `sort_by`, `find`, `any`, `all`, `slice`, `concat`,
-  `first`/`last`, `sum`, `range`, plus dict `values`/`get_or`/`remove`/`merge`.
+  `first`/`last`, `sum`, `range`, plus dict `values`/`get`/`remove`/`merge`.
 - String round-out: `substring`, `char_at`, `last_index_of`, `count`,
   `trim_start`/`trim_end`/`trim_prefix`/`trim_suffix`, `pad_start`/`pad_end`,
   `lines`, `is_empty`.

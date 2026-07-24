@@ -40,8 +40,9 @@ func mainWrap(body string) string {
 }
 
 // The bare sort/sort_by/find/any/all/slice/concat/sum/range/first/last/values/
-// get_or/remove/merge/clamp/sign builtins are now removable (array/dict/math
-// modules). Positive member-result coverage lives in core_arrays/core_dict/
+// get/remove/merge/clamp/sign builtins are now removable (array/dict/math
+// modules; get_or itself is fully removed, not merely moved -- see Task 6).
+// Positive member-result coverage lives in core_arrays/core_dict/
 // core_math_test.go; the negative type/domain checks moved to
 // core_collections_neg_test.go. The checkSrc/wantNoErr/wantErr/mainWrap helpers
 // above are retained: they are used by generics_test.go and optional_test.go.

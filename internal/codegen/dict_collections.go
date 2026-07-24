@@ -5,7 +5,7 @@ import (
 	"github.com/mitchellnemitz/wisp/internal/types"
 )
 
-// Collections-core dict builtins (values/get_or/remove/merge), reusing the M3
+// Collections-core dict builtins (values/get/remove/merge), reusing the M3
 // dict backing-variable and insertion-order key-list machinery.
 
 // genValues lowers values(d) -> V[]: the values in insertion order, parallel to
@@ -29,26 +29,6 @@ func (g *gen) genValues(args []ast.Expr) atom {
 	g.line("done")
 	g.line("eval \"__wisp_a_${%s}_len=\\$%s\"", arr, idxTemp)
 	return varAtom(arr)
-}
-
-// genGetOr lowers get_or(d, k, fallback) -> V: the value if k is present, else
-// the fallback. No abort.
-func (g *gen) genGetOr(args []ast.Expr) atom {
-	keyType := types.DictKeyType(g.info.Types[args[0]])
-	id := g.genExpr(args[0])
-	key := g.genExpr(args[1])
-	// Evaluate the fallback before the case so left-to-right order holds.
-	fallback := g.spillToTemp(g.genExpr(args[2]))
-	tok := g.encodeKey(keyType, key, args[1].Pos())
-	keysRead := g.readHandleVar(g.dictKeysName(id.name))
-	res := g.newTemp()
-	g.line("case \" $%s \" in", keysRead.name)
-	g.indent++
-	g.line("*\" $%s \"*) eval \"%s=\\$%s\" ;;", tok, res, g.dictEntryName(id.name, tok))
-	g.line("*) %s=\"$%s\" ;;", res, fallback)
-	g.indent--
-	g.line("esac")
-	return varAtom(res)
 }
 
 // genGet lowers get(d, k) -> Optional[V]: Some(d[k]) when k is present, else None.

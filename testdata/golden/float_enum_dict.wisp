@@ -5,7 +5,7 @@ fn main() -> int {
   let m: {Ratio: int} = {}
   m[Ratio.Half] = 1
   m[Ratio.Full] = 2
-  print("${dict.get_or(m, Ratio.Half, -1)}")
+  print("${unwrap_or(dict.get(m, Ratio.Half), -1)}")
   print("${length(dict.keys(m))}")
   return 0
 }
