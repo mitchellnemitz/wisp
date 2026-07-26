@@ -1,0 +1,14 @@
+{
+  "provenance": {
+    "seed": 0,
+    "bound_kind": "program_count",
+    "bound_value": 1,
+    "program_index": 0
+  },
+  "source": "import \"math\"\nfn main() -\u003e int {\n  let m: int = math.int_min()\n  let s: int = (m + 0)\n  print(\"${s}\")\n  return 0\n}\n",
+  "runs": null,
+  "detail": "curated: INT_MIN via variable into arithmetic (Design-B carve-out)",
+  "carved_zsh": true,
+  "shrunk": false,
+  "unstable": false
+}
