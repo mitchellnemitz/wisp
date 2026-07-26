@@ -1,6 +1,7 @@
 # Built compiler binary
 /wisp
 /wisp-linux
+/wisp-fuzz
 
 # Generated shell output and source maps from local runs
 *.sh.map
