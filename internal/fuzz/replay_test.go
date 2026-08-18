@@ -2,6 +2,7 @@
 package fuzz
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/mitchellnemitz/wisp/internal/testrunner"
@@ -47,10 +48,11 @@ func TestReplayUsesStoredSourceNotProvenance(t *testing.T) {
 }
 
 // TestCuratedCorpusLoads is the pure-Go (no-shell) structural half of SC-008: the
-// committed curated regression corpus parses via LoadCorpus and the intmin-via-var
-// entry has the expected shape -- a placeholder provenance, a non-empty stored source
-// that reaches INT_MIN arithmetic, and the stored zsh carve decision. This runs in CI;
-// the real four-shell replay is TestCuratedReplayPasses (fuzzshell).
+// committed curated regression corpus parses via LoadCorpus and every carve-clean
+// entry stores a compiling source with the carve decision recorded. The detector
+// reach of the stored sources is the sibling test
+// TestCuratedRegressionsReachBoundaryArith; the real four-shell replay is
+// TestCuratedReplayPasses (fuzzshell).
 func TestCuratedCorpusLoads(t *testing.T) {
 	entries, err := LoadCorpus("corpus/regressions")
 	if err != nil {
@@ -67,8 +69,6 @@ func TestCuratedCorpusLoads(t *testing.T) {
 		if !f.CarvedZsh {
 			continue
 		}
-		// The intmin-via-var entry: its stored source must compile and reach the
-		// INT_MIN-into-arithmetic construct the carve decision records.
 		if _, err := compileOnce(f.Source); err != nil {
 			t.Fatalf("curated entry %s stored source does not compile: %v", f.Provenance.Filename(), err)
 		}
@@ -76,5 +76,65 @@ func TestCuratedCorpusLoads(t *testing.T) {
 	}
 	if !found {
 		t.Fatal("no carve-clean curated entry found (expected intmin-via-var.json with CarvedZsh:true)")
+	}
+}
+
+// TestCuratedRegressionsReachBoundaryArith pins every curated carve entry with a
+// REAL provenance (seed != 0) to the structural detector on BOTH surfaces:
+//
+//  1. The original pre-shrink program regenerated from (seed, bound, index) via
+//     RegenerateProgram must satisfy programReachesBoundaryArith -- the exact
+//     program the manifest ran and the fuzzer shrunk from. The fuzzer has no
+//     source-to-IR parser, so the regenerated IR is the only faithful anchor for
+//     the detector; a future detector over-narrowing fails this test instead of
+//     silently passing CI and the fuzzshell replay (which use the STORED flag).
+//     A generator (gen.go/rng.go/builtins.go) drift would repoint regeneration at
+//     a different program -- that is acceptable for this pin: the SC-005 baseline
+//     test re-runs the manifest through the current generator, and the stored-
+//     source guard in (2) still bounds the replay surface.
+//
+//  2. The stored SHRUNK source replay actually executes must still carry a
+//     boundary marker (literal or math.int_min/int_max call) in its text -- the
+//     text-level guard that holds even if the generator drifts.
+//
+// The intmin-via-var entry (placeholder seed 0, not a real manifest program) is
+// exempt from (1); its direct min-side shape is pinned for the general detector by
+// TestBoundaryArithSubsumesMinSide.
+func TestCuratedRegressionsReachBoundaryArith(t *testing.T) {
+	entries, err := LoadCorpus("corpus/regressions")
+	if err != nil {
+		t.Fatalf("load curated corpus: %v", err)
+	}
+	markers := []string{intMinLiteral, intMaxLiteral, "math.int_min", "math.int_max"}
+	hasMarker := func(src string) bool {
+		for _, m := range markers {
+			if strings.Contains(src, m) {
+				return true
+			}
+		}
+		return false
+	}
+	checked := 0
+	for _, f := range entries {
+		if !f.CarvedZsh {
+			continue
+		}
+		if !hasMarker(f.Source) {
+			t.Errorf("curated entry %s: stored source carries no boundary marker; the carve decision would be stale", f.Provenance.Filename())
+		}
+		if f.Provenance.Seed == 0 {
+			continue // placeholder provenance (intmin-via-var); exempt from regeneration
+		}
+		p, err := RegenerateProgram(f.Provenance, DefaultGenConfig())
+		if err != nil {
+			t.Fatalf("regenerate %s: %v", f.Provenance.Filename(), err)
+		}
+		if !programReachesBoundaryArith(p) {
+			t.Errorf("curated entry %s: regenerated program does not reach boundary arithmetic; the stored carve decision would go stale", f.Provenance.Filename())
+		}
+		checked++
+	}
+	if checked == 0 {
+		t.Fatal("no curated carve entries with real provenance found to pin")
 	}
 }

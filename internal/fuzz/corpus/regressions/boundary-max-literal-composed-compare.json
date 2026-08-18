@@ -1,0 +1,14 @@
+{
+  "provenance": {
+    "seed": 20260725,
+    "bound_kind": "program_count",
+    "bound_value": 500,
+    "program_index": 392
+  },
+  "source": "import \"array\"\nimport \"dict\"\nimport \"math\"\nimport \"regex\"\nimport \"string\"\nfn main() -> int {\n  let v0: int = 0\n  let v10: int = 0\n  if ((((length(\"x\") - v10) * 10) <= ((139 * v0) - (9223372036854775807 + string.count(\"x\", \"x\"))))) {\n    print(\"${1}\")\n  }\n  return 0\n}\n",
+  "runs": null,
+  "detail": "curated regression (2026-08-17 first real 4-shell baseline): INT64_MAX literal composed with builtin results into arithmetic",
+  "carved_zsh": true,
+  "shrunk": true,
+  "unstable": false
+}

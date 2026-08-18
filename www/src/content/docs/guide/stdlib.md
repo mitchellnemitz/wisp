@@ -592,9 +592,15 @@ fn main() -> int {
 
 Integer arithmetic uses the shell's native signed integers (`math.int_max()` /
 `math.int_min()`). A `+`, `-`, or `*` whose true result falls outside that range
-wraps, like C two's-complement arithmetic, and the wrapped value is the same on
-every supported shell. Two integer operations instead abort (catchable, located,
-identical on every shell) because their result is not representable at all:
+wraps, like C two's-complement arithmetic, and the wrapped value is the same on dash,
+busybox ash, and bash. The one boundary residual is zsh, whose `$(( ))` engine
+truncates any operand value text with magnitude above 2^63-1 ("number truncated
+after 18 digits") and continues with the truncated value -- so a wrapped-to-boundary
+value re-entering arithmetic, e.g. `math.int_max() + 1` in a longer expression,
+diverges on zsh just as an `INT_MIN` operand does (see the int boundary discussion
+in design-decisions). Two integer operations instead abort
+(catchable, located, identical on every shell) because their result is not
+representable at all:
 division by zero, and the single overflowing division `math.int_min() / -1` (the
 quotient `2^63` exceeds `math.int_max()`); `math.int_min() % -1` is `0` and does not abort.
 The magnitude builtins below (`abs`, `gcd`, `lcm`) abort on `math.int_min()` for the
@@ -887,10 +893,10 @@ The largest and smallest signed integers the current shell can represent. Becaus
 POSIX does not mandate a fixed integer width (32-bit and 64-bit shells are both
 common), these are computed at runtime by doubling a value until it overflows.
 As a mathematical identity, `math.int_min()` equals `-math.int_max() - 1`; however, the
-expression `-math.int_max() - 1` in wisp requires shell `$(( ))` arithmetic at the
-`2^63` boundary, which diverges on zsh (cannot represent `2^63`) and is
-off-by-one on dash when the intermediate value is stored in a variable. Use
-`math.int_min()` directly rather than computing it via arithmetic.
+expression `-math.int_max() - 1` computes the INT64_MIN magnitude at the `2^63` boundary,
+which zsh's `$(( ))` cannot represent if the result re-enters arithmetic (it truncates
+magnitudes above `2^63-1`). dash, busybox ash, and bash handle it via the bare-operand
+form. Use `math.int_min()` directly rather than computing it via arithmetic.
 
 ```wisp
 math.int_max() > 1000000000   // true

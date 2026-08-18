@@ -59,8 +59,9 @@ func RequirePrereqs() ([]testrunner.Shell, error) {
 }
 
 // compareRuns reports whether the runs disagree on raw stdout bytes or exit status
-// (byte-exact, no normalization -- FR-007). carveZsh excludes zsh for the single
-// Design-B INT_MIN case (FR-015); non-zsh shells must still agree.
+// (byte-exact, no normalization -- FR-007). carveZsh excludes zsh for the
+// documented int64-boundary residual (FR-015 Design-B + the max-side extension,
+// see intmin.go); non-zsh shells must still agree.
 func compareRuns(runs []ShellRun, carveZsh bool) (bool, string) {
 	var ref *ShellRun
 	for i := range runs {
@@ -127,9 +128,11 @@ func runUnder(sh testrunner.Shell, scriptPath string) ShellRun {
 var execUnder = runUnder
 
 // RunOracle compiles p once, runs it under every shell, and applies both oracles.
-// The zsh carve-out decision is computed structurally (with data flow) from the IR.
+// The zsh carve-out decision is computed structurally (with data flow) from the IR:
+// a program is carved when a value at the int64 boundary (min or max side) can
+// reach `$(( ))` arithmetic -- the documented zsh residual (see intmin.go).
 func RunOracle(shells []testrunner.Shell, p *Program) (OracleResult, error) {
-	return runOracleSource(shells, Print(p), programReachesIntMinArith(p))
+	return runOracleSource(shells, Print(p), programReachesBoundaryArith(p))
 }
 
 // runOracleSource is the shared execution core: given source and an explicit carve
@@ -172,7 +175,7 @@ func runOracleSource(shells []testrunner.Shell, src string, carveZsh bool) (Orac
 		res.Runs = append(res.Runs, execUnder(sh, tmp.Name()))
 	}
 	if carveZsh {
-		log.Printf("fuzz: INT_MIN-arith carve-out excluding zsh for this program")
+		log.Printf("fuzz: INT-boundary-arith carve-out excluding zsh for this program")
 	}
 	res.Diverged, res.Detail = compareRuns(res.Runs, carveZsh)
 	return res, nil

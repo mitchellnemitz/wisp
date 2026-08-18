@@ -17,6 +17,10 @@
 # Ephemeral session-tracking scratch (never committed)
 /STATE.md
 
+# Fuzzer transient persisted findings (FR-013 local runs; curated regressions live
+# under internal/fuzz/corpus/regressions and ARE committed)
+/internal/fuzz/corpus/findings/
+
 # Local AI-session scratch and generated knowledge graph (never committed)
 /.claude/
 /graphify-out/

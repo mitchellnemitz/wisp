@@ -61,5 +61,6 @@ full policy.
 - INT_MIN (`-9223372036854775808`) cross-shell arithmetic divergence: value
   operands are now referenced bare inside `$(( ))` so dash/busybox ash/bash read
   the stored value correctly, and `INT_MIN % -1` is folded to 0 to avoid an x86
-  `idiv` SIGFPE. (zsh's `$(( ))` still cannot represent 2^63; that residual is a
-  loud error, documented in the guide.)
+  `idiv` SIGFPE. (zsh's `$(( ))` still cannot represent 2^63; it warns
+  "number truncated after 18 digits" and continues with a truncated value,
+  documented in the guide.)

@@ -250,13 +250,23 @@ native `$(( ))` arithmetic disagrees at the extreme boundary. wisp emits every
 reads the stored value rather than re-lexing the string; this makes an `INT_MIN`
 value stored in a variable and used in arithmetic correct on dash, bash, and
 busybox ash, and it was a genuine dash off-by-one before the bare-operand fix.
-The residual is zsh alone: its `$(( ))` cannot represent `2^63` at all, so an
-`INT_MIN` operand is a loud zsh error rather than a silent wrong value. Rather
-than emulate 64-bit wraparound in shell arithmetic by hand for the sake of one
-boundary value on one shell - which would add real complexity and its own bug
-surface for a case realistic programs rarely hit at the exact edge - wisp
-documents the divergence and treats it as a shell-portability limit, the same
-way it treats a shift amount at or beyond the integer width as platform-defined.
+The residual is zsh alone: its `$(( ))` engine converts an operand's value text
+with its own number parser, which warns "number truncated after 18 digits" and
+continues with the truncated value whenever a magnitude above `2^63 - 1` reaches
+arithmetic. The first version of this decision claimed that only an INT_MIN
+source could hit this and that computed overflow "wraps identically" on all four
+shells; the fuzzer's first real four-shell baseline (2026-08-17) disproved both
+halves: an `INT_MIN` operand is a warning followed by a wrong value (not "a loud
+error"), and a value that wraps into the boundary at runtime, e.g.
+`math.int_max() + 1`, hits the same truncation on the next `$(( ))` -- the
+structural fuzzer carve was widened to every boundary source (min- or max-side)
+that can reach arithmetic, while everything outside that reach stays compared
+against all four shells. Rather than emulate 64-bit wraparound in shell arithmetic
+by hand for the sake of one boundary value on one shell - which would add real
+complexity and its own bug surface for a case realistic programs rarely hit at
+the exact edge - wisp documents the divergence and treats it as a shell-portability
+limit, the same way it treats a shift amount at or beyond the integer width as
+platform-defined.
 
 Where overflow is *not* left unspecified is where it is unambiguous and
 dangerous to get silently wrong: negating or taking the absolute value of the
