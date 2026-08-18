@@ -1,0 +1,14 @@
+{
+  "provenance": {
+    "seed": 20260725,
+    "bound_kind": "program_count",
+    "bound_value": 500,
+    "program_index": 220
+  },
+  "source": "import \"array\"\nimport \"dict\"\nimport \"math\"\nimport \"regex\"\nimport \"string\"\nfn main() -> int {\n  let v8: int = ((9223372036854775807 + 1) - 187)\n  print(\"${v8}\")\n  return 0\n}\n",
+  "runs": null,
+  "detail": "curated regression (2026-08-17 first real 4-shell baseline): INT64_MAX literal +1 wrap then more arithmetic, result printed",
+  "carved_zsh": true,
+  "shrunk": true,
+  "unstable": false
+}

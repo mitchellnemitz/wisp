@@ -1,0 +1,14 @@
+{
+  "provenance": {
+    "seed": 2,
+    "bound_kind": "program_count",
+    "bound_value": 200,
+    "program_index": 34
+  },
+  "source": "import \"array\"\nimport \"dict\"\nimport \"math\"\nimport \"regex\"\nimport \"string\"\nfn main() -> int {\n  if ((((1 + 9223372036854775807) - (148 - 9223372036854775807)) >= math.trunc(1.5))) {\n    print(\"${1}\")\n  }\n  return 0\n}\n",
+  "runs": null,
+  "detail": "curated regression (2026-08-17 first real 4-shell baseline): INT64_MAX literal in arithmetic (wrap into boundary) feeding a comparison",
+  "carved_zsh": true,
+  "shrunk": true,
+  "unstable": false
+}

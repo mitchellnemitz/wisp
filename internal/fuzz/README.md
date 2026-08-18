@@ -51,22 +51,33 @@ deliberate, reviewed edit-and-rebuild, not an accidental file swap. The `-manife
 flag on `seeded` is an exploration escape hatch only; it is bannered NON-CANONICAL
 and never counts as the clean baseline.
 
-## The Design-B INT_MIN carve-out (FR-015)
+## The int64-boundary carve-out (FR-015, extended 2026-08-17)
 
-zsh's `$(( ))` arithmetic cannot represent INT_MIN (magnitude 2^63, one past
-INT_MAX): it truncates the 19-digit literal, whereas dash, busybox, and bash all
-store and evaluate it correctly. This is a documented pre-existing zsh limitation,
-not a wisp bug, so the oracle carves zsh out of the comparison for the single narrow
-construct that hits it: an INT_MIN source (the literal or `math.int_min()`) reaching
-a source-level `$(( ))` arithmetic operand, directly or through a variable bound to
-it. The carve is decided STRUCTURALLY from the IR by data flow
-(`programReachesIntMinArith`), is logged when it fires, and excludes ONLY zsh -- the
-other three shells must still agree. Nothing else is carved: INT_MIN into
-`abs`/`gcd`/`lcm` aborts uniformly on all four shells, and `min`/`max`/`clamp`/`sign`
-lower to integer `[ -lt ]` tests that zsh evaluates correctly, so carving them would
-mask a real regression. The compiler side of this contract lives in
-`internal/codegen/expr.go` (`arith()`), which references INT_MIN operands BARE inside
-`$(( ))` precisely so dash/busybox/bash read the stored value correctly.
+zsh's `$(( ))` engine converts an operand's value text with its own number parser,
+which truncates any magnitude above 2^63-1 after 18 digits ("number truncated after
+18 digits") and continues with the truncated value, exit unchanged -- whereas dash,
+busybox, and bash convert the same value text to a signed 64-bit integer and are
+correct. This is a documented pre-existing zsh limitation (design-decisions.md), not
+a wisp bug, so the oracle carves zsh out of the comparison for the narrow construct
+that hits it: a boundary-tainted value reaching a source-level `$(( ))` arithmetic
+operand. A value is boundary-tainted if it derives from any of the four boundary
+sources -- the INT64_MIN/INT64_MAX literals or `math.int_min()`/`math.int_max()` --
+through the IR-visible data flow: variable bindings, arithmetic composition,
+array/dict literals, and the `dict.get`/`unwrap_or`/index carriers. The carve is
+decided STRUCTURALLY from the IR (`programReachesBoundaryArith`), is logged when it
+fires, and excludes ONLY zsh -- the other three shells must still agree. The
+original Design-B carve (`programReachesIntMinArith`, min-side direct) is retained
+as the SC-008 done-signal predicate and is subsumed by the general one. Nothing else
+is carved: the INT_MIN magnitude into `abs`/`gcd`/`lcm` aborts uniformly on all four
+shells, `min`/`max`/`clamp`/`sign` lower to integer `[ -lt ]` tests that zsh
+evaluates correctly, and comparison-only operands never reach `$(( ))` at all (they
+lower to `[ ]` integer tests, where zsh reads the value text without the truncation)
+-- so carving those shapes would mask a real regression. The empirical
+record behind the 2026-08-17 extension (six first-baseline divergences, two
+detector gaps) is source-cited in `internal/fuzz/intmin.go`. The compiler side of
+the ORIGINAL min-side contract lives in `internal/codegen/expr.go` (`arith()`),
+which references INT_MIN operands BARE inside `$(( ))` precisely so dash/busybox/bash
+read the stored value correctly.
 
 ## Done signal (SC-001) and the SC-008 regression direction
 

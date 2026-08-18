@@ -109,18 +109,28 @@ The value types are:
   Accepted limitation: the exact INT_MIN value `-9223372036854775808` is correct
   in word and print contexts -- `to_string()`, printing, storing in a variable,
   passing as an argument, returning from a function -- on all four supported
-  shells (dash, busybox ash, bash, zsh). Arithmetic and comparison at this exact
-  boundary have narrower residuals. As an operand of shell arithmetic `$(( ))`,
+  shells (dash, busybox ash, bash, zsh). Arithmetic at this exact
+  boundary has narrower residuals. As an operand of shell arithmetic `$(( ))`,
   wisp emits every variable operand bare (`$(( m + 0 ))`, not `$(( $m + 0 ))`) so
   the shell reads the stored value instead of re-lexing the `2^63` token; an
   INT_MIN value stored in a variable and used in arithmetic is therefore correct
   on dash, bash, and busybox ash (a literal or compile-time constant is spilled to
-  the same bare form). The one arithmetic case that still diverges is zsh, whose
-  `$(( ))` cannot represent `2^63` at all: an INT_MIN operand there is a loud zsh
-  error ("number truncated after 18 digits"), not a silent wrong value. Separately,
-  an INT_MIN-valued operand in a `[ ]` numeric comparison can diverge on dash and
-  zsh. Programs that need exact cross-shell behavior should avoid `[ ]` comparison
-  at the exact INT_MIN boundary and avoid INT_MIN arithmetic on zsh.
+  the same bare form). The one shell arithmetic still diverges at the boundary is
+  zsh: its `$(( ))` engine converts an operand's value text with its own number
+  parser, which warns "number truncated after 18 digits" and proceeds with the
+  truncated value (exit unchanged), whenever a value larger than `2^63 - 1` in
+  magnitude reaches arithmetic -- whether it is an INT_MIN literal, `math.int_min()`,
+  or a value that wraps into that range at runtime (e.g. `math.int_max() + 1`).
+  This affects dash, busybox ash, and bash not at all for the INT_MIN magnitude:
+  they convert the value text to a signed 64-bit integer and are correct. Separately,
+  comparisons over boundary-magnitude values (which lower to `[ ]` integer tests)
+  agree on all four shells for literal and stored operands in the tested shapes:
+  zsh's `[ ]` parser reads the magnitude without the `$(( ))` truncation, and dash's
+  test parser reads stored values exactly (its off-by-one applies only when a
+  2^63-magnitude TOKEN is lexed inside `$(( ))` -- a bare literal or a
+  dollar-expanded variable -- and the bare-operand codegen emits neither).
+  The divergence surface is arithmetic, not comparison. Programs that need exact
+  cross-shell behavior should avoid boundary-magnitude arithmetic on zsh.
 
 - `float`: a finite decimal in the runtime domain: a value whose `%.17g`
   representation is a plain decimal with no exponent character. In practice this
@@ -330,10 +340,13 @@ operand is a compile error. There is no unary bitwise complement and no
 compound-assignment form. Using `&` or `|` on bool operands is a compile error
 that suggests the logical `&&` or `||` instead.
 
-Each lowers to one POSIX arithmetic expansion `$(( l op r ))`, so the result is
-identical across dash, busybox ash, bash, and zsh. Negative operands behave as
-signed two's-complement: `-1 & 255` is `255`, and `>>` is an arithmetic
-(sign-extending) shift, so `-8 >> 1` is `-4`.
+Each lowers to one POSIX arithmetic expansion `$(( l op r ))`, so for in-range
+operands the result is identical across dash, busybox ash, bash, and zsh. Negative
+operands behave as signed two's-complement: `-1 & 255` is `255`, and `>>` is an
+arithmetic (sign-extending) shift, so `-8 >> 1` is `-4`. A boundary-magnitude
+operand (e.g. `math.int_min()`) hits the same zsh `$(( ))` truncation residual as
+ordinary arithmetic (documented under `int` above); the two's-complement identity
+holds there on dash, busybox ash, and bash.
 
 All five bitwise operators bind **tighter than comparison**. This is a
 deliberate divergence from C, where `&` is looser than `==`. In wisp,
