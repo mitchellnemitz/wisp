@@ -100,7 +100,7 @@ The done signal requires all four shells installed (busybox included); it cannot
 exercised end-to-end without them, since a genuine cross-shell divergence cannot be
 produced on a correct compiler.
 
-## The curated regression entry
+## The curated regression entries
 
 `corpus/regressions/intmin-via-var.json` is CURATED, not discovered: on the correct
 (carve-clean) compiler the fuzzer never diverges on this construct, so it is
@@ -111,3 +111,11 @@ not a pointer to a real pre-shrink run -- replay runs the STORED `source` and st
 `TestReplayUsesStoredSourceNotProvenance`), so the placeholder is inert.
 `TestCuratedReplayPasses` (fuzzshell) asserts it replays clean on the correct
 compiler; the done signal above covers the fail direction.
+
+The six `boundary-*.json` entries are the other half: DISCOVERED by the first real
+four-shell baseline run (2026-08-17), shrunk to 1-minimal reproducers, and committed
+with their real (seed, bound, index) provenance so `wisp-fuzz regen` can rebuild the
+original pre-shrink program. Each carries `carved_zsh: true` because the boundary
+carve (see above) applies; `TestCuratedRegressionsReachBoundaryArith` pins both the
+regenerated provenance and the stored source to the detector, and replay must stay
+clean on the correct compiler.
